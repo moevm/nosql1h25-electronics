@@ -1,13 +1,41 @@
-def add_data(str_data):
+from pymongo import MongoClient, InsertOne, UpdateOne
+import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+try:
+    uri = os.getenv("DB_URI")
+    conn = MongoClient()
+    print("Connected successfully!!!")
+except Exception as e:
+    print(f"Could not connect to MongoDB: {e}")
+    exit()
+
+db_name = os.getenv("DB_NAME")
+collection_name = os.getenv("COLLECTION_NAME")
+
+db = conn[db_name]
+collection = db[collection_name]
+
+
+def add(str_data):
     pass
+
+
 def read_all():
     pass
+
+
 def mass_import(file_path):
     pass
+
+
 def mass_export(file_path):
     pass
 
-# print all program options
+
 def print_help_info():
     print("The program has the following options:")
     print("0 - Display a hint")
@@ -17,39 +45,41 @@ def print_help_info():
     print("4 - Mass export")
     print("5 - Exit")
 
-print_help_info()
 
-# main program loop
-while True:
-    chosen_option = input("Enter the selected option: ")
+if __name__ == '__main__':
+    print_help_info()
 
-    # display a help info
-    if chosen_option == "0":
-        print_help_info()
+    # main program loop
+    while True:
+        chosen_option = input("Enter the selected option: ")
 
-    # add data to the database
-    elif chosen_option == "1":
-        str_data = input("Please enter the data you wish to add: ")
-        add_data(str_data)
-        print("Data added successfully!")
+        # display a help info
+        if chosen_option == "0":
+            print_help_info()
 
-    # print data from database
-    elif chosen_option == "2":
-        print("Database contents:")
-        read_all()
+        # add data to the database
+        elif chosen_option == "1":
+            str_data = input("Please enter the data you wish to add: ")
+            add(str_data)
+            print("Data added successfully!")
 
-    # mass import
-    elif chosen_option == "3":
-        file_path = input("Enter the path to the file from which you want to import the database: ")
-        mass_import(file_path)
+        # print data from database
+        elif chosen_option == "2":
+            print("Database contents:")
+            read_all()
 
-    # mass export
-    elif chosen_option == "4":
-        file_path = input("Enter the path to the file to which you want to export the database: ")
-        mass_export(file_path)
+        # mass import
+        elif chosen_option == "3":
+            file_path = input("Enter the path to the file from which you want to import the database: ")
+            mass_import(file_path)
 
-    # main cycle end condition
-    elif chosen_option == "5":
-        break
+        # mass export
+        elif chosen_option == "4":
+            file_path = input("Enter the path to the file to which you want to export the database: ")
+            mass_export(file_path)
 
-    print()
+        # main cycle end condition
+        elif chosen_option == "5":
+            break
+
+        print()

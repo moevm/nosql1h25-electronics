@@ -41,7 +41,30 @@ def read_all():
 
 
 def mass_import(file_path):
-    pass
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        if not isinstance(data, list):
+            raise ValueError("JSON file must contain a list of documents.")
+
+        requests = []
+        for document in data:
+            if "_id" in document:
+                requests.append(UpdateOne({"_id": document["_id"]}, {"$set": document}, upsert=True))
+            else:
+                requests.append(InsertOne(document))
+
+        result = collection.bulk_write(requests)
+        print(f"Inserted {result.inserted_count} documents.")
+        print(f"Upserted {result.upserted_count} documents.")
+
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+    except json.JSONDecodeError:
+        print(f"Error: Invalid JSON format in {file_path}")
+    except Exception as e:
+        print(f"An error occurred during import: {e}")
 
 
 def mass_export(file_path):

@@ -20,12 +20,12 @@ db = conn[db_name]
 collection = db[collection_name]
 
 
-def add(str_data):
+def add(data):
     try:
-        data = {
-            "data": str_data
+        record = {
+            "data": data
         }
-        result = collection.insert_one(data)
+        result = collection.insert_one(record)
         print(f"Document added with id: {result.inserted_id}")
     except Exception as e:
         print(f"Error adding data: {e}")
@@ -40,9 +40,9 @@ def read_all():
         print(f"Error reading data: {e}")
 
 
-def mass_import(file_path):
+def mass_import(path):
     try:
-        with open(file_path, 'r') as f:
+        with open(path, 'r') as f:
             data = json.load(f)
 
         if not isinstance(data, list):
@@ -60,23 +60,23 @@ def mass_import(file_path):
         print(f"Upserted {result.upserted_count} documents.")
 
     except FileNotFoundError:
-        print(f"Error: File not found at {file_path}")
+        print(f"Error: File not found at {path}")
     except json.JSONDecodeError:
-        print(f"Error: Invalid JSON format in {file_path}")
+        print(f"Error: Invalid JSON format in {path}")
     except Exception as e:
         print(f"An error occurred during import: {e}")
 
 
-def mass_export(file_path):
+def mass_export(path):
     try:
         cursor = collection.find()
         data = list(cursor)
         print(f"Exporting {len(data)} documents.")
 
-        with open(file_path, 'w') as f:
+        with open(path, 'w') as f:
             json.dump(data, f, indent=4, default=str)
 
-        print(f"Data exported successfully to {file_path}")
+        print(f"Data exported successfully to {path}")
 
     except Exception as e:
         print(f"An error occurred during export: {e}")

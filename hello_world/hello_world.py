@@ -45,7 +45,18 @@ def mass_import(file_path):
 
 
 def mass_export(file_path):
-    pass
+    try:
+        cursor = collection.find()
+        data = list(cursor)
+        print(f"Exporting {len(data)} documents.")
+
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=4, default=str)
+
+        print(f"Data exported successfully to {file_path}")
+
+    except Exception as e:
+        print(f"An error occurred during export: {e}")
 
 
 def print_help_info():

@@ -21,11 +21,23 @@ collection = db[collection_name]
 
 
 def add(str_data):
-    pass
+    try:
+        data = {
+            "data": str_data
+        }
+        result = collection.insert_one(data)
+        print(f"Document added with id: {result.inserted_id}")
+    except Exception as e:
+        print(f"Error adding data: {e}")
 
 
 def read_all():
-    pass
+    try:
+        cursor = collection.find()
+        for record in cursor:
+            print(record)
+    except Exception as e:
+        print(f"Error reading data: {e}")
 
 
 def mass_import(file_path):

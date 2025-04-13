@@ -12,6 +12,17 @@ class User(Document):
     password_hash = StringField(required=True)
     salt = StringField(required=True)
 
+    meta = {
+        'collection': 'users',
+        'indexes': [
+            {'fields': ['phone'], 'unique': True},
+        ]
+    }
+
+    @property
+    def id(self):
+        return str(self.pk)
+
     @staticmethod
     def hash_password(password, salt):
         return hashlib.sha256((password + salt).encode()).hexdigest()
@@ -26,3 +37,15 @@ class User(Document):
             password_hash=password_hash,
             salt=salt
         )
+
+    def set_password(self, password):
+        self.salt = secrets.token_hex(16)
+        self.password_hash = self.hash_password(password, self.salt)
+        self.save()
+
+    def check_password(self, password):
+        hashed_password = self.hash_password(password, self.salt)
+        return hashed_password == self.password_hash
+
+    def __str__(self):
+        return self.phone

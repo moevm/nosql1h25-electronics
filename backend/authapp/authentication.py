@@ -5,7 +5,8 @@ class CustomJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
         user_id = validated_token.get('user_id')
         try:
-            user = User.objects.filter(id=user_id).first()
-        except Exception:
+            user = User.objects.get(id=user_id)
+        except Exception as e:
+            print(f"Authentication Error: {e}")
             return None
         return user

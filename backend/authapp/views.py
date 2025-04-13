@@ -35,7 +35,7 @@ class MeView(APIView):
 
     def get(self, request):
         user = request.user
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user.user)  # Используем user.user, чтобы получить исходный объект User
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RefreshTokenView(APIView):

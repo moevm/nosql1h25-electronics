@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from mongoengine.errors import NotUniqueError
 
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -17,8 +18,9 @@ class RegisterView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=201)
             except NotUniqueError:
-                return Response({'details': 'Phone number already exists'}, status=403)
+                return Response({'details': 'Phone number already exists'},status=403)
         return Response(serializer.errors, status=400)
+
 
 class MyTokenObtainPairView(APIView):
     permission_classes = [AllowAny]
@@ -30,13 +32,15 @@ class MyTokenObtainPairView(APIView):
         else:
             return Response(serializer.errors, status=400)
 
+
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        serializer = UserSerializer(user.user)  # Используем user.user, чтобы получить исходный объект User
+        serializer = UserSerializer(user.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]

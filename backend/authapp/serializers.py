@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 
+
 class UserSerializer(serializers.Serializer):
     fullname = serializers.CharField(max_length=255)
     role = serializers.CharField(read_only=True)
@@ -49,6 +50,7 @@ class UserSerializer(serializers.Serializer):
             'edit_date': str(instance.edit_date),
             'phone': instance.phone,
         }
+
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=255)

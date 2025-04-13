@@ -3,6 +3,7 @@ from datetime import datetime
 import hashlib
 import secrets
 
+
 class User(Document):
     fullname = StringField(required=True)
     role = StringField(default='client')

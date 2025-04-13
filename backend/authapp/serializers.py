@@ -25,8 +25,14 @@ class UserSerializer(serializers.Serializer):
         return user
 
     def update(self, instance, validated_data):
+        new_phone = validated_data.get('phone', instance.phone)
+
+        if new_phone != instance.phone:
+            if User.objects(phone=new_phone).first():
+                raise serializers.ValidationError("Phone number already exists")
+
         instance.fullname = validated_data.get('fullname', instance.fullname)
-        instance.phone = validated_data.get('phone', instance.phone)
+        instance.phone = new_phone
 
         if 'password' in validated_data:
             instance.set_password(validated_data['password'])

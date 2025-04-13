@@ -11,3 +11,12 @@ MONGO_PORT = os.getenv('MONGO_PORT')
 connect(MONGO_DB_NAME, host=f"{MONGO_HOST}:{MONGO_PORT}")
 
 # Create your models here.
+class Request():
+    pass
+
+class Photo():
+    pass
+
+class Status():
+    pass
+

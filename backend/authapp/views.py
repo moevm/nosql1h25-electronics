@@ -1,8 +1,8 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserSerializer, CustomTokenObtainPairSerializer
-from .models import User
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from mongoengine.errors import NotUniqueError
@@ -10,6 +10,11 @@ from mongoengine.errors import NotUniqueError
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=UserSerializer,
+        responses={201: UserSerializer, 403: None, 400: None}
+    )
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -25,6 +30,11 @@ class RegisterView(APIView):
 class MyTokenObtainPairView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=CustomTokenObtainPairSerializer,
+        responses={200: CustomTokenObtainPairSerializer, 400: None}
+    )
+
     def post(self, request):
         serializer = CustomTokenObtainPairSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -36,6 +46,10 @@ class MyTokenObtainPairView(APIView):
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses=UserSerializer
+    )
+
     def get(self, request):
         user = request.user
         serializer = UserSerializer(user.user)
@@ -44,6 +58,12 @@ class MeView(APIView):
 
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=None,
+        responses={200: {'type': 'object', 'properties': {'access_token': {'type': 'string'}}},
+                   400: None}
+    )
 
     def post(self, request):
         refresh_token = request.data.get('refresh')

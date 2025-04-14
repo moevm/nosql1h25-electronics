@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -115,9 +116,21 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Your Project API',
     'DESCRIPTION': 'API documentation for your project',
     'VERSION': '1.0.0',
+    'SECURITY_DEFINITIONS': {
+        'BearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        },
+    },
+    'DEFAULT_SECURITY': [{'BearerAuth': []}],
 }
 
 from rest_framework_simplejwt.settings import api_settings
+
+api_settings.ACCESS_TOKEN_LIFETIME = timedelta(minutes=5)
+api_settings.REFRESH_TOKEN_LIFETIME = timedelta(days=1)
+api_settings.ROTATE_REFRESH_TOKENS = True
 
 api_settings.USER_ID_FIELD = 'id'
 api_settings.USER_ID_CLAIM = 'user_id'

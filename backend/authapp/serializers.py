@@ -69,17 +69,19 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         if not user.check_password(password):
             raise serializers.ValidationError({'details': 'Invalid credentials'}, code='invalid_credentials')
 
-        # Сохраняем пользователя для использования в to_representation
         self.user = user
         return attrs
+
 
 class TokenResponseSerializer(serializers.Serializer):
     refresh = serializers.CharField()
     access = serializers.CharField()
     user_id = serializers.CharField()
 
+
 class ErrorResponseSerializer(serializers.Serializer):
     details = serializers.CharField(help_text="Error message")
+
 
 class TokenRefreshSerializer(serializers.Serializer):
     refresh = serializers.CharField(required=True, help_text="Refresh token")

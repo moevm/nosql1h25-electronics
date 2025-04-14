@@ -59,8 +59,7 @@ class MyTokenObtainPairView(APIView):
             }
             return Response(data, status=200)
 
-        # Обработка ошибок: возвращаем только одно сообщение об ошибке
-        return Response({'details': 'Invalid credentials'}, status=400)  # Можно добавить более конкретные сообщения
+        return Response({'details': 'Invalid credentials'}, status=400)
 
 
 class MeView(APIView):

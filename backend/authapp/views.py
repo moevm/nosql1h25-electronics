@@ -2,7 +2,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import UserSerializer, CustomTokenObtainPairSerializer
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer, ErrorResponseSerializer, \
+    TokenResponseSerializer, TokenRefreshSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from mongoengine.errors import NotUniqueError
@@ -13,9 +14,12 @@ class RegisterView(APIView):
 
     @extend_schema(
         request=UserSerializer,
-        responses={201: UserSerializer, 403: None, 400: None}
+        responses={
+            201: UserSerializer,
+            403: ErrorResponseSerializer,
+            400: ErrorResponseSerializer,
+        }
     )
-
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -23,8 +27,14 @@ class RegisterView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=201)
             except NotUniqueError:
-                return Response({'details': 'Phone number already exists'},status=403)
-        return Response(serializer.errors, status=400)
+                return Response({'details': 'Phone number already exists'}, status=403)
+
+        error_messages = serializer.errors
+
+        if 'phone' in error_messages:
+            return Response({'details': error_messages['phone'][0]}, status=400)
+
+        return Response({'details': 'Invalid data'}, status=400)
 
 
 class MyTokenObtainPairView(APIView):
@@ -32,24 +42,36 @@ class MyTokenObtainPairView(APIView):
 
     @extend_schema(
         request=CustomTokenObtainPairSerializer,
-        responses={200: CustomTokenObtainPairSerializer, 400: None}
+        responses={
+            200: TokenResponseSerializer,
+            400: ErrorResponseSerializer,
+        }
     )
-
     def post(self, request):
         serializer = CustomTokenObtainPairSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            return Response(serializer.validated_data, status=200)
-        else:
-            return Response(serializer.errors, status=400)
+        if serializer.is_valid():
+            user = serializer.user
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user_id': str(user.id),
+            }
+            return Response(data, status=200)
+
+        # Обработка ошибок: возвращаем только одно сообщение об ошибке
+        return Response({'details': 'Invalid credentials'}, status=400)  # Можно добавить более конкретные сообщения
 
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        responses=UserSerializer
+        responses={
+            200: UserSerializer,
+            401: ErrorResponseSerializer,
+        }
     )
-
     def get(self, request):
         user = request.user
         serializer = UserSerializer(user.user)
@@ -60,19 +82,20 @@ class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        request=None,
-        responses={200: {'type': 'object', 'properties': {'access_token': {'type': 'string'}}},
-                   400: None}
+        request=TokenRefreshSerializer,
+        responses={
+            200: {'type': 'object', 'properties': {'access_token': {'type': 'string'}}},
+            400: ErrorResponseSerializer,
+        }
     )
-
     def post(self, request):
         refresh_token = request.data.get('refresh')
         if not refresh_token:
-            return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'details': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
             return Response({'access_token': access_token}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({'details': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)

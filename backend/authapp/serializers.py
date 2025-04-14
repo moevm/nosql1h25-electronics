@@ -4,6 +4,7 @@ from .models import User
 
 
 class UserSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
     fullname = serializers.CharField(max_length=255)
     role = serializers.CharField(read_only=True)
     creation_date = serializers.CharField(read_only=True)
@@ -62,16 +63,23 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
         try:
             user = User.objects.get(phone=phone)
-        except Exception as e:
+        except Exception:
             raise serializers.ValidationError({'details': 'Invalid credentials'}, code='invalid_credentials')
 
         if not user.check_password(password):
             raise serializers.ValidationError({'details': 'Invalid credentials'}, code='invalid_credentials')
 
-        refresh = RefreshToken.for_user(user)
-        data = {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'user_id': str(user.id),
-        }
-        return data
+        # Сохраняем пользователя для использования в to_representation
+        self.user = user
+        return attrs
+
+class TokenResponseSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    access = serializers.CharField()
+    user_id = serializers.CharField()
+
+class ErrorResponseSerializer(serializers.Serializer):
+    details = serializers.CharField(help_text="Error message")
+
+class TokenRefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField(required=True, help_text="Refresh token")

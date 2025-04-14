@@ -113,8 +113,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Your Project API',
-    'DESCRIPTION': 'API documentation for your project',
+    'TITLE': 'Electronics API',
+    'DESCRIPTION': 'API documentation for nosql-electronics',
     'VERSION': '1.0.0',
     'SECURITY_DEFINITIONS': {
         'BearerAuth': {

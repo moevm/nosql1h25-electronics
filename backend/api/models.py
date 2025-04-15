@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 import datetime
-from mongoengine import connect, StringField, FloatField, BinaryField, DateTimeField, Document, ListField, ReferenceField
+from mongoengine import connect, StringField, FloatField, BinaryField, DateTimeField, Document, ListField, \
+    ReferenceField
 
 load_dotenv()
 
@@ -11,9 +12,11 @@ MONGO_PORT = os.getenv('MONGO_PORT')
 
 connect(MONGO_DB_NAME, host=f"{MONGO_HOST}:{MONGO_PORT}")
 
+
 class Photo(Document):
     data_photo = BinaryField()
 
+    @classmethod
     def create_photo(cls, data_photo):
         return cls(
             data_photo=data_photo
@@ -24,6 +27,7 @@ class Status(Document):
     type = StringField(required=True)
     timestamp = DateTimeField(default=datetime.now)
 
+    @classmethod
     def create_status(cls, type, timestamp):
         return cls(
             type=type,
@@ -36,18 +40,19 @@ class Request(Document):
     title = StringField(required=True)
     description = StringField(required=True)
     address = StringField(required=True)
-    #todo
+    # todo
     # добавить категории
     price = FloatField(required=True)
-    #todo
+    # todo
     # добавить Photo
     photos = ListField(ReferenceField(Photo))
-    #todo
+    # todo
     # добавить user_id
 
-    #todo
+    # todo
     # добавить statuses
     statuses = ListField(ReferenceField(Status))
+
     @classmethod
     def create_request(cls, title, description, address, price, categories=None, photos=None, statuses=None):
         return cls(
@@ -55,8 +60,7 @@ class Request(Document):
             description=description,
             price=price,
             address=address,
-            categories = categories if categories else [],
-            photos = photos if photos else [],
-            statuses = statuses if statuses else []
+            categories=categories if categories else [],
+            photos=photos if photos else [],
+            statuses=statuses if statuses else []
         )
-

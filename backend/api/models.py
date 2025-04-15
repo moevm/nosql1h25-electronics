@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import datetime
+from datetime import datetime
 from mongoengine import connect, StringField, FloatField, BinaryField, DateTimeField, Document, ListField, \
     ReferenceField
 

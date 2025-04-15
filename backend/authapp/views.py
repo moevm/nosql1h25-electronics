@@ -11,6 +11,7 @@ from mongoengine.errors import NotUniqueError
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         request=UserSerializer,
@@ -18,7 +19,8 @@ class RegisterView(APIView):
             201: UserSerializer,
             403: ErrorResponseSerializer,
             400: ErrorResponseSerializer,
-        }
+        },
+        auth=[]
     )
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -39,13 +41,15 @@ class RegisterView(APIView):
 
 class MyTokenObtainPairView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         request=CustomTokenObtainPairSerializer,
         responses={
             200: TokenResponseSerializer,
             400: ErrorResponseSerializer,
-        }
+        },
+        auth=[]
     )
     def post(self, request):
         serializer = CustomTokenObtainPairSerializer(data=request.data)

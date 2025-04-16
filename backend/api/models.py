@@ -19,6 +19,8 @@ connect(host=f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}
 class Photo(Document):
     data = BinaryField(required=True)
 
+    meta = {'collection': 'photos'}
+
     @classmethod
     def create_photo(cls, data):
         return cls(data=data)
@@ -68,6 +70,8 @@ class Request(Document):
     photos = ListField(ReferenceField(Photo), required=True)
     statuses = ListField(EmbeddedDocumentField(Status), required=True)
     user_id = ReferenceField(User, required=True)
+
+    meta = {'collection': 'requests'}
 
     @classmethod
     def create_request(cls, title, description, address,

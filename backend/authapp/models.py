@@ -29,15 +29,26 @@ class User(Document):
         return hashlib.sha256((password + salt).encode()).hexdigest()
 
     @classmethod
-    def create_user(cls, fullname, phone, password):
+    def create(cls, fullname, phone, password):
         salt = secrets.token_hex(16)
         password_hash = cls.hash_password(password, salt)
-        return cls(
+        user = cls(
             fullname=fullname,
             phone=phone,
             password_hash=password_hash,
             salt=salt
         )
+        user.save()
+        return user
+
+    def update(self, **kwargs):
+        for field in ['fullname', 'phone']:
+            if field in kwargs:
+                setattr(self, field, kwargs[field])
+        if 'password' in kwargs:
+            self.set_password(kwargs['password'])
+        self.edit_date = datetime.utcnow()
+        self.save()
 
     def set_password(self, password):
         self.salt = secrets.token_hex(16)

@@ -22,8 +22,14 @@ class Photo(Document):
     meta = {'collection': 'photos'}
 
     @classmethod
-    def create_photo(cls, data):
+    def create(cls, data):
         return cls(data=data)
+
+    def update(self, **kwargs):
+        for field in ['data']:
+            if field in kwargs:
+                setattr(self, field, kwargs[field])
+        self.save()
 
 
 class Status(EmbeddedDocument):
@@ -31,32 +37,65 @@ class Status(EmbeddedDocument):
 
     meta = {'allow_inheritance': True}
 
+    @classmethod
+    def create(cls, **kwargs):
+        if 'timestamp' not in kwargs:
+            kwargs['timestamp'] = datetime.utcnow()
+        return cls(**kwargs)
+
+    def update(self, **kwargs):
+        # Обновление полей статуса (если нужно)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
 
 class CreatedStatus(Status):
-    pass
+    @classmethod
+    def create(cls):
+        return super().create()
 
 
 class PriceOfferStatus(Status):
     price = FloatField(required=True)
     user_id = ReferenceField(User, required=True)
 
+    @classmethod
+    def create(cls, price, user_id, **kwargs):
+        return super().create(price=price, user_id=user_id, **kwargs)
+
 
 class PriceAcceptStatus(Status):
     user_id = ReferenceField(User, required=True)
+
+    @classmethod
+    def create(cls, user_id, **kwargs):
+        return super().create(user_id=user_id, **kwargs)
 
 
 class DateOfferStatus(Status):
     date = DateTimeField(required=True)
     user_id = ReferenceField(User, required=True)
 
+    @classmethod
+    def create(cls, date, user_id, **kwargs):
+        return super().create(date=date, user_id=user_id, **kwargs)
+
 
 class DateAcceptStatus(Status):
     user_id = ReferenceField(User, required=True)
+
+    @classmethod
+    def create(cls, user_id, **kwargs):
+        return super().create(user_id=user_id, **kwargs)
 
 
 class ClosedStatus(Status):
     success = BooleanField(required=True)
     user_id = ReferenceField(User, required=True)
+
+    @classmethod
+    def create(cls, success, user_id, **kwargs):
+        return super().create(success=success, user_id=user_id, **kwargs)
 
 
 class Request(Document):
@@ -74,9 +113,8 @@ class Request(Document):
     meta = {'collection': 'requests'}
 
     @classmethod
-    def create_request(cls, title, description, address,
-                       category, price, user_id, photos=None, statuses=None):
-        return cls(
+    def create(cls, title, description, address, category, price, user_id, photos=None, statuses=None):
+        instance = cls(
             title=title,
             description=description,
             address=address,
@@ -86,3 +124,19 @@ class Request(Document):
             photos=photos if photos else [],
             statuses=statuses if statuses else []
         )
+        instance.save()
+        return instance
+
+    def update(self, **kwargs):
+        for field in ['title', 'description', 'address', 'category', 'price']:
+            if field in kwargs:
+                setattr(self, field, kwargs[field])
+        if 'photos' in kwargs:
+            self.photos = kwargs['photos']
+        if 'statuses' in kwargs:
+            self.statuses = kwargs['statuses']
+        self.save()
+
+    def add_status(self, status):
+        self.statuses.append(status)
+        self.save()

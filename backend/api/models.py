@@ -1,66 +1,84 @@
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-from mongoengine import connect, StringField, FloatField, BinaryField, DateTimeField, Document, ListField, \
-    ReferenceField
+from mongoengine import connect, Document, StringField, DateTimeField, FloatField, BinaryField, ListField, \
+    ReferenceField, EmbeddedDocument, EmbeddedDocumentField, ObjectIdField, BooleanField
+from authapp.models import User
 
 load_dotenv()
 
 MONGO_DB_NAME = os.getenv('MONGO_DB_NAME')
 MONGO_HOST = os.getenv('MONGO_HOST')
 MONGO_PORT = os.getenv('MONGO_PORT')
+MONGO_USER = os.getenv('MONGO_USER')
+MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
 
-connect(MONGO_DB_NAME, host=f"{MONGO_HOST}:{MONGO_PORT}")
+connect(host=f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB_NAME}")
 
 
 class Photo(Document):
-    data_photo = BinaryField()
+    data = BinaryField(required=True)
 
     @classmethod
-    def create_photo(cls, data_photo):
-        return cls(
-            data_photo=data_photo
-        )
+    def create_photo(cls, data):
+        return cls(data=data)
 
 
-class Status(Document):
-    type = StringField(required=True)
-    timestamp = DateTimeField(default=datetime.now)
+class Status(EmbeddedDocument):
+    timestamp = DateTimeField(default=datetime.utcnow)
 
-    @classmethod
-    def create_status(cls, type, timestamp):
-        return cls(
-            type=type,
-            timestamp=timestamp
-        )
+    meta = {'allow_inheritance': True}
 
 
-# Create your models here.
+class CreatedStatus(Status):
+    pass
+
+
+class PriceOfferStatus(Status):
+    price = FloatField(required=True)
+    user_id = ReferenceField(User, required=True)
+
+
+class PriceAcceptStatus(Status):
+    user_id = ReferenceField(User, required=True)
+
+
+class DateOfferStatus(Status):
+    date = DateTimeField(required=True)
+    user_id = ReferenceField(User, required=True)
+
+
+class DateAcceptStatus(Status):
+    user_id = ReferenceField(User, required=True)
+
+
+class ClosedStatus(Status):
+    success = BooleanField(required=True)
+    user_id = ReferenceField(User, required=True)
+
+
 class Request(Document):
     title = StringField(required=True)
     description = StringField(required=True)
     address = StringField(required=True)
-    # todo
-    # добавить категории
+    category = StringField(choices=[
+        'laptop', 'smartphone', 'tablet', 'pc', 'tv', 'audio', 'console', 'periphery', 'other'
+    ], required=True)
     price = FloatField(required=True)
-    # todo
-    # добавить Photo
-    photos = ListField(ReferenceField(Photo))
-    # todo
-    # добавить user_id
-
-    # todo
-    # добавить statuses
-    statuses = ListField(ReferenceField(Status))
+    photos = ListField(ReferenceField(Photo), required=True)
+    statuses = ListField(EmbeddedDocumentField(Status), required=True)
+    user_id = ReferenceField(User, required=True)
 
     @classmethod
-    def create_request(cls, title, description, address, price, categories=None, photos=None, statuses=None):
+    def create_request(cls, title, description, address,
+                       category, price, user_id, photos=None, statuses=None):
         return cls(
             title=title,
             description=description,
-            price=price,
             address=address,
-            categories=categories if categories else [],
+            category=category,
+            price=price,
+            user_id=user_id,
             photos=photos if photos else [],
             statuses=statuses if statuses else []
         )

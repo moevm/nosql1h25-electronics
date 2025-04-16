@@ -7,8 +7,8 @@ import secrets
 class User(Document):
     fullname = StringField(required=True)
     role = StringField(default='client')
-    creation_date = DateTimeField(default=datetime.now)
-    edit_date = DateTimeField(default=datetime.now)
+    creation_date = DateTimeField(default=datetime.utcnow)
+    edit_date = DateTimeField(default=datetime.utcnow)
     phone = StringField(required=True, unique=True)
     password_hash = StringField(required=True)
     salt = StringField(required=True)

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
     'api',
     'authapp',
 ]
@@ -80,9 +82,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -107,9 +109,28 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Electronics API',
+    'DESCRIPTION': 'API documentation for nosql-electronics',
+    'VERSION': '1.0.0',
+    'SECURITY_DEFINITIONS': {
+        'BearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        },
+    },
+    'DEFAULT_SECURITY': [{'BearerAuth': []}],
 }
 
 from rest_framework_simplejwt.settings import api_settings
+
+api_settings.ACCESS_TOKEN_LIFETIME = timedelta(minutes=5)
+api_settings.REFRESH_TOKEN_LIFETIME = timedelta(days=1)
+api_settings.ROTATE_REFRESH_TOKENS = True
 
 api_settings.USER_ID_FIELD = 'id'
 api_settings.USER_ID_CLAIM = 'user_id'

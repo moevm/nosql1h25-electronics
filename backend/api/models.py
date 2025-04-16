@@ -43,11 +43,6 @@ class Status(EmbeddedDocument):
             kwargs['timestamp'] = datetime.utcnow()
         return cls(**kwargs)
 
-    def update(self, **kwargs):
-        # Обновление полей статуса (если нужно)
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
 
 class CreatedStatus(Status):
     @classmethod

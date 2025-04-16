@@ -24,6 +24,10 @@ class User(Document):
     def id(self):
         return str(self.pk)
 
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+
     @staticmethod
     def hash_password(password, salt):
         return hashlib.sha256((password + salt).encode()).hexdigest()

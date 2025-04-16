@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from mongoengine import connect, Document, StringField, DateTimeField, FloatField, BinaryField, ListField, \
-    ReferenceField, EmbeddedDocument, EmbeddedDocumentField, ObjectIdField, BooleanField
+    ReferenceField, EmbeddedDocument, EmbeddedDocumentField, BooleanField
 from authapp.models import User
 
 load_dotenv()

@@ -1,8 +1,8 @@
-import { Box, Button, Container, Grid, Paper, Typography } from "@mui/material";
+import { Button, Container, Grid, Paper, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
-import Slider from 'react-slick';
 import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
+import ImageGallery from "../ui/ImageGallery";
 
 const mockData = {
     title: 'Ноутбук Lenovo ThinkPad',
@@ -41,14 +41,10 @@ const ProductCardPage = () => {
                 Карточка товара
             </Typography>
     
-            <Grid container spacing={4}>
+            <Grid container spacing={3}>
                 <Grid size={{xs: 12, md: 6}}>
-                    <Paper elevation={3} sx={{ p: 2 }}>
-                        <Slider dots infinite speed={500} slidesToShow={1} slidesToScroll={1}>
-                            {product.images.map((img, idx) => (
-                                <Box key={idx} component="img" src={img} alt={`Фото ${idx + 1}`} sx={{ width: '100%', height: 'auto' }} />
-                            ))}
-                        </Slider>
+                    <Paper elevation={10}>
+                        <ImageGallery images={mockData.images} />
                     </Paper>
                 </Grid>
         

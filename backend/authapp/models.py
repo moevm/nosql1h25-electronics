@@ -7,8 +7,8 @@ import secrets
 class User(Document):
     fullname = StringField(required=True)
     role = StringField(default='client')
-    creation_date = DateTimeField(default=datetime.now)
-    edit_date = DateTimeField(default=datetime.now)
+    creation_date = DateTimeField(default=datetime.utcnow)
+    edit_date = DateTimeField(default=datetime.utcnow)
     phone = StringField(required=True, unique=True)
     password_hash = StringField(required=True)
     salt = StringField(required=True)
@@ -24,20 +24,35 @@ class User(Document):
     def id(self):
         return str(self.pk)
 
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+
     @staticmethod
     def hash_password(password, salt):
         return hashlib.sha256((password + salt).encode()).hexdigest()
 
     @classmethod
-    def create_user(cls, fullname, phone, password):
+    def create(cls, fullname, phone, password):
         salt = secrets.token_hex(16)
         password_hash = cls.hash_password(password, salt)
-        return cls(
+        user = cls(
             fullname=fullname,
             phone=phone,
             password_hash=password_hash,
             salt=salt
         )
+        user.save()
+        return user
+
+    def update(self, **kwargs):
+        for field in ['fullname', 'phone']:
+            if field in kwargs:
+                setattr(self, field, kwargs[field])
+        if 'password' in kwargs:
+            self.set_password(kwargs['password'])
+        self.edit_date = datetime.utcnow()
+        self.save()
 
     def set_password(self, password):
         self.salt = secrets.token_hex(16)

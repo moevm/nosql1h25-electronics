@@ -2,7 +2,7 @@ import { Button, Paper, Stack, Typography, Select, MenuItem, TextField, Checkbox
 import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/RequestsTable';
 import { requests as requestsData } from '@src/model/data.example';
-import style from './RequestsClientPage.module.css';
+import style from './RequestsAdminPage.module.css';
 
 export const RequestsClientPage = () => {
   return (

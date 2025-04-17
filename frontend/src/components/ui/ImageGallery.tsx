@@ -2,7 +2,6 @@ import Slider from 'react-slick';
 import styles from './ImageGallery.module.css';
 import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { Box } from '@mui/material';
 
 type ProductGalleryProps = {
   images: string[];

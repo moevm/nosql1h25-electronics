@@ -24,7 +24,6 @@ const ImageGallery: React.FC<ProductGalleryProps> = ({ images }: { images: strin
         beforeChange: (_: number, next: number) => setCurrentSlide(next),
         autoplay: true,
         autoplaySpeed: 2000,
-        pauseOnHover: true
     }
 
     const handlePrev = () => {
@@ -35,8 +34,16 @@ const ImageGallery: React.FC<ProductGalleryProps> = ({ images }: { images: strin
         sliderRef.current?.slickNext();
     };
 
+    const handleMouseEnter = () => {
+        sliderRef.current?.slickPause();
+    };
+    
+    const handleMouseLeave = () => {
+        sliderRef.current?.slickPlay();
+    };
+
     return (
-        <div className={styles.sliderContainer}>
+        <div className={styles.sliderContainer} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
             <Slider ref={sliderRef} {...sliderSettings}>
                 {images.map((src, idx) => (
                     <img src={src} alt={`Фото ${idx}`} className={styles.slideImage}/>

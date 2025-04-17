@@ -1,0 +1,54 @@
+.sliderContainer {
+    position: relative;
+}
+  
+.navZone {
+    position: absolute;
+    top: 0;
+    width: 80px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+}
+  
+.navZone:hover {
+    opacity: 1;
+}
+  
+.leftNav {
+    left: 0;
+    background: linear-gradient(to right,rgba(0, 0, 0, 0.7) 5%, rgba(255, 255, 255, 0) 80%);
+}
+  
+.rightNav {
+    right: 0;
+    background: linear-gradient(to left,rgba(0, 0, 0, 0.6) 0%, rgba(255, 255, 255, 0) 90%);
+}
+  
+.arrowIcon {
+    color: white;
+    font-size: 32px;
+    pointer-events: none;
+}
+
+.sliderContainer {
+    position: relative;
+}
+  
+.slideImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+  
+.active {
+    transform: scale(1.02);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+}
+  

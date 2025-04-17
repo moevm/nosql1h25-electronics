@@ -22,6 +22,9 @@ const ImageGallery: React.FC<ProductGalleryProps> = ({ images }: { images: strin
         slidesToScroll: 1,
         arrows: false,
         beforeChange: (_: number, next: number) => setCurrentSlide(next),
+        autoplay: true,
+        autoplaySpeed: 2000,
+        pauseOnHover: true
     }
 
     const handlePrev = () => {

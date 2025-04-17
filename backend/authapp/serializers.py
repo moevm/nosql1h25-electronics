@@ -1,6 +1,5 @@
 import re
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 
 PHONE_REGEX = re.compile(r'^\+7\d{10}$')

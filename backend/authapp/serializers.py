@@ -1,6 +1,9 @@
+import re
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
+
+PHONE_REGEX = re.compile(r'^\+7\d{10}$')
 
 
 class UserSerializer(serializers.Serializer):
@@ -13,6 +16,11 @@ class UserSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate_phone(self, value):
+        if not isinstance(value, str):
+            raise serializers.ValidationError("Phone must be a string")
+        if not PHONE_REGEX.match(value):
+            raise serializers.ValidationError("Phone number format is invalid. Expected format: +7XXXXXXXXXX")
+
         user = User.objects(phone=value).first()
         if user:
             if self.instance is None or user.id != self.instance.id:

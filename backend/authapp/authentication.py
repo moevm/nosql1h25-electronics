@@ -1,6 +1,7 @@
 from rest_framework_simplejwt_mongoengine.authentication import JWTAuthentication
 from .models import User
 
+
 class AuthenticatedUser:
     def __init__(self, user):
         self.user = user
@@ -8,6 +9,7 @@ class AuthenticatedUser:
 
     def __getattr__(self, name):
         return getattr(self.user, name)
+
 
 class CustomJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):

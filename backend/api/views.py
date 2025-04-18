@@ -21,7 +21,6 @@ class RequestViewSet(ModelViewSet):
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
         },
-        auth=[]
     )
     def create(self, request, *args, **kwargs):
         """POST запрос для создания заявки с кастомной логикой"""

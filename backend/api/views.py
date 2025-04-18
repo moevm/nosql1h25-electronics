@@ -36,8 +36,6 @@ class PhotoViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """POST запрос для загрузки фотографии"""
         user = request.user
-        if not user.is_authenticated:
-            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         photo_data = request.FILES.get('photo')
         if not photo_data:
@@ -58,8 +56,6 @@ class PhotoViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         """GET запрос для получения фотографии по ID"""
         user = request.user
-        if not user.is_authenticated:
-            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         photo_id = kwargs.get('pk')
         try:

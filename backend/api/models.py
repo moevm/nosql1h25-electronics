@@ -47,7 +47,9 @@ class Status(EmbeddedDocument):
 class CreatedStatus(Status):
     @classmethod
     def create(cls):
-        return super().create()
+        obj = super().create()
+        obj._cls = "created_status"
+        return obj
 
 
 class PriceOfferStatus(Status):
@@ -56,7 +58,9 @@ class PriceOfferStatus(Status):
 
     @classmethod
     def create(cls, price, user_id, **kwargs):
-        return super().create(price=price, user_id=user_id, **kwargs)
+        obj = super().create(price=price, user_id=user_id, **kwargs)
+        obj._cls = "price_offer_status"
+        return obj
 
 
 class PriceAcceptStatus(Status):
@@ -64,7 +68,9 @@ class PriceAcceptStatus(Status):
 
     @classmethod
     def create(cls, user_id, **kwargs):
-        return super().create(user_id=user_id, **kwargs)
+        obj = super().create(user_id=user_id, **kwargs)
+        obj._cls = "price_accept_status"
+        return obj
 
 
 class DateOfferStatus(Status):
@@ -73,7 +79,9 @@ class DateOfferStatus(Status):
 
     @classmethod
     def create(cls, date, user_id, **kwargs):
-        return super().create(date=date, user_id=user_id, **kwargs)
+        obj = super().create(date=date, user_id=user_id, **kwargs)
+        obj._cls = "date_offer_status"
+        return obj
 
 
 class DateAcceptStatus(Status):
@@ -81,7 +89,9 @@ class DateAcceptStatus(Status):
 
     @classmethod
     def create(cls, user_id, **kwargs):
-        return super().create(user_id=user_id, **kwargs)
+        obj = super().create(user_id=user_id, **kwargs)
+        obj._cls = "date_accept_status"
+        return obj
 
 
 class ClosedStatus(Status):
@@ -90,7 +100,9 @@ class ClosedStatus(Status):
 
     @classmethod
     def create(cls, success, user_id, **kwargs):
-        return super().create(success=success, user_id=user_id, **kwargs)
+        obj = super().create(success=success, user_id=user_id, **kwargs)
+        obj._cls = "closed_status"
+        return obj
 
 
 class Request(Document):

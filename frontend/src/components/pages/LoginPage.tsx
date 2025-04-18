@@ -23,6 +23,7 @@ export const LoginPage = () => {
             <TextField 
               placeholder='Логин' 
               name='login' 
+              slotProps={{ htmlInput: { minLength: 3, maxLength: 50 }}}
               required 
               value={login}
               onChange={e => setLogin(e.target.value)}  
@@ -35,6 +36,7 @@ export const LoginPage = () => {
               placeholder='Пароль'
               type='password'
               name='password'
+              slotProps={{ htmlInput: { minLength: 8, maxLength: 50 }}}
               required
               value={password}
               onChange={e => setPassword(e.target.value)}

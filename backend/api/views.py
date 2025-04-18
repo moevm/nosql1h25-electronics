@@ -6,8 +6,6 @@ from .models import Request, Photo, CreatedStatus
 from .serializers import RequestSerializer
 
 class RequestCreateView(APIView):
-    """Создание заявки"""
-
     def post(self, request):
         # Проверка авторизации
         user = request.user
@@ -21,7 +19,7 @@ class RequestCreateView(APIView):
 
             # Генерация статуса "created"
             created_status = CreatedStatus.create()
-            validated_data['statuses'] = [created_status]  # Добавляем статус "created"
+            validated_data['statuses'] = [created_status]
 
             # Привязываем пользователя
             validated_data["user_id"] = user.id
@@ -36,8 +34,6 @@ class RequestCreateView(APIView):
 
 
 class PhotoUploadView(APIView):
-    """Публикация фото"""
-
     def post(self, request):
         # Проверка авторизации
         user = request.user
@@ -68,7 +64,7 @@ class PhotoRetrieveView(APIView):
             return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            photo = Photo.objects.get(id=photo_id)  # Ищем фото по ID
+            photo = Photo.objects.get(id=photo_id)
         except Photo.DoesNotExist:
             return Response({"details": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 

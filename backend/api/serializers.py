@@ -5,6 +5,7 @@ class PhotoSerializer(serializers.Serializer):
     id = serializers.CharField()
     data = serializers.CharField()
 
+
 class CreatedStatusSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
 
@@ -33,10 +34,7 @@ class ClosedStatusSerializer(serializers.Serializer):
 
 
 class StatusSerializer(serializers.ListSerializer):
-    """Кастомный сериалайзер для обработки списка статусов"""
-
     def to_representation(self, data):
-        """Преобразование объекта в JSON"""
         result = []
         for item in data:
             if isinstance(item, CreatedStatus):
@@ -52,10 +50,9 @@ class StatusSerializer(serializers.ListSerializer):
         return result
 
     def to_internal_value(self, data):
-        """Обработка данных, переданных клиентом"""
         statuses = []
         for item in data:
-            type_ = item.pop("type")  # Определяем тип статуса
+            type_ = item.pop("_cls")
             if type_ == "created":
                 statuses.append(CreatedStatus(**item))
             elif type_ == "price_offer":
@@ -70,6 +67,7 @@ class StatusSerializer(serializers.ListSerializer):
                 raise serializers.ValidationError(f"Unknown status type: {type_}")
         return statuses
 
+
 class RequestSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=200)
     description = serializers.CharField()
@@ -79,14 +77,13 @@ class RequestSerializer(serializers.Serializer):
     ])
     price = serializers.FloatField()
     photos = serializers.ListField(
-        child=serializers.CharField(),  # ID фотографий
+        child=serializers.CharField(),
         required=False
     )
-    user_id = serializers.CharField()  # ID пользователя
+    user_id = serializers.CharField()
 
     def validate_user_id(self, value):
         """Проверка, что ID пользователя соответствует токену"""
-        # `self.context` передаёт данные токена в сериализатор
         request_user = self.context['request'].user
         if str(request_user.id) != value:
             raise serializers.ValidationError("User ID does not match the authenticated user.")

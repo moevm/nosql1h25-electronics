@@ -72,7 +72,6 @@ class AuthViewSet(viewsets.GenericViewSet):
     )
     @action(detail=False, methods=['post'], url_path='logout')
     def logout(self, request):
-        user = request.user
-        user.token_version += 1
-        user.save()
+        user = getattr(request.user, 'user', None) or request.user
+        user.increment_token_version()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -49,6 +49,10 @@ class User(Document):
         user.save()
         return user
 
+    def increment_token_version(self):
+        User.objects(id=self.id).update_one(inc__token_version=1)
+        self.token_version += 1
+
     def update(self, **kwargs):
         for field in ['login', 'fullname', 'phone']:
             if field in kwargs:

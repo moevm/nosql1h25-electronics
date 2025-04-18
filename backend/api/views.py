@@ -1,99 +1,70 @@
-from drf_spectacular.utils import extend_schema
-from django.http import HttpResponse
-from rest_framework.views import APIView
+from rest_framework_mongoengine.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import HttpResponse
 from .models import Request, Photo, CreatedStatus
-from .serializers import RequestSerializer, PhotoResponseSerializer
-from authapp.serializers import ErrorResponseSerializer
+from .serializers import RequestSerializer, PhotoSerializer
 
-class RequestCreateView(APIView):
-    @extend_schema(
-        summary="Создать новую заявку",
-        description="Позволяет пользователю создать новую заявку. Пользователь должен быть аутентифицирован.",
-        request=RequestSerializer,
-        responses={
-            201: RequestSerializer,
-            400: ErrorResponseSerializer,
-            401: ErrorResponseSerializer,
-        },
-        auth=[]
-    )
-    def post(self, request):
+class RequestViewSet(ModelViewSet):
+    """ViewSet для работы с заявками"""
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+
+    def create(self, request, *args, **kwargs):
+        """POST запрос для создания заявки с кастомной логикой"""
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        created_status = CreatedStatus.create()
+        validated_data['statuses'] = [created_status]
+
+        validated_data["user_id"] = request.user.id
+
+        request_obj = Request(**validated_data)
+        request_obj.save()
+
+        response_serializer = self.get_serializer(request_obj)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class PhotoViewSet(ModelViewSet):
+    """ViewSet для работы с фотографиями"""
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
+
+    def create(self, request, *args, **kwargs):
+        """POST запрос для загрузки фотографии"""
         user = request.user
+        if not user.is_authenticated:
+            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Сериализация данных
-        serializer = RequestSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            validated_data = serializer.validated_data
-
-            # Генерация статуса "created"
-            created_status = CreatedStatus.create()
-            validated_data['statuses'] = [created_status]
-
-            # Привязываем пользователя
-            validated_data["user_id"] = user.id
-
-            # Сохраняем заявку
-            request_obj = Request(**validated_data)
-            request_obj.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class PhotoUploadView(APIView):
-    @extend_schema(
-        summary="Загрузить фото",
-        description="Загружает фото в базу данных. Пользователь должен быть аутентифицирован.",
-        request=None,
-        responses={
-            200: PhotoResponseSerializer,
-            400: ErrorResponseSerializer,
-            401: ErrorResponseSerializer,
-            403: ErrorResponseSerializer,
-        },
-        auth=[]
-    )
-    def post(self, request):
-        user = request.user
-
-        # Запрет для администраторов
-        if hasattr(user, 'is_admin') and user.is_admin:
-            return Response({"details": "Admins are not allowed to public photos"}, status=status.HTTP_403_FORBIDDEN)
-
-        # Проверяем наличие файла
         photo_data = request.FILES.get('photo')
         if not photo_data:
             return Response({"details": "No photo provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Сохраняем фото в базу
-        photo = Photo.create(data=photo_data.read())
+        if not photo_data.content_type.startswith('image/'):
+            return Response({"details": "Uploaded file is not an image."}, status=status.HTTP_400_BAD_REQUEST)
+
+        max_file_size = 5 * 1024 * 1024
+        if photo_data.size > max_file_size:
+            return Response({"details": "Image file size exceeds 5MB."}, status=status.HTTP_400_BAD_REQUEST)
+
+        photo = Photo.create(data=photo_data.read(), content_type=photo_data.content_type)
         photo.save()
 
-        return Response({"photo_id": str(photo.id)}, status=status.HTTP_200_OK)
+        return Response({"photo_id": str(photo.id)}, status=status.HTTP_201_CREATED)
 
-
-class PhotoRetrieveView(APIView):
-    @extend_schema(
-        summary="Получить фото",
-        description="Позволяет получить фото по его ID. Пользователь должен быть аутентифицирован.",
-        responses={
-            200: None,
-            401: ErrorResponseSerializer,
-            404: ErrorResponseSerializer,
-        },
-        auth=[]
-    )
-    def get(self, request, photo_id):
-
+    def retrieve(self, request, *args, **kwargs):
+        """GET запрос для получения фотографии по ID"""
         user = request.user
+        if not user.is_authenticated:
+            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
+        photo_id = kwargs.get('pk')
         try:
             photo = Photo.objects.get(id=photo_id)
         except Photo.DoesNotExist:
-            return Response({"details": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "Photo not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Отправляем фото как бинарные данные
         return HttpResponse(photo.data, content_type="image/jpeg")

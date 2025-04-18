@@ -102,7 +102,7 @@ class Request(Document):
     ], required=True)
     price = FloatField(required=True)
     photos = ListField(ReferenceField(Photo), required=True)
-    statuses = ListField(EmbeddedDocumentField(Status), required=True)
+    statuses = ListField(EmbeddedDocumentField(Status), default=list, required=True)
     user_id = ReferenceField(User, required=True)
 
     meta = {'collection': 'requests'}

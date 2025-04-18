@@ -1,100 +1,76 @@
+from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
+from bson import ObjectId
+from bson.dbref import DBRef
 from .models import Request, Photo, CreatedStatus, PriceOfferStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 
-class PhotoSerializer(serializers.Serializer):
-    id = serializers.CharField()
-    data = serializers.CharField()
+class PhotoSerializer(DocumentSerializer):
+    class Meta:
+        model = Photo
+        fields = ['id', 'data']
 
+class PhotoResponseSerializer(DocumentSerializer):
+    class Meta:
+        model = Photo
+        fields = ['id']
 
-class PhotoResponseSerializer(serializers.Serializer):
-    photo_id = serializers.CharField()
+class CreatedStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = CreatedStatus
+        fields = '__all__'
 
-class CreatedStatusSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
+class PriceOfferStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = PriceOfferStatus
+        fields = '__all__'
 
+class DateOfferStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = DateOfferStatus
+        fields = '__all__'
 
-class PriceOfferStatusSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
-    price = serializers.FloatField(required=True)
-    user_id = serializers.CharField(required=True)
+class DateAcceptStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = DateAcceptStatus
+        fields = '__all__'
 
+class ClosedStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = ClosedStatus
+        fields = '__all__'
 
-class DateOfferStatusSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
-    date = serializers.DateTimeField(required=True)
-    user_id = serializers.CharField(required=True)
-
-
-class DateAcceptStatusSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
-    user_id = serializers.CharField(required=True)
-
-
-class ClosedStatusSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
-    success = serializers.BooleanField(required=True)
-    user_id = serializers.CharField(required=True)
-
-
-class StatusSerializer(serializers.ListSerializer):
-    def to_representation(self, data):
-        result = []
-        for item in data:
-            if isinstance(item, CreatedStatus):
-                result.append(CreatedStatusSerializer(item).data)
-            elif isinstance(item, PriceOfferStatus):
-                result.append(PriceOfferStatusSerializer(item).data)
-            elif isinstance(item, DateOfferStatus):
-                result.append(DateOfferStatusSerializer(item).data)
-            elif isinstance(item, DateAcceptStatus):
-                result.append(DateAcceptStatusSerializer(item).data)
-            elif isinstance(item, ClosedStatus):
-                result.append(ClosedStatusSerializer(item).data)
-        return result
-
-    def to_internal_value(self, data):
-        statuses = []
-        for item in data:
-            type_ = item.pop("_cls")
-            if type_ == "created":
-                statuses.append(CreatedStatus(**item))
-            elif type_ == "price_offer":
-                statuses.append(PriceOfferStatus(**item))
-            elif type_ == "date_offer":
-                statuses.append(DateOfferStatus(**item))
-            elif type_ == "date_accept":
-                statuses.append(DateAcceptStatus(**item))
-            elif type_ == "closed":
-                statuses.append(ClosedStatus(**item))
-            else:
-                raise serializers.ValidationError(f"Unknown status type: {type_}")
-        return statuses
-
-
-class RequestSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=200)
-    description = serializers.CharField()
-    address = serializers.CharField()
-    category = serializers.ChoiceField(choices=[
-        'laptop', 'smartphone', 'tablet', 'pc', 'tv', 'audio', 'console', 'periphery', 'other'
-    ])
-    price = serializers.FloatField()
-    photos = serializers.ListField(
-        child=serializers.CharField(),
-        required=False
-    )
-    user_id = serializers.CharField()
+class RequestSerializer(DocumentSerializer):
+    class Meta:
+        model = Request
+        exclude = ['statuses']
 
     def validate_user_id(self, value):
         """Проверка, что ID пользователя соответствует токену"""
+        if isinstance(value, DBRef):
+            value = value.id
+
+        if not ObjectId.is_valid(value):
+            raise serializers.ValidationError("Invalid User ID format.")
+
         request_user = self.context['request'].user
-        if str(request_user.id) != value:
+        if str(request_user.id) != str(value):
             raise serializers.ValidationError("User ID does not match the authenticated user.")
         return value
 
     def validate_photos(self, value):
         """Проверка, что все фото существуют в базе данных"""
-        invalid_photos = [photo_id for photo_id in value if Photo.objects.filter(id=photo_id).count() == 0]
+        invalid_photos = []
+        for photo_id in value:
+            if isinstance(photo_id, DBRef):
+                photo_id = photo_id.id
+
+            if not ObjectId.is_valid(photo_id):
+                invalid_photos.append(photo_id)
+                continue
+
+            if not Photo.objects.filter(id=photo_id).count():
+                invalid_photos.append(photo_id)
+
         if invalid_photos:
             raise serializers.ValidationError(f"Invalid photo IDs: {invalid_photos}")
         return value

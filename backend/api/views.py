@@ -22,8 +22,6 @@ class RequestCreateView(APIView):
     def post(self, request):
         # Проверка авторизации
         user = request.user
-        if not user.is_authenticated:
-            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Сериализация данных
         serializer = RequestSerializer(data=request.data, context={'request': request})
@@ -62,8 +60,6 @@ class PhotoUploadView(APIView):
     def post(self, request):
         # Проверка авторизации
         user = request.user
-        if not user.is_authenticated:
-            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Запрет для администраторов
         if hasattr(user, 'is_admin') and user.is_admin:
@@ -95,8 +91,6 @@ class PhotoRetrieveView(APIView):
     def get(self, request, photo_id):
         # Проверка авторизации
         user = request.user
-        if not user.is_authenticated:
-            return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
             photo = Photo.objects.get(id=photo_id)

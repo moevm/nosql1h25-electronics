@@ -6,6 +6,9 @@ class PhotoSerializer(serializers.Serializer):
     data = serializers.CharField()
 
 
+class PhotoResponseSerializer(serializers.Serializer):
+    photo_id = serializers.CharField()
+
 class CreatedStatusSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
 

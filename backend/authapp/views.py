@@ -61,6 +61,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         responses={
             200: OpenApiResponse(response=UserResponseSerializer, description="Current user info"),
             401: OpenApiResponse(response=ErrorDetailSerializer, description="Authentication required"),
+            403: OpenApiResponse(response=ErrorDetailSerializer,
+                                 description="You do not have permission to perform this action"),
         },
     )
     @action(detail=False, methods=['get'], url_path='me')
@@ -73,6 +75,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         responses={
             204: OpenApiResponse(description="Logged out. No content."),
             401: OpenApiResponse(response=ErrorDetailSerializer, description="Authentication required"),
+            403: OpenApiResponse(response=ErrorDetailSerializer,
+                                 description="You do not have permission to perform this action"),
         },
     )
     @action(detail=False, methods=['post'], url_path='logout')

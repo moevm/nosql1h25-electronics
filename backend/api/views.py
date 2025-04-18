@@ -13,15 +13,15 @@ class RequestViewSet(ModelViewSet):
     serializer_class = RequestSerializer
 
     @extend_schema(
-        summary="Загрузить фото",
-        description="Загружает фото в базу данных.",
-        request=None,
+        summary="Создать новую заявку",
+        description="Позволяет пользователю создать новую заявку.",
+        request=RequestSerializer,
         responses={
-            200: PhotoResponseSerializer,
+            201: RequestSerializer,
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
-            403: ErrorResponseSerializer,
-        }
+        },
+        auth=[]
     )
     def create(self, request, *args, **kwargs):
         """POST запрос для создания заявки с кастомной логикой"""

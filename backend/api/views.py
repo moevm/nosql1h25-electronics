@@ -1,15 +1,28 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
+from drf_spectacular.utils import extend_schema
+from authapp.serializers import ErrorResponseSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import HttpResponse
 from .models import Request, Photo, CreatedStatus
-from .serializers import RequestSerializer, PhotoSerializer
+from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
 
+    @extend_schema(
+        summary="Загрузить фото",
+        description="Загружает фото в базу данных.",
+        request=None,
+        responses={
+            200: PhotoResponseSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+        }
+    )
     def create(self, request, *args, **kwargs):
         """POST запрос для создания заявки с кастомной логикой"""
         serializer = self.get_serializer(data=request.data, context={'request': request})
@@ -33,6 +46,17 @@ class PhotoViewSet(ModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
+    @extend_schema(
+        summary="Загрузить фото",
+        description="Загружает фото в базу данных.",
+        request=None,
+        responses={
+            200: PhotoResponseSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+        }
+    )
     def create(self, request, *args, **kwargs):
         """POST запрос для загрузки фотографии"""
         user = request.user
@@ -53,6 +77,15 @@ class PhotoViewSet(ModelViewSet):
 
         return Response({"photo_id": str(photo.id)}, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        summary="Получить фото",
+        description="Позволяет получить фото по его ID.",
+        responses={
+            200: None,
+            401: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        }
+    )
     def retrieve(self, request, *args, **kwargs):
         """GET запрос для получения фотографии по ID"""
         user = request.user

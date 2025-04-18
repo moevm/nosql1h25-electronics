@@ -40,9 +40,26 @@ class ClosedStatusSerializer(DocumentSerializer):
         fields = '__all__'
 
 class RequestSerializer(DocumentSerializer):
+    statuses = serializers.ListField(read_only=True)
+
     class Meta:
         model = Request
-        exclude = ['statuses']
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        """Переопределяем метод для исключения _cls из statuses"""
+        representation = super().to_representation(instance)
+
+        if "statuses" in representation:
+            updated_statuses = []
+            for status in instance.statuses:
+                status_data = status.to_mongo().to_dict()
+                if "_cls" in status_data:
+                    del status_data["_cls"]
+                updated_statuses.append(status_data)
+            representation["statuses"] = updated_statuses
+
+        return representation
 
     def validate_user_id(self, value):
         """Проверка, что ID пользователя соответствует токену"""

@@ -4,7 +4,7 @@ from authapp.serializers import ErrorResponseSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import HttpResponse
-from .models import Request, Photo, CreatedStatus
+from .models import Request, Photo, Status, CreatedStatus
 from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
 
 class RequestViewSet(ModelViewSet):
@@ -38,6 +38,14 @@ class RequestViewSet(ModelViewSet):
 
         response_serializer = self.get_serializer(request_obj)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        requests = Request.objects.all()
+
+        serializer = RequestSerializer(requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class PhotoViewSet(ModelViewSet):

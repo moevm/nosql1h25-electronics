@@ -34,6 +34,7 @@ class Photo(Document):
 
 class Status(EmbeddedDocument):
     timestamp = DateTimeField(default=datetime.utcnow)
+    type = StringField()
 
     meta = {'allow_inheritance': True}
 
@@ -46,9 +47,8 @@ class Status(EmbeddedDocument):
 
 class CreatedStatus(Status):
     @classmethod
-    def create(cls):
-        obj = super().create()
-        obj._cls = "created_status"
+    def create(cls, **kwargs):
+        obj = super().create(type="created_status", **kwargs)
         return obj
 
 

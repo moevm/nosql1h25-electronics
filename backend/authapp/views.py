@@ -33,7 +33,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         errors = serializer.errors
         for field in ['login', 'phone', 'password', 'fullname']:
             if field in errors:
-                return Response({"details": errors[field][0]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"details": f"{field} - {errors[field][0]}"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"details": "Incorrect field"}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
@@ -41,6 +41,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         responses={
             200: OpenApiResponse(response=TokenResponseSerializer, description="Login successful. Returns token."),
             403: OpenApiResponse(response=ErrorDetailSerializer, description="Invalid credentials"),
+            400: OpenApiResponse(response=ErrorDetailSerializer, description="Bad request"),
         },
         auth=[],
         description="User login",
@@ -48,8 +49,13 @@ class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'], url_path='login')
     def login(self, request):
         serializer = CustomTokenObtainPairSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        errors = serializer.errors
+        for field in ['login', 'password']:
+            if field in errors:
+                return Response({"details": errors[field][0]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"details": "Invalid input"}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         responses={

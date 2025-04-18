@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Request, Photo
+from .models import Request, Photo, CreatedStatus
 from .serializers import RequestSerializer
 
 class RequestCreateView(APIView):
@@ -14,14 +14,22 @@ class RequestCreateView(APIView):
         if not user.is_authenticated:
             return Response({"details": "Authorization required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Запрет для администраторов
-        if hasattr(user, 'is_admin') and user.is_admin:
-            return Response({"details": "Admins cant create requests"}, status=status.HTTP_403_FORBIDDEN)
-
         # Сериализация данных
-        serializer = RequestSerializer(data=request.data)
+        serializer = RequestSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save(user_id=user)  # Привязываем заявку к автору
+            validated_data = serializer.validated_data
+
+            # Генерация статуса "created"
+            created_status = CreatedStatus.create()
+            validated_data['statuses'] = [created_status]  # Добавляем статус "created"
+
+            # Привязываем пользователя
+            validated_data["user_id"] = user.id
+
+            # Сохраняем заявку
+            request_obj = Request(**validated_data)
+            request_obj.save()
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -53,8 +61,6 @@ class PhotoUploadView(APIView):
 
 
 class PhotoRetrieveView(APIView):
-    """Получение фото по ID"""
-
     def get(self, request, photo_id):
         # Проверка авторизации
         user = request.user

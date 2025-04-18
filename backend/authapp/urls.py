@@ -1,10 +1,14 @@
 from django.urls import path
-from .views import RegisterView, MyTokenObtainPairView, MeView, RefreshTokenView
+from .views import AuthViewSet
 
+auth_register = AuthViewSet.as_view({'post': 'register'})
+auth_login = AuthViewSet.as_view({'post': 'login'})
+auth_me = AuthViewSet.as_view({'get': 'me'})
+auth_logout = AuthViewSet.as_view({'post': 'logout'})
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/', MyTokenObtainPairView.as_view(), name='login'),
-    path('me/', MeView.as_view(), name='me'),
-    path('token/refresh/', RefreshTokenView.as_view(), name='token_refresh'),
+    path('register/', auth_register, name='register'),
+    path('login/', auth_login, name='login'),
+    path('me/', auth_me, name='me'),
+    path('logout/', auth_logout, name='logout'),
 ]

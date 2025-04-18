@@ -1,11 +1,24 @@
+from drf_spectacular.utils import extend_schema
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Request, Photo, CreatedStatus
-from .serializers import RequestSerializer
+from .serializers import RequestSerializer, PhotoResponseSerializer
+from authapp.serializers import ErrorResponseSerializer
 
 class RequestCreateView(APIView):
+    @extend_schema(
+        summary="Создать новую заявку",
+        description="Позволяет пользователю создать новую заявку. Пользователь должен быть аутентифицирован.",
+        request=RequestSerializer,
+        responses={
+            201: RequestSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+        },
+        auth=[]
+    )
     def post(self, request):
         # Проверка авторизации
         user = request.user
@@ -34,6 +47,18 @@ class RequestCreateView(APIView):
 
 
 class PhotoUploadView(APIView):
+    @extend_schema(
+        summary="Загрузить фото",
+        description="Загружает фото в базу данных. Пользователь должен быть аутентифицирован.",
+        request=None,
+        responses={
+            200: PhotoResponseSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+        },
+        auth=[]
+    )
     def post(self, request):
         # Проверка авторизации
         user = request.user
@@ -57,6 +82,16 @@ class PhotoUploadView(APIView):
 
 
 class PhotoRetrieveView(APIView):
+    @extend_schema(
+        summary="Получить фото",
+        description="Позволяет получить фото по его ID. Пользователь должен быть аутентифицирован.",
+        responses={
+            200: None,
+            401: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        },
+        auth=[]
+    )
     def get(self, request, photo_id):
         # Проверка авторизации
         user = request.user

@@ -20,7 +20,6 @@ class RequestCreateView(APIView):
         auth=[]
     )
     def post(self, request):
-        # Проверка авторизации
         user = request.user
 
         # Сериализация данных
@@ -58,7 +57,6 @@ class PhotoUploadView(APIView):
         auth=[]
     )
     def post(self, request):
-        # Проверка авторизации
         user = request.user
 
         # Запрет для администраторов
@@ -89,7 +87,7 @@ class PhotoRetrieveView(APIView):
         auth=[]
     )
     def get(self, request, photo_id):
-        # Проверка авторизации
+
         user = request.user
 
         try:

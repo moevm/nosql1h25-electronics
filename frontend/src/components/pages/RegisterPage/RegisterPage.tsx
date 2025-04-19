@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Paper, Typography, TextField, Button, Stack, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import style from './RegisterPage.module.css';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export const RegisterPage = () => {
   };
 
   return (
-    <Container maxWidth='sm'>
+    <Container maxWidth='sm' className={style.container}>
       <Paper component='form' elevation={5} onSubmit={onSubmit} sx={{ mt: 3, p: 3 }}>
         <Stack direction='column' gap={2}>
           <Typography variant='h4'>Регистрация</Typography>

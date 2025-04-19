@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Paper, Typography, TextField, Button, Stack, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import style from './LoginPage.module.css';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,8 +14,8 @@ export const LoginPage = () => {
   };
 
   return (
-    <Container maxWidth='xs'>
-      <Paper component='form' elevation={5} onSubmit={onSubmit} sx={{ mt: 3, p: 3 }}>
+    <Container maxWidth='xs' className={style.container}>
+      <Paper component='form' elevation={5} onSubmit={onSubmit} sx={{ p: 3 }}>
         <Stack direction='column' gap={2}>
           <Typography variant='h4'>Авторизация</Typography>
 

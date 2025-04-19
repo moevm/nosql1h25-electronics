@@ -5,10 +5,14 @@ from authapp.models import User
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework import status
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import Request, Photo, CreatedStatus
 from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
 from datetime import datetime, time
+from bson import ObjectId
+import json
+import base64
+import subprocess
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
@@ -216,3 +220,97 @@ class PhotoViewSet(ModelViewSet):
             return Response({"details": "Photo not found"}, status=status.HTTP_404_NOT_FOUND)
 
         return HttpResponse(photo.data, content_type="image/jpeg")
+
+
+class DatabaseBackupViewSet(ModelViewSet):
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+
+    def export_backup(self, request, *args, **kwargs):
+        """Экспорт данных всех коллекций базы данных"""
+        backup_data = {
+            "requests": [],
+            "photos": [],
+            "users": []
+        }
+
+        # Экспорт requests
+
+        for obj in Request.objects.all():
+            obj_data = obj.to_mongo().to_dict()
+
+            def handle_objectid(value):
+                if isinstance(value, ObjectId):
+                    return str(value)
+                elif isinstance(value, list):
+                    return [handle_objectid(item) for item in value]
+                elif isinstance(value, dict):
+                    return {k: handle_objectid(v) for k, v in value.items()}
+                return value
+
+            obj_data = {key: handle_objectid(value) for key, value in obj_data.items()}
+            backup_data["requests"].append(obj_data)
+
+        # Экспорт photos
+
+        for obj in Photo.objects.all():
+            obj_data = obj.to_mongo().to_dict()
+            obj_data["data"] = base64.b64encode(obj_data["data"]).decode("utf-8")
+            obj_data = {key: handle_objectid(value) for key, value in obj_data.items()}
+            backup_data["photos"].append(obj_data)
+
+        # Экспорт users
+
+        for obj in User.objects.all():
+            obj_data = obj.to_mongo().to_dict()
+            obj_data = {key: handle_objectid(value) for key, value in obj_data.items()}
+            backup_data["users"].append(obj_data)
+
+        response = JsonResponse(backup_data, safe=False)
+        response['Content-Disposition'] = 'attachment; filename=backup.json'
+        return response
+
+    def import_backup(self, request, *args, **kwargs):
+        """Импорт данных всех коллекций из файла"""
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({"details": "No file uploaded"}, status=400)
+
+        try:
+            data = json.load(file)
+
+            for obj_data in data.get("requests", []):
+                if "_id" in obj_data:
+                    obj_data["id"] = ObjectId(obj_data.pop("_id"))
+
+                if "statuses" in obj_data:
+                    for status in obj_data["statuses"]:
+                        if "timestamp" in status:
+                            try:
+                                status["timestamp"] = datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
+                            except ValueError:
+                                status["timestamp"] = datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+                Request(**obj_data).save()
+
+            for obj_data in data.get("photos", []):
+                if "_id" in obj_data:
+                    obj_data["id"] = ObjectId(obj_data.pop("_id"))
+                obj_data["data"] = base64.b64decode(obj_data["data"])
+                Photo(**obj_data).save()
+
+            for obj_data in data.get("users", []):
+                if "_id" in obj_data:
+                    obj_data["id"] = ObjectId(obj_data.pop("_id"))
+
+                for date_field in ["creation_date", "edit_date"]:
+                    if date_field in obj_data:
+                        try:
+                            obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
+                        except ValueError:
+                            obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+                User(**obj_data).save()
+
+        except Exception as e:
+            return JsonResponse({"details": f"Failed to import backup: {str(e)}"}, status=500)
+
+        return JsonResponse({"details": "Backup successfully imported"}, status=200)

@@ -62,7 +62,6 @@ const PasswordFormField = ({ control }: FormFieldProps) => (
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-
   const { control, handleSubmit } = useForm<FormInputs>();
 
   const onSubmit = (data: FormInputs) => {

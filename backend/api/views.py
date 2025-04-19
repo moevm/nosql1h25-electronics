@@ -228,6 +228,13 @@ class DatabaseBackupViewSet(ModelViewSet):
 
     def export_backup(self, request, *args, **kwargs):
         """Экспорт данных всех коллекций базы данных"""
+        user = request.user
+        if not user.is_admin:
+            return Response(
+                {"details": "You do not have permission to do backup"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         backup_data = {
             "requests": [],
             "photos": [],
@@ -272,9 +279,16 @@ class DatabaseBackupViewSet(ModelViewSet):
 
     def import_backup(self, request, *args, **kwargs):
         """Импорт данных всех коллекций из файла"""
+        user = request.user
+        if not user.is_admin:
+            return Response(
+                {"details": "You do not have permission to do backup"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         file = request.FILES.get('file')
         if not file:
-            return JsonResponse({"details": "No file uploaded"}, status=400)
+            return JsonResponse({"details": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             data = json.load(file)
@@ -284,12 +298,12 @@ class DatabaseBackupViewSet(ModelViewSet):
                     obj_data["id"] = ObjectId(obj_data.pop("_id"))
 
                 if "statuses" in obj_data:
-                    for status in obj_data["statuses"]:
-                        if "timestamp" in status:
+                    for custom_status in obj_data["statuses"]:
+                        if "timestamp" in custom_status:
                             try:
-                                status["timestamp"] = datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
+                                custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
                             except ValueError:
-                                status["timestamp"] = datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+                                custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
                 Request(**obj_data).save()
 
             for obj_data in data.get("photos", []):
@@ -311,6 +325,6 @@ class DatabaseBackupViewSet(ModelViewSet):
                 User(**obj_data).save()
 
         except Exception as e:
-            return JsonResponse({"details": f"Failed to import backup: {str(e)}"}, status=500)
+            return JsonResponse({"details": f"Failed to import backup: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return JsonResponse({"details": "Backup successfully imported"}, status=200)
+        return JsonResponse({"details": "Backup successfully imported"}, status=status.HTTP_200_OK)

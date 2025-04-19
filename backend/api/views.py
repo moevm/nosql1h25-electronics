@@ -57,6 +57,14 @@ class RequestViewSet(ModelViewSet):
         author = request.query_params.get('author')
         me = request.query_params.get('me')
 
+        if user.role == "client":
+            if author:
+                return Response(
+                    {"details": "You do not have permission to filter by author."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            me = True
+
         queryset = Request.objects.all()
 
         if title:

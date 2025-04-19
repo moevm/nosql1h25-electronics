@@ -1,4 +1,4 @@
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt_mongoengine.authentication import JWTAuthentication
 from .models import User
 
 
@@ -14,10 +14,13 @@ class AuthenticatedUser:
 class CustomJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
         user_id = validated_token.get('user_id')
+        token_version = validated_token.get('token_version', -1)
         try:
             user = User.objects.get(id=user_id)
-        except Exception as e:
-            print(f"Authentication Error: {e}")
+        except User.DoesNotExist:
+            return None
+
+        if user.token_version != token_version:
             return None
 
         return AuthenticatedUser(user)

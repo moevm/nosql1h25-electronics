@@ -1,10 +1,11 @@
-from mongoengine import Document, StringField, DateTimeField
+from mongoengine import Document, StringField, DateTimeField, IntField
 from datetime import datetime
 import hashlib
 import secrets
 
 
 class User(Document):
+    login = StringField(required=True, unique=True)
     fullname = StringField(required=True)
     role = StringField(default='client')
     creation_date = DateTimeField(default=datetime.utcnow)
@@ -12,10 +13,12 @@ class User(Document):
     phone = StringField(required=True, unique=True)
     password_hash = StringField(required=True)
     salt = StringField(required=True)
+    token_version = IntField(default=0)
 
     meta = {
         'collection': 'users',
         'indexes': [
+            {'fields': ['login'], 'unique': True},
             {'fields': ['phone'], 'unique': True},
         ]
     }
@@ -33,10 +36,11 @@ class User(Document):
         return hashlib.sha256((password + salt).encode()).hexdigest()
 
     @classmethod
-    def create(cls, fullname, phone, password):
+    def create(cls, login, fullname, phone, password):
         salt = secrets.token_hex(16)
         password_hash = cls.hash_password(password, salt)
         user = cls(
+            login=login,
             fullname=fullname,
             phone=phone,
             password_hash=password_hash,
@@ -45,8 +49,12 @@ class User(Document):
         user.save()
         return user
 
+    def increment_token_version(self):
+        User.objects(id=self.id).update_one(inc__token_version=1)
+        self.token_version += 1
+
     def update(self, **kwargs):
-        for field in ['fullname', 'phone']:
+        for field in ['login', 'fullname', 'phone']:
             if field in kwargs:
                 setattr(self, field, kwargs[field])
         if 'password' in kwargs:

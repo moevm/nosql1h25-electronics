@@ -54,6 +54,9 @@ class RequestSerializer(DocumentSerializer):
             updated_statuses = []
             for status in instance.statuses:
                 status_data = status.to_mongo().to_dict()
+                for key, value in status_data.items():
+                    if isinstance(value, ObjectId):
+                        status_data[key] = str(value)
                 if "_cls" in status_data:
                     del status_data["_cls"]
                 updated_statuses.append(status_data)

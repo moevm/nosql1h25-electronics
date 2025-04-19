@@ -112,12 +112,23 @@ class RequestViewSet(ModelViewSet):
             queryset = queryset.filter(category=category)
 
         if author:
-            collection_name = User._meta["collection"]
             matching_users = [
                 user.id for user in User.objects.filter(fullname=author)
             ]
 
             queryset = queryset.filter(user_id__in=matching_users)
+
+        if me:
+            filtered_queryset = []
+            for request_obj in queryset:
+                if str(request_obj.user_id.id) == str(user.id):
+                    filtered_queryset.append(request_obj)
+                elif request_obj.statuses:
+                    for custom_status in request_obj.statuses:
+                        if "user_id" in custom_status and str(custom_status.user_id.id) == str(user.id):
+                            filtered_queryset.append(request_obj)
+                            break
+            queryset = queryset.filter(id__in=[obj.id for obj in filtered_queryset])
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

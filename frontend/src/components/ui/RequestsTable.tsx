@@ -29,7 +29,7 @@ export const RequestsTable = ({ requests }: RequestsTableProps) => {
               <TableCell>{request.title}</TableCell>
               <TableCell>{categoryToRussian(request.category)}</TableCell>
               <TableCell>{statusTypeToRussian(request.statuses.at(-1)!.type)}</TableCell>
-              <TableCell>{request.statuses.at(-1)!.timestamp.format('YYYY-MM-DD')}</TableCell>
+              <TableCell>{request.statuses.at(-1)!.timestamp.format('DD.MM.YYYY')}</TableCell>
             </TableRow>
           )) } 
         </TableBody>

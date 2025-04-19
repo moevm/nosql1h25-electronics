@@ -34,6 +34,7 @@ class Photo(Document):
 
 class Status(EmbeddedDocument):
     timestamp = DateTimeField(default=datetime.utcnow)
+    type = StringField()
 
     meta = {'allow_inheritance': True}
 
@@ -46,8 +47,9 @@ class Status(EmbeddedDocument):
 
 class CreatedStatus(Status):
     @classmethod
-    def create(cls):
-        return super().create()
+    def create(cls, **kwargs):
+        obj = super().create(type="created_status", **kwargs)
+        return obj
 
 
 class PriceOfferStatus(Status):
@@ -56,7 +58,8 @@ class PriceOfferStatus(Status):
 
     @classmethod
     def create(cls, price, user_id, **kwargs):
-        return super().create(price=price, user_id=user_id, **kwargs)
+        obj = super().create(price=price, user_id=user_id, type="price_offer_status", **kwargs)
+        return obj
 
 
 class PriceAcceptStatus(Status):
@@ -64,7 +67,8 @@ class PriceAcceptStatus(Status):
 
     @classmethod
     def create(cls, user_id, **kwargs):
-        return super().create(user_id=user_id, **kwargs)
+        obj = super().create(user_id=user_id, type="price_accept_status", **kwargs)
+        return obj
 
 
 class DateOfferStatus(Status):
@@ -73,7 +77,8 @@ class DateOfferStatus(Status):
 
     @classmethod
     def create(cls, date, user_id, **kwargs):
-        return super().create(date=date, user_id=user_id, **kwargs)
+        obj = super().create(date=date, user_id=user_id, type="date_offer_status", **kwargs)
+        return obj
 
 
 class DateAcceptStatus(Status):
@@ -81,7 +86,8 @@ class DateAcceptStatus(Status):
 
     @classmethod
     def create(cls, user_id, **kwargs):
-        return super().create(user_id=user_id, **kwargs)
+        obj = super().create(user_id=user_id, type="date_accept_status", **kwargs)
+        return obj
 
 
 class ClosedStatus(Status):
@@ -90,7 +96,8 @@ class ClosedStatus(Status):
 
     @classmethod
     def create(cls, success, user_id, **kwargs):
-        return super().create(success=success, user_id=user_id, **kwargs)
+        obj = super().create(success=success, user_id=user_id, type="closed_status", **kwargs)
+        return obj
 
 
 class Request(Document):
@@ -102,7 +109,7 @@ class Request(Document):
     ], required=True)
     price = FloatField(required=True)
     photos = ListField(ReferenceField(Photo), required=True)
-    statuses = ListField(EmbeddedDocumentField(Status), required=True)
+    statuses = ListField(EmbeddedDocumentField(Status), default=list, required=True)
     user_id = ReferenceField(User, required=True)
 
     meta = {'collection': 'requests'}

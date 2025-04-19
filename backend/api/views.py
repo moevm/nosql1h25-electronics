@@ -12,7 +12,6 @@ from datetime import datetime, time
 from bson import ObjectId
 import json
 import base64
-import subprocess
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
@@ -32,17 +31,37 @@ class RequestViewSet(ModelViewSet):
     )
     def create(self, request, *args, **kwargs):
         """POST запрос для создания заявки с кастомной логикой"""
+        user = request.user
+        if user.is_admin:
+            return Response(
+                {"details": "You do not have permission to create request"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = self.get_serializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(
+                {"details": "Invalid request data"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         validated_data = serializer.validated_data
+
 
         created_status = CreatedStatus.create()
         validated_data['statuses'] = [created_status]
 
         validated_data["user_id"] = request.user.id
 
-        request_obj = Request(**validated_data)
-        request_obj.save()
+        try:
+            request_obj = Request(**validated_data)
+            request_obj.save()
+        except Exception as e:
+            return Response(
+                {"details": f"Failed to save request"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         response_serializer = self.get_serializer(request_obj)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -51,14 +70,17 @@ class RequestViewSet(ModelViewSet):
         user = request.user
 
         # Получаем параметры фильтрации
-        title = request.query_params.get('title')
-        description = request.query_params.get('description')
-        from_date = request.query_params.get('from')
-        to_date = request.query_params.get('to')
-        custom_status = request.query_params.get('status')
-        category = request.query_params.get('category')
-        author = request.query_params.get('author')
-        me = request.query_params.get('me')
+        title = str(request.query_params.get('title')) if request.query_params.get('title') is not None else None
+        description = str(request.query_params.get('description')) if request.query_params.get(
+            'description') is not None else None
+        from_date = str(request.query_params.get('from')) if request.query_params.get('from') is not None else None
+        to_date = str(request.query_params.get('to')) if request.query_params.get('to') is not None else None
+        custom_status = str(request.query_params.get('status')) if request.query_params.get(
+            'status') is not None else None
+        category = str(request.query_params.get('category')) if request.query_params.get(
+            'category') is not None else None
+        author = str(request.query_params.get('author')) if request.query_params.get('author') is not None else None
+        me = str(request.query_params.get('me')) if request.query_params.get('me') is not None else None
 
         if user.role == "client":
             if author:
@@ -147,7 +169,7 @@ class RequestViewSet(ModelViewSet):
     def retrieve(self, request, pk=None, *args, **kwargs):
         try:
             instance = Request.objects.get(id=pk)
-        except Request.DoesNotExist:
+        except:
             return Response(
                 {"details": "Request not found"},
                 status=status.HTTP_404_NOT_FOUND
@@ -195,7 +217,7 @@ class PhotoViewSet(ModelViewSet):
         if photo_data.size > max_file_size:
             return Response({"details": "Image file size exceeds 5MB."}, status=status.HTTP_400_BAD_REQUEST)
 
-        photo = Photo.create(data=photo_data.read(), content_type=photo_data.content_type)
+        photo = Photo.create(data=photo_data.read())
         photo.save()
 
         return Response({"photo_id": str(photo.id)}, status=status.HTTP_201_CREATED)

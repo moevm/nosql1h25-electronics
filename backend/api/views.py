@@ -1,5 +1,6 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
+from drf_spectacular.types import OpenApiTypes
 from authapp.serializers import ErrorResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
@@ -66,6 +67,27 @@ class RequestViewSet(ModelViewSet):
         response_serializer = self.get_serializer(request_obj)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        summary="Получить список заявок",
+        description="Возвращает список заявок с возможностью фильтрации по разным критериям.",
+        parameters=[
+            OpenApiParameter(name="title", description="Фильтрация по названию заявки", required=False, type=str),
+            OpenApiParameter(name="description", description="Фильтрация по описанию заявки", required=False, type=str),
+            OpenApiParameter(name="from", description="Фильтрация по дате начала (формат YYYY-MM-DD)", required=False,
+                             type=str),
+            OpenApiParameter(name="to", description="Фильтрация по дате окончания (формат YYYY-MM-DD)", required=False,
+                             type=str),
+            OpenApiParameter(name="status", description="Фильтрация по статусу заявки", required=False, type=str),
+            OpenApiParameter(name="category", description="Фильтрация по категории заявки", required=False, type=str),
+            OpenApiParameter(name="author", description="Фильтрация по автору заявки", required=False, type=str),
+            OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
+        ],
+        responses={
+            200: RequestSerializer(many=True),
+            400: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+        }
+    )
     def list(self, request, *args, **kwargs):
         user = request.user
 
@@ -166,6 +188,15 @@ class RequestViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Получить заявку",
+        description="Позволяет получить заявку по её ID с проверкой прав доступа.",
+        responses={
+            200: RequestSerializer,
+            403: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        }
+    )
     def retrieve(self, request, pk=None, *args, **kwargs):
         try:
             instance = Request.objects.get(id=pk)
@@ -248,6 +279,14 @@ class DatabaseBackupViewSet(ModelViewSet):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
 
+    @extend_schema(
+        summary="Экспорт резервной копии",
+        description="Позволяет экспортировать данные всех коллекций базы данных в формате JSON.",
+        responses={
+            200: OpenApiResponse(description="JSON файл с данными для резервной копии"),
+            403: ErrorResponseSerializer,
+        }
+    )
     def export_backup(self, request, *args, **kwargs):
         """Экспорт данных всех коллекций базы данных"""
         user = request.user
@@ -376,6 +415,17 @@ class DatabaseBackupViewSet(ModelViewSet):
         except Exception as e:
             raise ValueError(f"Validation failed: {str(e)}")
 
+    @extend_schema(
+        summary="Импорт резервной копии",
+        description="Позволяет импортировать данные всех коллекций из JSON файла.",
+        request=OpenApiTypes.BINARY,
+        responses={
+            200: OpenApiResponse(description="Резервная копия успешно импортирована"),
+            400: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+            500: ErrorResponseSerializer,
+        }
+    )
     def import_backup(self, request, *args, **kwargs):
         """Импорт данных всех коллекций из файла"""
         user = request.user

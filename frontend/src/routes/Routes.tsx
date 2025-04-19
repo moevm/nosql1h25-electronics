@@ -1,17 +1,20 @@
 import { Routes, Route } from 'react-router-dom';
-import TestPage from '../components/pages/TestPage';
-import NotFoundPage from '../components/pages/NotFoundPage';
-
-const routes = [
-    { path: '/test', element: <TestPage/>,},
-    { path: '*', element: <NotFoundPage/>,},
-];
+import TestPage from '@src/components/pages/TestPage';
+import NotFoundPage from '@src/components/pages/NotFoundPage';
+import RegisterPage from '@src/components/pages/RegisterPage/RegisterPage';
+import RequestsAdminPage from '@src/components/pages/RequestsAdminPage';
+import RequestsClientPage from '@src/components/pages/RequestsClientPage';
+import LoginPage from '@src/components/pages/LoginPage/LoginPage';
 
 const AppRouter = () => (
   <Routes>
-    {routes.map(({ path, element }) => (
-      <Route key={path} path={path} element={element} />
-    ))}
+    <Route path='login' element={<LoginPage />} />
+    <Route path='register' element={<RegisterPage />} />
+    <Route path='requests' element={<RequestsAdminPage />} />
+    {/* <Route path='requests' element={<RequestsClientPage />} /> */}
+    <Route path='test' element={<TestPage />} />
+
+    <Route path='*' element={<NotFoundPage />} />
   </Routes>
 );
 

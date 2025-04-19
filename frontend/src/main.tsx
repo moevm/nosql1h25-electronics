@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { smallInputsTheme } from '@src/components/themes/smallInputs';
+import { SmallInputsTheme } from '@src/components/themes/SmallInputs';
 import 'dayjs/locale/ru';
 import App from '@src/components/App';
 
@@ -16,7 +16,7 @@ import { ThemeProvider } from '@mui/material';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='ru'>
-      <ThemeProvider theme={smallInputsTheme}>
+      <ThemeProvider theme={SmallInputsTheme}>
         <App />
       </ThemeProvider>
     </LocalizationProvider>

@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material";
 
-export const smallInputsTheme = createTheme({
+export const SmallInputsTheme = createTheme({
   components: {
     MuiInputBase: {
       defaultProps: {
@@ -10,4 +10,4 @@ export const smallInputsTheme = createTheme({
   },
 });
 
-export default smallInputsTheme;
+export default SmallInputsTheme;

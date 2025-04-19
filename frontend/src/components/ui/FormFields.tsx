@@ -1,6 +1,7 @@
 import { Checkbox, CheckboxProps, FormControlLabel, TextField, TextFieldProps } from "@mui/material";
 import { KeysMatching } from "@src/lib/typeUtility";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
+import { PasswordField, PasswordFieldProps } from "./PasswordField";
 
 export type TextFormFieldProps<T extends FieldValues> = {
   control: Control<T>;
@@ -54,3 +55,30 @@ export const CheckboxFormField = <T extends FieldValues>({ control, name, label,
   />
 );
 
+export type PasswordFormField<T extends FieldValues> = {
+  control: Control<T>;
+  name: KeysMatching<T, string> extends Path<T> ? KeysMatching<T, string> : never;
+} & Omit<PasswordFieldProps, 'name'>;
+
+export const PasswordFormField = <T extends FieldValues>({ control, name, ...passwordFieldProps }: PasswordFormField<T>) => (
+  <Controller 
+    control={control}
+    name={name}
+    render={({ field, fieldState }) => (
+      <PasswordField 
+        {...passwordFieldProps}
+        helperText={fieldState.error?.message}
+        error={!!fieldState.error}
+        value={field.value}
+        onChange={field.onChange}
+      />
+    )}
+    rules={{
+      validate: {
+        required: (value: string) => {
+          if (!value) return 'Обязательное поле';
+        },
+      },
+    }}
+  />
+);

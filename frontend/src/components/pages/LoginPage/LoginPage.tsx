@@ -1,64 +1,13 @@
-import { Paper, Typography, TextField, Button, Stack, Container } from '@mui/material';
+import { Paper, Typography, Button, Stack, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Control, Controller, useForm } from 'react-hook-form';
-import { PasswordField } from '@src/components/ui/PasswordField';
+import { useForm } from 'react-hook-form';
+import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
 import style from './LoginPage.module.css';
 
 interface FormInputs {
   login: string;
   password: string;
 }
-
-interface FormFieldProps {
-  control: Control<FormInputs>;
-}
-
-const LoginFormField = ({ control }: FormFieldProps) => (
-  <Controller
-    name='login'
-    control={control}
-    render={({ field, fieldState }) => (
-      <TextField
-        placeholder='Логин'
-        helperText={fieldState.error?.message}
-        error={!!fieldState.error}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: {
-        required: (value: string) => {
-          if (!value) return 'Обязательное поле';
-          if (!value.trim()) return 'Поле не может быть пустым';
-        },
-      },
-    }}
-  />
-);
-
-const PasswordFormField = ({ control }: FormFieldProps) => (
-  <Controller 
-    name='password'
-    control={control}
-    render={({ field, fieldState }) => (
-      <PasswordField 
-        placeholder='Пароль'
-        helperText={fieldState.error?.message}
-        error={!!fieldState.error}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: {
-        required: (value: string) => {
-          if (!value) return 'Обязательное поле';
-        },
-      },
-    }}
-  />
-);
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -76,12 +25,12 @@ export const LoginPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Логин:</Typography>
-            <LoginFormField control={control} />
+            <TextFormField placeholder='Логин' required name='login' control={control} />
           </Stack> 
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Пароль:</Typography>
-            <PasswordFormField control={control} /> 
+            <PasswordFormField placeholder='Пароль' name='password' control={control} /> 
           </Stack>
 
           <Stack direction='column' gap={1}>

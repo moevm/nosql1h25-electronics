@@ -2,7 +2,9 @@ import { TextFieldProps, TextField, InputAdornment, IconButton } from "@mui/mate
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
 
-export const PasswordField = (props: Omit<TextFieldProps, 'type' | 'slotProps'>) => {
+export type PasswordFieldProps = TextFieldProps; 
+
+export const PasswordField = (props: PasswordFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (

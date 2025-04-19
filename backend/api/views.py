@@ -140,6 +140,25 @@ class RequestViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        try:
+            instance = Request.objects.get(id=pk)
+        except Request.DoesNotExist:
+            return Response(
+                {"details": "Request not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user = request.user
+        if not user.is_admin and str(instance.user_id.id) != str(user.id):
+            return Response(
+                {"details": "You do not have permission to view this request."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = RequestSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class PhotoViewSet(ModelViewSet):
     """ViewSet для работы с фотографиями"""

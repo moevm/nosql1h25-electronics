@@ -32,7 +32,8 @@ export const TextFormField = <T extends FieldValues>({ control, name, required, 
       validate: {
         require: value => {
           if (!value) return required ? 'Обязательное поле' : undefined;
-          if (!value.trim()) return 'Поле не может быть пустой строкой';
+          value = value.trim();
+          if (!value) return 'Поле не может быть пустой строкой';
           if (minLength && value.length < minLength) return `Минимальная длина: ${minLength}`;
         },
       },

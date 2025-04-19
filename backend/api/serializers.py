@@ -41,6 +41,8 @@ class ClosedStatusSerializer(DocumentSerializer):
 
 class RequestSerializer(DocumentSerializer):
     statuses = serializers.ListField(read_only=True)
+    user_id = serializers.CharField(source="user_id.id", read_only=True)
+    photos = serializers.ListField(child=serializers.CharField())
 
     class Meta:
         model = Request
@@ -52,8 +54,8 @@ class RequestSerializer(DocumentSerializer):
 
         if "statuses" in representation:
             updated_statuses = []
-            for status in instance.statuses:
-                status_data = status.to_mongo().to_dict()
+            for custom_status in instance.statuses:
+                status_data = custom_status.to_mongo().to_dict()
                 for key, value in status_data.items():
                     if isinstance(value, ObjectId):
                         status_data[key] = str(value)

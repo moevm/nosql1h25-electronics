@@ -6,15 +6,18 @@ import { PasswordField, PasswordFieldProps } from "./PasswordField";
 export type TextFormFieldProps<T extends FieldValues> = {
   control: Control<T>;
   name: KeysMatching<T, string | undefined> extends Path<T> ? KeysMatching<T, string | undefined> : never;
+  minLength?: number;
+  maxLength?: number;
 } & Omit<TextFieldProps, 'name'>;
 
-export const TextFormField = <T extends FieldValues>({ control, name, required, ...textFieldProps }: TextFormFieldProps<T>) => (
+export const TextFormField = <T extends FieldValues>({ control, name, required, minLength, maxLength, ...textFieldProps }: TextFormFieldProps<T>) => (
   <Controller
     control={control}
     name={name}
     render={({ field, fieldState }) => (
       <TextField
         {...textFieldProps}
+        slotProps={{ htmlInput: { maxLength } }}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}
         value={field.value}
@@ -26,6 +29,7 @@ export const TextFormField = <T extends FieldValues>({ control, name, required, 
         require: value => {
           if (!value) return required ? 'Обязательное поле' : undefined;
           if (!value.trim()) return 'Поле не может быть пустой строкой';
+          if (minLength && value.length < minLength) return `Минимальная длина: ${minLength}`;
         },
       },
     }}
@@ -58,15 +62,18 @@ export const CheckboxFormField = <T extends FieldValues>({ control, name, label,
 export type PasswordFormField<T extends FieldValues> = {
   control: Control<T>;
   name: KeysMatching<T, string> extends Path<T> ? KeysMatching<T, string> : never;
+  minLength?: number;
+  maxLength?: number;
 } & Omit<PasswordFieldProps, 'name'>;
 
-export const PasswordFormField = <T extends FieldValues>({ control, name, ...passwordFieldProps }: PasswordFormField<T>) => (
+export const PasswordFormField = <T extends FieldValues>({ control, name, minLength, maxLength, ...passwordFieldProps }: PasswordFormField<T>) => (
   <Controller 
     control={control}
     name={name}
     render={({ field, fieldState }) => (
       <PasswordField 
         {...passwordFieldProps}
+        slotProps={{ htmlInput: { maxLength }}}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}
         value={field.value}
@@ -77,6 +84,7 @@ export const PasswordFormField = <T extends FieldValues>({ control, name, ...pas
       validate: {
         required: (value: string) => {
           if (!value) return 'Обязательное поле';
+          if (minLength && value.length < minLength) return `Минимальная длина: ${minLength}`;
         },
       },
     }}

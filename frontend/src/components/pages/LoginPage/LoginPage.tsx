@@ -25,12 +25,12 @@ export const LoginPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Логин:</Typography>
-            <TextFormField placeholder='Логин' required name='login' control={control} />
+            <TextFormField placeholder='Логин' minLength={3} maxLength={50} required name='login' control={control} />
           </Stack> 
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Пароль:</Typography>
-            <PasswordFormField placeholder='Пароль' name='password' control={control} /> 
+            <PasswordFormField placeholder='Пароль' maxLength={50} name='password' control={control} /> 
           </Stack>
 
           <Stack direction='column' gap={1}>

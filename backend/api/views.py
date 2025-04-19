@@ -28,6 +28,7 @@ class RequestViewSet(ModelViewSet):
             201: RequestSerializer,
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer
         },
     )
     def create(self, request, *args, **kwargs):
@@ -85,6 +86,7 @@ class RequestViewSet(ModelViewSet):
         responses={
             200: RequestSerializer(many=True),
             400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
         }
     )
@@ -193,6 +195,7 @@ class RequestViewSet(ModelViewSet):
         description="Позволяет получить заявку по её ID с проверкой прав доступа.",
         responses={
             200: RequestSerializer,
+            401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
             404: ErrorResponseSerializer,
         }
@@ -284,6 +287,7 @@ class DatabaseBackupViewSet(ModelViewSet):
         description="Позволяет экспортировать данные всех коллекций базы данных в формате JSON.",
         responses={
             200: OpenApiResponse(description="JSON файл с данными для резервной копии"),
+            401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
         }
     )
@@ -422,6 +426,7 @@ class DatabaseBackupViewSet(ModelViewSet):
         responses={
             200: OpenApiResponse(description="Резервная копия успешно импортирована"),
             400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
             500: ErrorResponseSerializer,
         }

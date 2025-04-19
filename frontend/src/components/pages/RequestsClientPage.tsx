@@ -6,6 +6,7 @@ import { useState } from 'react';
 import type { DateType } from '@src/model/misc';
 import type { Status } from '@src/model/status';
 import { requests as requestsData } from '@src/model/data.example';
+import dayjs from 'dayjs';
 
 export const RequestsClientPage = () => {
   const [fromDate, setFromDate] = useState<DateType | null>(null);
@@ -28,12 +29,12 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography component='p' variant='body1'>Дата изменения статуса (от):</Typography>
-            <DatePicker value={fromDate} onChange={value => setFromDate(value)} />
+            <DatePicker maxDate={dayjs()} value={fromDate} onChange={value => setFromDate(value)} />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography component='p' variant='body1'>Дата изменения статуса (до):</Typography>
-            <DatePicker value={toDate}  onChange={value => setToDate(value)} />
+            <DatePicker maxDate={dayjs()} value={toDate}  onChange={value => setToDate(value)} />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>

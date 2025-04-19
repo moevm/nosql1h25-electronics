@@ -7,7 +7,6 @@ import { Category } from '@src/model/category';
 import { Status } from '@src/model/status';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
-import style from './RequestsAdminPage.module.css';
 
 import { requests as requestsData } from '@src/model/data.example';
 
@@ -172,7 +171,14 @@ export const RequestsClientPage = () => {
 
           <CheckboxFormField label='Участвовал в разрешении' name='helpedResolving' control={control} />
 
-          <Box className={style['apply-filters-container']}>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, auto)',
+            gridTemplateRows: 'repeat(2, auto)',
+            justifyContent: 'start',
+            alignItems: 'center',
+            gap: '5px 20px',
+          }}>
             <Stack direction='row' gap={1} alignItems='center'>
               <Typography variant='body1'>Категория товара:</Typography>
               <CategoryFormField control={control} />

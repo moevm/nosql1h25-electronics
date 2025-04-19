@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import TestPage from '@src/components/pages/TestPage';
 import NotFoundPage from '@src/components/pages/NotFoundPage';
 import RegisterPage from '@src/components/pages/RegisterPage/RegisterPage';
-import RequestsAdminPage from '@src/components/pages/RequestsAdminPage/RequestsAdminPage';
+import RequestsAdminPage from '@src/components/pages/RequestsAdminPage';
 import RequestsClientPage from '@src/components/pages/RequestsClientPage';
 import LoginPage from '@src/components/pages/LoginPage/LoginPage';
 

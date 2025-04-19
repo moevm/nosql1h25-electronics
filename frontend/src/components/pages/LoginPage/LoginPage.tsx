@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Paper, Typography, TextField, Button, Stack, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { PasswordField } from '@src/components/ui/PasswordField';
 import style from './LoginPage.module.css';
 
 export const LoginPage = () => {
@@ -36,9 +37,8 @@ export const LoginPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Пароль:</Typography>
-            <TextField 
+            <PasswordField 
               placeholder='Пароль'
-              type='password'
               name='password'
               value={password}
               onChange={e => setPassword(e.target.value)}

@@ -1,14 +1,14 @@
 import { Button, Paper, Stack, Typography, Select, MenuItem, TextField, Checkbox, FormControlLabel, Box, Container } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { RequestsTable } from '@src/components/RequestsTable';
+import { RequestsTable } from '@src/components/ui/RequestsTable';
 import { useState } from 'react';
 import { DateType } from '@src/model/misc';
 import { Category } from '@src/model/category';
 import { Status } from '@src/model/status';
+import dayjs from 'dayjs';
 import style from './RequestsAdminPage.module.css';
 
 import { requests as requestsData } from '@src/model/data.example';
-import dayjs from 'dayjs';
 
 export const RequestsClientPage = () => {
   const [fromDate, setFromDate] = useState<DateType | null>(null);

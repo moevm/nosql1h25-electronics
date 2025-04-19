@@ -3,6 +3,7 @@ import { Paper, Typography, TextField, Button, Stack, Container } from '@mui/mat
 import { MuiTelInput, classes } from 'mui-tel-input';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
+import { PasswordField } from '@src/components/ui/PasswordField';
 import style from './RegisterPage.module.css';
 
 const MuiTelInputNoFlag = styled(MuiTelInput)`
@@ -46,9 +47,8 @@ export const RegisterPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Пароль:</Typography>
-            <TextField 
-              placeholder='Пароль' 
-              type='password' 
+            <PasswordField 
+              placeholder='Пароль'
               name='password'
               value={password}
               onChange={e => setPassword(e.target.value)}

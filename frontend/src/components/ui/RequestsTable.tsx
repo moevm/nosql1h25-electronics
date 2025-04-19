@@ -20,7 +20,12 @@ export const RequestsTable = ({ requests }: RequestsTableProps) => {
         </TableHead>
         <TableBody>
           { requests.map(request => (
-            <TableRow hover onClick={() => alert(request.id)} sx={{ cursor: 'pointer' }} key={request.id}>
+            <TableRow 
+              hover 
+              sx={{ cursor: 'pointer' }} 
+              onClick={() => alert(request.id)} 
+              key={request.id}
+            >
               <TableCell>{request.title}</TableCell>
               <TableCell>{categoryToRussian(request.category)}</TableCell>
               <TableCell>{statusTypeToRussian(request.statuses.at(-1)!.type)}</TableCell>

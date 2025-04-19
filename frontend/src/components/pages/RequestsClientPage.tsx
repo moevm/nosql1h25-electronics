@@ -86,8 +86,16 @@ export const RequestsClientPage = () => {
 
 
             <Stack gap={2}>
-              <TextField placeholder='Название...' value={title} onChange={e => setTitle(e.target.value)} />
-              <TextField placeholder='Описание...' value={description} onChange={e => setDescription(e.target.value)}/>
+              <TextField 
+                placeholder='Название...' 
+                value={title} 
+                onChange={e => setTitle(e.target.value)} 
+              />
+              <TextField 
+                placeholder='Описание...' 
+                value={description} 
+                onChange={e => setDescription(e.target.value)}
+              />
             </Stack>
           </Stack>
 

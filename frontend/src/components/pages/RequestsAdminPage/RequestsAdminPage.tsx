@@ -33,13 +33,13 @@ export const RequestsClientPage = () => {
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
-            <Typography component='p' variant='body1'>Дата изменения статуса (от):</Typography>
-            <DatePicker value={fromDate} onChange={value => setFromDate(value)}/>
+            <Typography variant='body1'>Дата изменения статуса (от):</Typography>
+            <DatePicker value={fromDate} onChange={value => setFromDate(value)} />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
-            <Typography component='p' variant='body1'>Дата изменения статуса (до):</Typography>
-            <DatePicker value={toDate} onChange={value => setToDate(value)}/>
+            <Typography variant='body1'>Дата изменения статуса (до):</Typography>
+            <DatePicker value={toDate}  onChange={value => setToDate(value)} />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
@@ -57,10 +57,20 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Клиент:</Typography>
-            <TextField placeholder='ФИО' value={client} onChange={e => setClient(e.target.value)}/>
+            <TextField 
+              placeholder='ФИО' 
+              value={client} 
+              onChange={e => setClient(e.target.value)}
+            />
           </Stack>
 
-          <FormControlLabel control={<Checkbox value={helpedResolving} onChange={e => setHelpedResolving(e.target.checked)}/>} label='Участвовал в разрешении' />
+          <FormControlLabel 
+            control={<Checkbox 
+              value={helpedResolving}
+              onChange={e => setHelpedResolving(e.target.checked)}
+            />} 
+            label='Участвовал в разрешении'
+          />
 
           <Box className={style['apply-filters-container']}>
             <Stack direction='row' gap={1} alignItems='center'>
@@ -79,18 +89,25 @@ export const RequestsClientPage = () => {
               </Select>
             </Stack>
 
-            <TextField placeholder='Название...' value={title} onChange={e => setTitle(e.target.value)} />
+            <TextField
+              placeholder='Название...'
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+            />
             
             <Button variant='contained'>Применить фильтры</Button>
 
-            <TextField placeholder='Описание...' value={description} onChange={e => setDescription(e.target.value)} />
+            <TextField 
+              placeholder='Описание...' 
+              value={description} 
+              onChange={e => setDescription(e.target.value)} 
+            />
           </Box>
 
           <RequestsTable requests={requestsData}/> 
         </Stack>
       </Paper>
     </Container>
-    
   );
 };
 

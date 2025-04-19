@@ -15,7 +15,12 @@ export const LoginPage = () => {
 
   return (
     <Container maxWidth='xs' className={style.container}>
-      <Paper component='form' elevation={5} onSubmit={onSubmit} sx={{ p: 3 }}>
+      <Paper 
+        component='form' 
+        elevation={5} 
+        onSubmit={onSubmit} 
+        sx={{ p: 3 }}
+      >
         <Stack direction='column' gap={2}>
           <Typography variant='h4'>Авторизация</Typography>
 
@@ -24,8 +29,6 @@ export const LoginPage = () => {
             <TextField 
               placeholder='Логин' 
               name='login' 
-              slotProps={{ htmlInput: { minLength: 3, maxLength: 50 }}}
-              required 
               value={login}
               onChange={e => setLogin(e.target.value)}  
             />
@@ -37,8 +40,6 @@ export const LoginPage = () => {
               placeholder='Пароль'
               type='password'
               name='password'
-              slotProps={{ htmlInput: { minLength: 8, maxLength: 50 }}}
-              required
               value={password}
               onChange={e => setPassword(e.target.value)}
             /> 

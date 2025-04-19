@@ -1,10 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
 import TestPage from '../components/pages/TestPage';
 import NotFoundPage from '../components/pages/NotFoundPage';
+import ProductCardPage from '../components/pages/ProductCardPage';
 
 const routes = [
-    { path: '/test', element: <TestPage/>,},
-    { path: '*', element: <NotFoundPage/>,},
+  { path: '/product/:id', element: <ProductCardPage /> },
+  { path: '/test', element: <TestPage/>,},
+  { path: '*', element: <NotFoundPage/>,},
 ];
 
 const AppRouter = () => (

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer, UserResponseSerializer, \
-    ErrorDetailSerializer, TokenResponseSerializer
+    ErrorResponseSerializer, TokenResponseSerializer
 
 
 class AuthViewSet(viewsets.GenericViewSet):
@@ -18,8 +18,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         request=RegisterSerializer,
         responses={
             204: OpenApiResponse(description="No content. Registration successful."),
-            403: OpenApiResponse(response=ErrorDetailSerializer, description="Validation error"),
-            400: OpenApiResponse(response=ErrorDetailSerializer, description="Login already exists"),
+            403: OpenApiResponse(response=ErrorResponseSerializer, description="Validation error"),
+            400: OpenApiResponse(response=ErrorResponseSerializer, description="Login already exists"),
         },
         auth=[],
         description="Register a new user",
@@ -40,8 +40,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         request=CustomTokenObtainPairSerializer,
         responses={
             200: OpenApiResponse(response=TokenResponseSerializer, description="Login successful. Returns token."),
-            403: OpenApiResponse(response=ErrorDetailSerializer, description="Invalid credentials"),
-            400: OpenApiResponse(response=ErrorDetailSerializer, description="Bad request"),
+            403: OpenApiResponse(response=ErrorResponseSerializer, description="Invalid credentials"),
+            400: OpenApiResponse(response=ErrorResponseSerializer, description="Bad request"),
         },
         auth=[],
         description="User login",
@@ -60,8 +60,8 @@ class AuthViewSet(viewsets.GenericViewSet):
     @extend_schema(
         responses={
             200: OpenApiResponse(response=UserResponseSerializer, description="Current user info"),
-            401: OpenApiResponse(response=ErrorDetailSerializer, description="Authentication required"),
-            403: OpenApiResponse(response=ErrorDetailSerializer,
+            401: OpenApiResponse(response=ErrorResponseSerializer, description="Authentication required"),
+            403: OpenApiResponse(response=ErrorResponseSerializer,
                                  description="You do not have permission to perform this action"),
         },
     )
@@ -74,8 +74,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         request=serializers.Serializer,
         responses={
             204: OpenApiResponse(description="Logged out. No content."),
-            401: OpenApiResponse(response=ErrorDetailSerializer, description="Authentication required"),
-            403: OpenApiResponse(response=ErrorDetailSerializer,
+            401: OpenApiResponse(response=ErrorResponseSerializer, description="Authentication required"),
+            403: OpenApiResponse(response=ErrorResponseSerializer,
                                  description="You do not have permission to perform this action"),
         },
     )

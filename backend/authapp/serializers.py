@@ -31,7 +31,7 @@ class RegisterSerializer(DocumentSerializer):
         return User.create(password=password, **validated_data)
 
 
-class ErrorDetailSerializer(serializers.Serializer):
+class ErrorResponseSerializer(serializers.Serializer):
     details = serializers.CharField()
 
 

@@ -11,7 +11,7 @@ const AppRouter = () => (
     <Route path='login' element={<LoginPage />} />
     <Route path='register' element={<RegisterPage />} />
     <Route path='requests' element={<RequestsAdminPage />} />
-    <Route path='requestsClient' element={<RequestsClientPage />} />
+    {/* <Route path='requests' element={<RequestsClientPage />} /> */}
     <Route path='test' element={<TestPage />} />
 
     <Route path='*' element={<NotFoundPage />} />

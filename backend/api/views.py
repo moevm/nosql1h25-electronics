@@ -300,28 +300,71 @@ class DatabaseBackupViewSet(ModelViewSet):
         return response
 
     def validate_backup_data(self, data):
-        """Валидация данных перед импортом"""
+        """Валидация структуры и содержимого данных перед импортом"""
         try:
-            for obj_data in data.get("requests", []):
-                if "_id" in obj_data:
-                    obj_data["id"] = ObjectId(obj_data["_id"])
+            required_request_fields = {"_id", "title", "description", "address", "category", "price", "statuses",
+                                       "user_id", "photos"}
 
-                if "statuses" in obj_data:
-                    for custom_status in obj_data["statuses"]:
-                        if "timestamp" in custom_status:
-                            try:
-                                datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
-                            except ValueError:
-                                datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+            required_photo_fields = {"_id", "data"}
+
+            required_user_fields = {"_id", "login", "fullname", "role", "phone", "password_hash", "salt",
+                                    "token_version", "creation_date", "edit_date"}
+
+            for obj_data in data.get("requests", []):
+                fields = set(obj_data.keys())
+                if not required_request_fields.issubset(fields):
+                    raise ValueError(f"Missing required fields in Request: {required_request_fields - fields}")
+                if not fields.issubset(required_request_fields):
+                    raise ValueError(f"Unexpected fields in Request: {fields - required_request_fields}")
+
+                for status in obj_data.get("statuses", []):
+                    required_status_fields = {"type", "timestamp", "_cls"}
+                    if status["type"] not in [
+                        "created_status",
+                        "price_offer_status",
+                        "price_accept_status",
+                        "date_offer_status",
+                        "date_accept_status",
+                        "closed_status"
+                    ]:
+                        raise ValueError(f"Invalid status type: {status['type']}")
+                    if status["type"] != "created_status":
+                        required_status_fields.add("user_id")
+                    if status["type"] == "date_offer_status":
+                        required_status_fields.add("date")
+                    if status["type"] == "closed_status":
+                        required_status_fields.add("success")
+                    if status["type"] == "price_offer_status":
+                        required_status_fields.add("price")
+
+                    status_fields = set(status.keys())
+
+                    if not required_status_fields.issubset(status_fields):
+                        raise ValueError(f"Missing required fields in Status: {required_status_fields - status_fields}")
+                    if not status_fields.issubset(required_status_fields):
+                        raise ValueError(
+                            f"Unexpected fields in Status: {status_fields - (required_status_fields)}")
+
+                    try:
+                        datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
+                    except ValueError:
+                        datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S")
 
             for obj_data in data.get("photos", []):
-                if "_id" in obj_data:
-                    obj_data["id"] = ObjectId(obj_data["_id"])
+                fields = set(obj_data.keys())
+                if not required_photo_fields.issubset(fields):
+                    raise ValueError(f"Missing required fields in Photo: {required_photo_fields - fields}")
+                if not fields.issubset(required_photo_fields):
+                    raise ValueError(f"Unexpected fields in Photo: {fields - required_photo_fields}")
                 base64.b64decode(obj_data["data"])
 
             for obj_data in data.get("users", []):
-                if "_id" in obj_data:
-                    obj_data["id"] = ObjectId(obj_data["_id"])
+                fields = set(obj_data.keys())
+                if not required_user_fields.issubset(fields):
+                    raise ValueError(f"Missing required fields in User: {required_user_fields - fields}")
+                if not fields.issubset(required_user_fields):
+                    raise ValueError(
+                        f"Unexpected fields in User: {fields - (required_user_fields)}")
 
                 for date_field in ["creation_date", "edit_date"]:
                     if date_field in obj_data:
@@ -329,7 +372,6 @@ class DatabaseBackupViewSet(ModelViewSet):
                             datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
                         except ValueError:
                             datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
-
             return True
         except Exception as e:
             raise ValueError(f"Validation failed: {str(e)}")

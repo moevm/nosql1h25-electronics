@@ -2,6 +2,7 @@ import { Checkbox, CheckboxProps, FormControlLabel, TextField, TextFieldProps } 
 import { KeysMatching } from "@src/lib/typeUtility";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 import { PasswordField, PasswordFieldProps } from "./PasswordField";
+import { merge } from 'ts-deepmerge';
 
 export type TextFormFieldProps<T extends FieldValues> = {
   control: Control<T>;
@@ -10,14 +11,17 @@ export type TextFormFieldProps<T extends FieldValues> = {
   maxLength?: number;
 } & Omit<TextFieldProps, 'name'>;
 
-export const TextFormField = <T extends FieldValues>({ control, name, required, minLength, maxLength, ...textFieldProps }: TextFormFieldProps<T>) => (
+export const TextFormField = <T extends FieldValues>({ control, name, required, minLength, maxLength, slotProps, ...textFieldProps }: TextFormFieldProps<T>) => (
   <Controller
     control={control}
     name={name}
     render={({ field, fieldState }) => (
       <TextField
         {...textFieldProps}
-        slotProps={{ htmlInput: { maxLength } }}
+        slotProps={merge(
+          { htmlInput: { maxLength }},
+          slotProps ?? {},
+        )}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}
         value={field.value}
@@ -66,14 +70,17 @@ export type PasswordFormField<T extends FieldValues> = {
   maxLength?: number;
 } & Omit<PasswordFieldProps, 'name'>;
 
-export const PasswordFormField = <T extends FieldValues>({ control, name, minLength, maxLength, ...passwordFieldProps }: PasswordFormField<T>) => (
+export const PasswordFormField = <T extends FieldValues>({ control, name, minLength, maxLength, slotProps, ...passwordFieldProps }: PasswordFormField<T>) => (
   <Controller 
     control={control}
     name={name}
     render={({ field, fieldState }) => (
       <PasswordField 
         {...passwordFieldProps}
-        slotProps={{ htmlInput: { maxLength }}}
+        slotProps={merge(
+          { htmlInput: { maxLength }},
+          slotProps ?? {},
+        )}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}
         value={field.value}

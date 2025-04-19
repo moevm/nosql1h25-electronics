@@ -6,8 +6,7 @@ from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework import status
 from django.http import HttpResponse
-from django.db.models import Q
-from .models import Request, Photo, Status, CreatedStatus
+from .models import Request, Photo, CreatedStatus
 from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
 from datetime import datetime, time
 

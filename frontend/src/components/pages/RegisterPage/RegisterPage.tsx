@@ -1,7 +1,15 @@
 import { FormEvent, useState } from 'react';
 import { Paper, Typography, TextField, Button, Stack, Container } from '@mui/material';
+import { MuiTelInput, classes } from 'mui-tel-input';
+import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 import style from './RegisterPage.module.css';
+
+const MuiTelInputNoFlag = styled(MuiTelInput)`
+  .${classes.flagButton} {
+    display: none;
+  }
+`;
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -59,13 +67,14 @@ export const RegisterPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Номер телефона:</Typography>
-            <TextField 
-              placeholder='+x(xxx)xxx-xx-xx' 
-              type='tel' 
-              name='phone' 
+            <MuiTelInputNoFlag 
+              defaultCountry='RU' 
+              disableDropdown
+              forceCallingCode
+              slotProps={{ htmlInput: { maxLength: 13 }}}
               value={phone}
-              onChange={e => setPhone(e.target.value)}
-            /> 
+              onChange={value => setPhone(value)}
+            />
           </Stack>
 
           <Stack direction='column' gap={1}>

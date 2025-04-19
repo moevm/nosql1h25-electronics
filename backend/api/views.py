@@ -299,6 +299,41 @@ class DatabaseBackupViewSet(ModelViewSet):
         response['Content-Disposition'] = 'attachment; filename=backup.json'
         return response
 
+    def validate_backup_data(self, data):
+        """Валидация данных перед импортом"""
+        try:
+            for obj_data in data.get("requests", []):
+                if "_id" in obj_data:
+                    obj_data["id"] = ObjectId(obj_data["_id"])
+
+                if "statuses" in obj_data:
+                    for custom_status in obj_data["statuses"]:
+                        if "timestamp" in custom_status:
+                            try:
+                                datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
+                            except ValueError:
+                                datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+
+            for obj_data in data.get("photos", []):
+                if "_id" in obj_data:
+                    obj_data["id"] = ObjectId(obj_data["_id"])
+                base64.b64decode(obj_data["data"])
+
+            for obj_data in data.get("users", []):
+                if "_id" in obj_data:
+                    obj_data["id"] = ObjectId(obj_data["_id"])
+
+                for date_field in ["creation_date", "edit_date"]:
+                    if date_field in obj_data:
+                        try:
+                            datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
+                        except ValueError:
+                            datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+
+            return True
+        except Exception as e:
+            raise ValueError(f"Validation failed: {str(e)}")
+
     def import_backup(self, request, *args, **kwargs):
         """Импорт данных всех коллекций из файла"""
         user = request.user
@@ -314,6 +349,12 @@ class DatabaseBackupViewSet(ModelViewSet):
 
         try:
             data = json.load(file)
+
+            self.validate_backup_data(data)
+
+            Request.objects.all().delete()
+            Photo.objects.all().delete()
+            User.objects.all().delete()
 
             for obj_data in data.get("requests", []):
                 if "_id" in obj_data:
@@ -346,7 +387,10 @@ class DatabaseBackupViewSet(ModelViewSet):
                             obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
                 User(**obj_data).save()
 
+        except ValueError as validation_error:
+            return JsonResponse({"details": str(validation_error)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return JsonResponse({"details": f"Failed to import backup: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse({"details": f"Failed to import backup: {str(e)}"},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return JsonResponse({"details": "Backup successfully imported"}, status=status.HTTP_200_OK)

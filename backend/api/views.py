@@ -1,16 +1,21 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from authapp.serializers import ErrorResponseSerializer
+from authapp.models import User
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
 from rest_framework import status
 from django.http import HttpResponse
+from django.db.models import Q
 from .models import Request, Photo, Status, CreatedStatus
 from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
+from datetime import datetime, time
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
+    filter_backends = [OrderingFilter]
 
     @extend_schema(
         summary="Создать новую заявку",
@@ -39,12 +44,82 @@ class RequestViewSet(ModelViewSet):
         response_serializer = self.get_serializer(request_obj)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         user = request.user
 
-        requests = Request.objects.all()
+        # Получаем параметры фильтрации
+        title = request.query_params.get('title')
+        description = request.query_params.get('description')
+        from_date = request.query_params.get('from')
+        to_date = request.query_params.get('to')
+        custom_status = request.query_params.get('status')
+        category = request.query_params.get('category')
+        author = request.query_params.get('author')
+        me = request.query_params.get('me')
 
-        serializer = RequestSerializer(requests, many=True)
+        queryset = Request.objects.all()
+
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        if description:
+            queryset = queryset.filter(description__icontains=description)
+
+        if from_date:
+            try:
+                from_date = datetime.strptime(from_date, "%Y-%m-%d")
+                from_date = datetime.combine(from_date, time.min)
+            except ValueError:
+                return Response({"details": "Invalid 'from' date format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if to_date:
+            try:
+                to_date = datetime.strptime(to_date, "%Y-%m-%d")
+                to_date = datetime.combine(to_date, time.max)
+            except ValueError:
+                return Response({"details": "Invalid 'to' date format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if from_date or to_date:
+            filtered_queryset = []
+            for request_obj in queryset:
+                if request_obj.statuses:
+                    last_status = request_obj.statuses[-1]
+                    timestamp = last_status["timestamp"]
+
+                    if timestamp:
+                        if from_date and timestamp < from_date:
+                            continue
+                        if to_date and timestamp > to_date:
+                            continue
+
+                        filtered_queryset.append(request_obj)
+            queryset = queryset.filter(id__in=[obj.id for obj in filtered_queryset])
+
+        if custom_status:
+            filtered_queryset = []
+            for request_obj in queryset:
+                if request_obj.statuses:
+                    last_status = request_obj.statuses[-1]
+                    type_field = last_status["type"]
+
+                    if type_field and type_field != custom_status:
+                        continue
+
+                    filtered_queryset.append(request_obj)
+            queryset = queryset.filter(id__in=[obj.id for obj in filtered_queryset])
+
+        if category:
+            queryset = queryset.filter(category=category)
+
+        if author:
+            collection_name = User._meta["collection"]
+            matching_users = [
+                user.id for user in User.objects.filter(fullname=author)
+            ]
+
+            queryset = queryset.filter(user_id__in=matching_users)
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

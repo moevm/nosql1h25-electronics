@@ -58,8 +58,7 @@ class PriceOfferStatus(Status):
 
     @classmethod
     def create(cls, price, user_id, **kwargs):
-        obj = super().create(price=price, user_id=user_id, **kwargs)
-        obj._cls = "price_offer_status"
+        obj = super().create(price=price, user_id=user_id, type="price_offer_status", **kwargs)
         return obj
 
 
@@ -68,8 +67,7 @@ class PriceAcceptStatus(Status):
 
     @classmethod
     def create(cls, user_id, **kwargs):
-        obj = super().create(user_id=user_id, **kwargs)
-        obj._cls = "price_accept_status"
+        obj = super().create(user_id=user_id, type="price_accept_status", **kwargs)
         return obj
 
 
@@ -79,8 +77,7 @@ class DateOfferStatus(Status):
 
     @classmethod
     def create(cls, date, user_id, **kwargs):
-        obj = super().create(date=date, user_id=user_id, **kwargs)
-        obj._cls = "date_offer_status"
+        obj = super().create(date=date, user_id=user_id, type="date_offer_status", **kwargs)
         return obj
 
 
@@ -89,8 +86,7 @@ class DateAcceptStatus(Status):
 
     @classmethod
     def create(cls, user_id, **kwargs):
-        obj = super().create(user_id=user_id, **kwargs)
-        obj._cls = "date_accept_status"
+        obj = super().create(user_id=user_id, type="date_accept_status", **kwargs)
         return obj
 
 
@@ -100,8 +96,7 @@ class ClosedStatus(Status):
 
     @classmethod
     def create(cls, success, user_id, **kwargs):
-        obj = super().create(success=success, user_id=user_id, **kwargs)
-        obj._cls = "closed_status"
+        obj = super().create(success=success, user_id=user_id, type="closed_status", **kwargs)
         return obj
 
 

@@ -198,7 +198,7 @@ export const RequestsClientPage = () => {
               <Button variant='contained' onClick={handleSubmit(onSubmit)}>Сортировать</Button>
             </Stack>
 
-            <Stack gap={2}>
+            <Stack gap={1}>
               <TextFormField placeholder='Название...' name='title' control={control} />
               <TextFormField placeholder='Описание...' name='description' control={control} />
             </Stack>

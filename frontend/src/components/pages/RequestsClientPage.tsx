@@ -1,4 +1,4 @@
-import { Button, Paper, Stack, Typography, Select, MenuItem, Container } from '@mui/material';
+import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
 import { Category } from '@src/model/category';
@@ -9,6 +9,8 @@ import { Control, Controller, useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/FormFields';
 
 import { requests as requestsData } from '@src/model/data.example';
+import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
+import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 
 interface FormInputs {
   fromDate?: DateType;
@@ -152,6 +154,9 @@ const SortFieldFormField = (props: FormFieldProps) => (
 
 export const RequestsClientPage = () => {
   const { control, handleSubmit } = useForm<FormInputs>();
+  
+  const dispatch = useAppDispatch();
+  const isLoggingOut = useAppSelector(selectIsLoggingOut);
 
   const onSubmit = (data: FormInputs) => {
     alert(JSON.stringify(data));
@@ -163,8 +168,15 @@ export const RequestsClientPage = () => {
         <Stack gap={1}>
           <Typography variant='h4'>Список заявок</Typography>
 
-          <Stack direction='row'>
+          <Stack direction='row' gap={1}>
             <Button variant='contained'>Перейти в профиль</Button>
+            <Button
+              variant='contained'
+              disabled={isLoggingOut}
+              onClick={() => dispatch(logout())}
+            >
+              { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
+            </Button>
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>

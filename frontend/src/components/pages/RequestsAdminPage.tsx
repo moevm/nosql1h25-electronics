@@ -1,4 +1,4 @@
-import { Button, Paper, Stack, Typography, Select, MenuItem, Box, Container } from '@mui/material';
+import { Button, Paper, Stack, Typography, Select, MenuItem, Box, Container, CircularProgress } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
 import { CheckboxFormField, TextFormField } from '@src/components/ui/FormFields';
@@ -9,6 +9,8 @@ import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 
 import { requests as requestsData } from '@src/model/data.example';
+import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
+import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 
 interface FormInputs {
   fromDate?: DateType;
@@ -131,6 +133,9 @@ const CategoryFormField = (props: FormFieldProps) => (
 
 export const RequestsClientPage = () => {
   const { control, handleSubmit } = useForm<FormInputs>();
+  
+  const dispatch = useAppDispatch();
+  const isLoggingOut = useAppSelector(selectIsLoggingOut);
 
   const onSubmit = (data: FormInputs) => {
     alert(JSON.stringify(data));
@@ -147,6 +152,13 @@ export const RequestsClientPage = () => {
             <Button variant='contained'>Экспорт БД</Button>
             <Button variant='contained'>Импорт БД</Button>
             <Button variant='contained'>Статистика</Button>
+            <Button 
+              variant='contained' 
+              disabled={isLoggingOut} 
+              onClick={() => dispatch(logout())}
+            >
+              { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
+            </Button>
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>

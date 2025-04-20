@@ -6,7 +6,7 @@ import { User } from '@src/model/user';
 export const initLogin = createAsyncThunk(
   'user/initLogin',
   async (_: unknown, { rejectWithValue }) => {
-    await sleep(3000);
+    await sleep(1000);
 
     const token = localStorage.getItem('token');
     if (token) return { token, user: localStorage.getItem('role') === 'admin' ? admin : client };
@@ -39,7 +39,7 @@ export const logout = createAsyncThunk(
   'user/logout',
   async () => {
     await sleep(1000)
-    localStorage.removeItem('token');
+    localStorage.clear();
   },
 );
 
@@ -48,11 +48,13 @@ export interface UserState {
   token?: string;
   error?: string;
   isAuthorizing: boolean;
+  isLoggingOut: boolean;
   isInit: boolean;
 }
 
 const initialState: UserState = {
   isAuthorizing: false,
+  isLoggingOut: false,
   isInit: true,
 };
 
@@ -74,10 +76,12 @@ export const counterSlice = createSlice({
       state.isAuthorizing = false;
     })
     
-    .addCase(logout.fulfilled, state => {
+    .addCase(logout.pending, state => {
+      state.isLoggingOut = true;
+    }).addCase(logout.fulfilled, state => {
       state.user = undefined;
       state.token = undefined;
-      localStorage.removeItem('token');
+      state.isLoggingOut = false;
     })
     
     .addCase(initLogin.pending, state => {
@@ -97,6 +101,7 @@ export const counterSlice = createSlice({
     selectIsClient: state => state.user?.role === 'client',
     selectIsAuthorized: state => !!state.user,
     selectIsAuthorizing: state => state.isAuthorizing,
+    selectIsLoggingOut: state => state.isLoggingOut,
     selectIsInitialAuthorizing: state => state.isInit && state.isAuthorizing,
 
     selectUser: state => state.user,
@@ -104,5 +109,5 @@ export const counterSlice = createSlice({
   },
 });
 
-export const { selectIsAdmin, selectIsClient, selectIsAuthorized, selectIsAuthorizing, selectIsInitialAuthorizing, selectUser, selectToken } = counterSlice.selectors;
+export const { selectIsAdmin, selectIsClient, selectIsAuthorized, selectIsAuthorizing, selectIsLoggingOut, selectIsInitialAuthorizing, selectUser, selectToken } = counterSlice.selectors;
 export default counterSlice.reducer;

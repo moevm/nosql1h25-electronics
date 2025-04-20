@@ -306,19 +306,19 @@ class DatabaseBackupViewSet(ModelViewSet):
             "users": []
         }
 
+        def handle_objectid(value):
+            if isinstance(value, ObjectId):
+                return str(value)
+            elif isinstance(value, list):
+                return [handle_objectid(item) for item in value]
+            elif isinstance(value, dict):
+                return {k: handle_objectid(v) for k, v in value.items()}
+            return value
+
         # Экспорт requests
 
         for obj in Request.objects.all():
             obj_data = obj.to_mongo().to_dict()
-
-            def handle_objectid(value):
-                if isinstance(value, ObjectId):
-                    return str(value)
-                elif isinstance(value, list):
-                    return [handle_objectid(item) for item in value]
-                elif isinstance(value, dict):
-                    return {k: handle_objectid(v) for k, v in value.items()}
-                return value
 
             obj_data = {key: handle_objectid(value) for key, value in obj_data.items()}
             backup_data["requests"].append(obj_data)

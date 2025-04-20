@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent, Box, Typography, TextField, MenuItem, DialogActions, Button, Grid, Avatar } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface CreateRequestDialogProps {
   open: boolean;
@@ -51,24 +51,33 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
     }
   };
 
-  const getImagePreview = (file: File) => URL.createObjectURL(file);
+  const imagePreviews = useMemo(() => {
+    return form.images.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+  }, [form.images]);
+
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
+    };
+  }, [imagePreviews]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Добавление товара</DialogTitle>
       <DialogContent>
-        <Box mt={2}>
-          <Typography variant="subtitle2">Изображения</Typography>
+        <Box>
+          <Typography variant="body1">Изображения</Typography>
           <input type="file" accept="image/*" multiple onChange={handleImageChange} />
           {errors.images && (
             <Typography color="error" variant="caption">{errors.images}</Typography>
           )}
 
           <Grid container spacing={1} mt={1}>
-            {form.images.map((file, idx) => (
-              <Grid key={idx}>
-                <Avatar variant="rounded" src={getImagePreview(file)} alt={`img-${idx}`} sx={{ width: 64, height: 64 }} />
-              </Grid>
+            {imagePreviews.map((p, index) => (
+              <Avatar variant="rounded" src={p.url} alt={`фото-${index}`} sx={{ width: 64, height: 64 }}/>
             ))}
           </Grid>
         </Box>

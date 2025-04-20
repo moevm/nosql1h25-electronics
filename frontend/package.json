@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-api": "bash ./generate-api.sh",
-    "generate-api-win": "powershell -ExecutionPolicy Bypass -File ./generate-api.ps1"
+    "generate-api-win": "powershell -ExecutionPolicy Bypass -File ./generate-api.ps1",
+    "patch-request": "node ./scripts/postgenerate.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -23,8 +24,10 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "framer-motion": "^12.7.4",
+    "fs": "^0.0.1-security",
     "mui-tel-input": "^9.0.0",
     "openapi-typescript-codegen": "^0.29.0",
+    "path": "^0.12.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",

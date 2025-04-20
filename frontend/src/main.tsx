@@ -4,7 +4,10 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { SmallInputsTheme } from '@src/components/themes/SmallInputs';
 import 'dayjs/locale/ru';
+import { store } from '@src/store/Store';
+import { Provider } from 'react-redux';
 import App from '@src/components/App';
+
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ThemeProvider } from '@mui/material';
@@ -18,7 +21,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='ru'>
       <ThemeProvider theme={SmallInputsTheme}>
-        <App />
+        <Provider store={store}>
+          <App />
+        </Provider>
       </ThemeProvider>
     </LocalizationProvider>
   </StrictMode>,

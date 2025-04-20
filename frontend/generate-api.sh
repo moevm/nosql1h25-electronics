@@ -2,7 +2,6 @@
 
 BACKEND_SWAGGER_PATH="./schema.json"
 FRONTEND_API_DIR="./src/api"
-REQUEST_CLIENT_PATH="./src/api/core/requestWithClient.ts"
 TMP_DIR="./tmp/openapi_codegen_tmp"
 
 echo "generating schema.json"

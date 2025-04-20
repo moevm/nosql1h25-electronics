@@ -21,9 +21,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='ru'>
       <ThemeProvider theme={SmallInputsTheme}>
-        <Provider store={store}>
-          <App />
-        </Provider>
+          <Provider store={store}>
+            <App />
+          </Provider>
       </ThemeProvider>
     </LocalizationProvider>
   </StrictMode>,

@@ -3,7 +3,7 @@ import { sleep } from '@src/lib/Sleep';
 import { admin, client } from '@src/model/data.example';
 import { User } from '@src/model/user';
 
-const login = createAsyncThunk(
+export const login = createAsyncThunk(
   'user/login',
   async ({ login, password }: { login: string, password: string }, { rejectWithValue }) => {
     await sleep(1000);
@@ -15,7 +15,7 @@ const login = createAsyncThunk(
   },
 );
 
-const logout = createAsyncThunk(
+export const logout = createAsyncThunk(
   'user/logout',
   () => sleep(1000),
 );
@@ -24,11 +24,11 @@ export interface UserState {
   user?: User;
   token?: string;
   error?: string;
-  authorizing: boolean;
+  isAuthorizing: boolean;
 }
 
 const initialState: UserState = {
-  authorizing: false,
+  isAuthorizing: false,
 };
 
 export const counterSlice = createSlice({
@@ -38,15 +38,15 @@ export const counterSlice = createSlice({
   extraReducers: builder => {
     builder.addCase(login.pending, state => {
       state.error = undefined;
-      state.authorizing = true;
+      state.isAuthorizing = true;
     }).addCase(login.fulfilled, (state, action) => {
       state.error = undefined;
-      state.authorizing = false;
+      state.isAuthorizing = false;
       state.user = action.payload.user;
       state.token = action.payload.token;
     }).addCase(login.rejected, (state, action) => {
       state.error = action.payload as string;
-      state.authorizing = false;
+      state.isAuthorizing = false;
     }).addCase(logout.fulfilled, state => {
       state.user = undefined;
       state.token = undefined;

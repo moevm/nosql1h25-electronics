@@ -1,7 +1,10 @@
-import { Paper, Typography, Button, Stack, Container } from '@mui/material';
+import { Paper, Typography, Button, Stack, Container, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
+import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
+import { login, selectIsAuthorized } from '@src/store/UserSlice';
+import { useEffect } from 'react';
 import style from './LoginPage.module.css';
 
 interface FormInputs {
@@ -11,11 +14,21 @@ interface FormInputs {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit } = useForm<FormInputs>();
+  const { control, handleSubmit, setError } = useForm<FormInputs>();
 
-  const onSubmit = (data: FormInputs) => {
-    alert(JSON.stringify(data));    
-  };
+  const dispatch = useAppDispatch();
+  const isAuthorizing = useAppSelector(state => state.user.isAuthorizing);
+  const authError = useAppSelector(state => state.user.error);
+  const isAuthorized = useAppSelector(selectIsAuthorized);
+
+  useEffect(() => {
+    if (!authError) return;
+    setError('login', { message: authError });
+  }, [authError]);
+
+  if (isAuthorized) navigate('/requests/client', { replace: true });
+
+  const onSubmit = (data: FormInputs) => dispatch(login(data));
 
   return (
     <Container maxWidth='xs' className={style.container}>
@@ -34,7 +47,9 @@ export const LoginPage = () => {
           </Stack>
 
           <Stack direction='column' gap={1}>
-            <Button variant='contained' onClick={handleSubmit(onSubmit)}>Войти</Button>
+            <Button variant='contained' onClick={handleSubmit(onSubmit)} disabled={isAuthorizing}>
+              { isAuthorizing ? <CircularProgress size={25} /> : 'Войти' }
+            </Button>
             <Button onClick={() => navigate('/register')}>Регистрация</Button>
           </Stack>
         </Stack>

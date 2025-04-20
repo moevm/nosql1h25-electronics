@@ -8,15 +8,16 @@ import { Status } from '@src/model/status';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 
-import { requests as requestsData } from '@src/model/data.example';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
+import { reset, selectFields, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
+import { useEffect } from 'react';
 
-interface FormInputs {
+export interface RequestsAdminFormInputs {
   fromDate?: DateType;
   toDate?: DateType;
   status: Status['type'] | 'any';
-  client?: string;
+  author?: string;
   helpedResolving: boolean;
   category: Category | 'any';
   title?: string;
@@ -24,7 +25,7 @@ interface FormInputs {
 }
 
 interface FormFieldProps {
-  control: Control<FormInputs>;
+  control: Control<RequestsAdminFormInputs>;
 }
 
 const FromDateFormField = (props: FormFieldProps) => (
@@ -132,13 +133,31 @@ const CategoryFormField = (props: FormFieldProps) => (
 );
 
 export const RequestsClientPage = () => {
-  const { control, handleSubmit } = useForm<FormInputs>();
+  const { control, handleSubmit, setValue } = useForm<RequestsAdminFormInputs>();
   
   const dispatch = useAppDispatch();
   const isLoggingOut = useAppSelector(selectIsLoggingOut);
 
-  const onSubmit = (data: FormInputs) => {
-    alert(JSON.stringify(data));
+  const isRequestsLoading = useAppSelector(selectIsLoading);
+  const requestsData = useAppSelector(selectRequests);
+  const fieldsValue = useAppSelector(selectFields) as Partial<RequestsAdminFormInputs>;
+
+  useEffect(() => {
+    if (fieldsValue.fromDate) setValue('fromDate', fieldsValue.toDate);
+    if (fieldsValue.toDate) setValue('toDate', fieldsValue.toDate);
+    if (fieldsValue.status) setValue('status', fieldsValue.status);
+    if (fieldsValue.author) setValue('author', fieldsValue.author);
+    if (fieldsValue.helpedResolving) setValue('helpedResolving', fieldsValue.helpedResolving);
+    if (fieldsValue.category) setValue('category', fieldsValue.category);
+    if (fieldsValue.title) setValue('title', fieldsValue.title);
+    if (fieldsValue.description) setValue('description', fieldsValue.description);
+
+    dispatch(updateRequests(null));
+  }, []);
+
+  const onSubmit = (data: RequestsAdminFormInputs) => {
+    dispatch(updateFields(data));
+    dispatch(updateRequests(null));
   };
 
   return (
@@ -155,7 +174,10 @@ export const RequestsClientPage = () => {
             <Button 
               variant='contained' 
               disabled={isLoggingOut} 
-              onClick={() => dispatch(logout())}
+              onClick={() => {
+                dispatch(logout())
+                dispatch(reset());
+              }}
             >
               { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
             </Button>
@@ -178,7 +200,7 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Клиент:</Typography>
-            <TextFormField placeholder='ФИО' name='client' control={control} />
+            <TextFormField placeholder='ФИО' name='author' control={control} />
           </Stack>
 
           <CheckboxFormField label='Участвовал в разрешении' name='helpedResolving' control={control} />
@@ -204,7 +226,12 @@ export const RequestsClientPage = () => {
             />
           </Box>
 
-          <RequestsTable requests={requestsData}/> 
+          { isRequestsLoading 
+            ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 
+            : requestsData !== undefined 
+            ? <RequestsTable requests={requestsData}/> 
+            : <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><Typography variant='h4'>Пусто</Typography></Box> 
+          }
         </Stack>
       </Paper>
     </Container>

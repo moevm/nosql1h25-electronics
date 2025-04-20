@@ -1,4 +1,4 @@
-import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress } from '@mui/material';
+import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress, Box } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
 import { Category } from '@src/model/category';
@@ -7,12 +7,12 @@ import type { Status } from '@src/model/status';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/FormFields';
-
-import { requests as requestsData } from '@src/model/data.example';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
+import { reset, selectFields, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
+import { useEffect } from 'react';
 
-interface FormInputs {
+export interface RequestsClientFormInputs {
   fromDate?: DateType;
   toDate?: DateType;
   status: Status['type'] | 'any';
@@ -23,7 +23,7 @@ interface FormInputs {
 }
 
 interface FormFieldProps {
-  control: Control<FormInputs>;
+  control: Control<RequestsClientFormInputs>;
 }
 
 const FromDateFormField = (props: FormFieldProps) => (
@@ -153,13 +153,30 @@ const SortFieldFormField = (props: FormFieldProps) => (
 );
 
 export const RequestsClientPage = () => {
-  const { control, handleSubmit } = useForm<FormInputs>();
-  
+  const { control, handleSubmit, setValue } = useForm<RequestsClientFormInputs>();
+
   const dispatch = useAppDispatch();
   const isLoggingOut = useAppSelector(selectIsLoggingOut);
 
-  const onSubmit = (data: FormInputs) => {
-    alert(JSON.stringify(data));
+  const isRequestsLoading = useAppSelector(selectIsLoading);
+  const requestsData = useAppSelector(selectRequests);
+  const fieldsValue = useAppSelector(selectFields) as Partial<RequestsClientFormInputs>;
+
+  useEffect(() => {
+    if (fieldsValue.fromDate) setValue('fromDate', fieldsValue.toDate);
+    if (fieldsValue.toDate) setValue('toDate', fieldsValue.toDate);
+    if (fieldsValue.status) setValue('status', fieldsValue.status);
+    if (fieldsValue.category) setValue('category', fieldsValue.category);
+    if (fieldsValue.title) setValue('title', fieldsValue.title);
+    if (fieldsValue.description) setValue('description', fieldsValue.description);
+    if (fieldsValue.sortField) setValue('sortField', fieldsValue.sortField);
+
+    dispatch(updateRequests(null));
+  }, []);
+
+  const onSubmit = (data: RequestsClientFormInputs) => {
+    dispatch(updateFields(data));
+    dispatch(updateRequests(null));
   };
 
   return (
@@ -173,7 +190,10 @@ export const RequestsClientPage = () => {
             <Button
               variant='contained'
               disabled={isLoggingOut}
-              onClick={() => dispatch(logout())}
+              onClick={() => {
+                dispatch(logout())
+                dispatch(reset());
+              }}
             >
               { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
             </Button>
@@ -216,7 +236,12 @@ export const RequestsClientPage = () => {
             </Stack>
           </Stack>
 
-          <RequestsTable requests={requestsData}/> 
+          { isRequestsLoading 
+            ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 
+            : requestsData !== undefined 
+            ? <RequestsTable requests={requestsData}/> 
+            : <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><Typography variant='h4'>Пусто</Typography></Box> 
+          }
         </Stack>
       </Paper>
     </Container>

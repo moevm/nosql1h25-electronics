@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer, { initLogin } from './UserSlice';
+import requestsReducer from './RequestsSlice';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
+    requests: requestsReducer,
   },
 });
 

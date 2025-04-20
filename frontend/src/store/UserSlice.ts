@@ -58,7 +58,7 @@ const initialState: UserState = {
   isInit: true,
 };
 
-export const counterSlice = createSlice({
+export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {},
@@ -109,5 +109,5 @@ export const counterSlice = createSlice({
   },
 });
 
-export const { selectIsAdmin, selectIsClient, selectIsAuthorized, selectIsAuthorizing, selectIsLoggingOut, selectIsInitialAuthorizing, selectUser, selectToken } = counterSlice.selectors;
-export default counterSlice.reducer;
+export const { selectIsAdmin, selectIsClient, selectIsAuthorized, selectIsAuthorizing, selectIsLoggingOut, selectIsInitialAuthorizing, selectUser, selectToken } = userSlice.selectors;
+export default userSlice.reducer;

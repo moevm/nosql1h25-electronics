@@ -1,87 +1,67 @@
+import re
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_mongoengine.serializers import DocumentSerializer
+from rest_framework_simplejwt_mongoengine.tokens import RefreshToken
 from .models import User
 
+PHONE_REGEX = re.compile(r'^\+7\d{10}$')
 
-class UserSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    fullname = serializers.CharField(max_length=255)
-    role = serializers.CharField(read_only=True)
-    creation_date = serializers.CharField(read_only=True)
-    edit_date = serializers.CharField(read_only=True)
-    phone = serializers.CharField(max_length=255)
-    password = serializers.CharField(write_only=True)
+
+class RegisterSerializer(DocumentSerializer):
+    password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ('login', 'password', 'fullname', 'phone')
+
+    def validate_login(self, value):
+        if User.objects(login=value).first():
+            raise serializers.ValidationError("Login already exists")
+        return value
 
     def validate_phone(self, value):
+        if not PHONE_REGEX.match(value):
+            raise serializers.ValidationError("Phone number format is invalid. Expected format: +7XXXXXXXXXX")
         if User.objects(phone=value).first():
             raise serializers.ValidationError("Phone number already exists")
         return value
 
     def create(self, validated_data):
-        user = User.create_user(
-            fullname=validated_data['fullname'],
-            phone=validated_data['phone'],
-            password=validated_data['password']
-        )
-        user.save()
-        return user
-
-    def update(self, instance, validated_data):
-        new_phone = validated_data.get('phone', instance.phone)
-
-        if new_phone != instance.phone:
-            if User.objects(phone=new_phone).first():
-                raise serializers.ValidationError("Phone number already exists")
-
-        instance.fullname = validated_data.get('fullname', instance.fullname)
-        instance.phone = new_phone
-
-        if 'password' in validated_data:
-            instance.set_password(validated_data['password'])
-
-        instance.save()
-        return instance
-
-    def to_representation(self, instance):
-        return {
-            'id': str(instance.id),
-            'fullname': instance.fullname,
-            'role': instance.role,
-            'creation_date': str(instance.creation_date),
-            'edit_date': str(instance.edit_date),
-            'phone': instance.phone,
-        }
-
-
-class CustomTokenObtainPairSerializer(serializers.Serializer):
-    phone = serializers.CharField(max_length=255)
-    password = serializers.CharField(write_only=True)
-
-    def validate(self, attrs):
-        phone = attrs.get('phone')
-        password = attrs.get('password')
-
-        try:
-            user = User.objects.get(phone=phone)
-        except Exception:
-            raise serializers.ValidationError({'details': 'Invalid credentials'}, code='invalid_credentials')
-
-        if not user.check_password(password):
-            raise serializers.ValidationError({'details': 'Invalid credentials'}, code='invalid_credentials')
-
-        self.user = user
-        return attrs
-
-
-class TokenResponseSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
-    access = serializers.CharField()
-    user_id = serializers.CharField()
+        password = validated_data.pop('password')
+        return User.create(password=password, **validated_data)
 
 
 class ErrorResponseSerializer(serializers.Serializer):
-    details = serializers.CharField(help_text="Error message")
+    details = serializers.CharField()
 
 
-class TokenRefreshSerializer(serializers.Serializer):
-    refresh = serializers.CharField(required=True, help_text="Refresh token")
+class TokenResponseSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+
+class UserResponseSerializer(DocumentSerializer):
+    user_id = serializers.CharField(source='id')
+
+    class Meta:
+        model = User
+        fields = ('user_id', 'fullname', 'role', 'phone', 'creation_date', 'edit_date')
+
+
+class CustomTokenObtainPairSerializer(serializers.Serializer):
+    login = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        login = attrs.get('login')
+        password = attrs.get('password')
+
+        user = User.objects(login=login).first()
+        if not user or not user.check_password(password):
+            raise serializers.ValidationError({"details": "Invalid credentials"}, code="authorization")
+
+        refresh = RefreshToken.for_user(user)
+        refresh['token_version'] = user.token_version
+
+        return {
+            'token': str(refresh.access_token),
+        }

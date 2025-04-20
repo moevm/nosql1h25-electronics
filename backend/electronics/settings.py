@@ -25,7 +25,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework_simplejwt',
+    'rest_framework_simplejwt_mongoengine',
+    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_mongoengine',
     'drf_spectacular',
     'api',
     'authapp',
@@ -82,7 +84,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'ru'
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Moscow'
 
@@ -110,6 +112,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'authapp.utils.custom_exception_handler',
 }
 
 SPECTACULAR_SETTINGS = {
@@ -126,11 +129,11 @@ SPECTACULAR_SETTINGS = {
     'DEFAULT_SECURITY': [{'BearerAuth': []}],
 }
 
-from rest_framework_simplejwt.settings import api_settings
-
-api_settings.ACCESS_TOKEN_LIFETIME = timedelta(minutes=5)
-api_settings.REFRESH_TOKEN_LIFETIME = timedelta(days=1)
-api_settings.ROTATE_REFRESH_TOKENS = True
-
-api_settings.USER_ID_FIELD = 'id'
-api_settings.USER_ID_CLAIM = 'user_id'
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}

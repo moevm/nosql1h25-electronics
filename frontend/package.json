@@ -12,19 +12,26 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.2.5",
     "@mui/icons-material": "^7.0.2",
     "@mui/lab": "^7.0.0-beta.11",
     "@mui/material": "^7.0.2",
+    "@mui/x-date-pickers": "^7.28.3",
+    "dayjs": "^1.11.13",
     "framer-motion": "^12.7.4",
+    "mui-tel-input": "^9.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.55.0",
     "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^7.5.0",
     "react-slick": "^0.30.3",
-    "slick-carousel": "^1.8.1"
+    "slick-carousel": "^1.8.1",
+    "ts-deepmerge": "^7.0.2"  
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/node": "^22.14.1",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/react-slick": "^0.23.13",

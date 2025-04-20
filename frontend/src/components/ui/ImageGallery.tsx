@@ -7,8 +7,8 @@ type ProductGalleryProps = {
   images: string[];
 };
 
-const ImageGallery: React.FC<ProductGalleryProps> = ({ images }: { images: string[] }) => {
-  const sliderRef = useRef<any>(null);
+const ImageGallery = ({ images }: ProductGalleryProps) => {
+  const sliderRef = useRef<Slider>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const sliderSettings = {

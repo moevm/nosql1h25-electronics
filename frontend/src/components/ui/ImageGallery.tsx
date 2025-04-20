@@ -14,7 +14,7 @@ const ImageGallery = ({ images }: ProductGalleryProps) => {
   const sliderSettings = {
     className: "center",
     dots: true,
-    dotsClass: `slickы-dots`,
+    dotsClass: `slick-dots`,
     swipeToSlide: true,
     infinite: true,
     speed: 500,

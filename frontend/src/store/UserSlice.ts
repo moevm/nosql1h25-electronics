@@ -3,13 +3,33 @@ import { sleep } from '@src/lib/Sleep';
 import { admin, client } from '@src/model/data.example';
 import { User } from '@src/model/user';
 
+export const initLogin = createAsyncThunk(
+  'user/initLogin',
+  async (_: unknown, { rejectWithValue }) => {
+    await sleep(3000);
+
+    const token = localStorage.getItem('token');
+    if (token) return { token, user: localStorage.getItem('role') === 'admin' ? admin : client };
+
+    return rejectWithValue(null);
+  },
+);
+
 export const login = createAsyncThunk(
   'user/login',
   async ({ login, password }: { login: string, password: string }, { rejectWithValue }) => {
     await sleep(1000);
 
-    if (login === 'client' && password === 'password') return { token: '123', user: client };
-    if (login === 'admin' && password === 'password') return { token: '123', user: admin };
+    if (login === 'client' && password === 'password') {
+      localStorage.setItem('token', '123');
+      localStorage.setItem('role', 'client'); // пока нет нормального механизма авторизации сделано так, потом этот параметр снесется
+      return { token: '123', user: client };
+    }
+    if (login === 'admin' && password === 'password') { 
+      localStorage.setItem('token', '123');
+      localStorage.setItem('role', 'admin');
+      return { token: '123', user: admin }; 
+    }
 
     return rejectWithValue('Неправильный логин или пароль');
   },
@@ -17,7 +37,10 @@ export const login = createAsyncThunk(
 
 export const logout = createAsyncThunk(
   'user/logout',
-  () => sleep(1000),
+  async () => {
+    await sleep(1000)
+    localStorage.removeItem('token');
+  },
 );
 
 export interface UserState {
@@ -25,10 +48,12 @@ export interface UserState {
   token?: string;
   error?: string;
   isAuthorizing: boolean;
+  isInit: boolean;
 }
 
 const initialState: UserState = {
   isAuthorizing: false,
+  isInit: true,
 };
 
 export const counterSlice = createSlice({
@@ -47,20 +72,37 @@ export const counterSlice = createSlice({
     }).addCase(login.rejected, (state, action) => {
       state.error = action.payload as string;
       state.isAuthorizing = false;
-    }).addCase(logout.fulfilled, state => {
+    })
+    
+    .addCase(logout.fulfilled, state => {
       state.user = undefined;
       state.token = undefined;
+      localStorage.removeItem('token');
+    })
+    
+    .addCase(initLogin.pending, state => {
+      state.isAuthorizing = true;
+    }).addCase(initLogin.fulfilled, (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isInit = false;
+      state.isAuthorizing = false;
+    }).addCase(initLogin.rejected, state => {
+      state.isInit = false;
+      state.isAuthorizing = false;
     });
   },
   selectors: {
     selectIsAdmin: state => state.user?.role === 'admin',
     selectIsClient: state => state.user?.role === 'client',
     selectIsAuthorized: state => !!state.user,
+    selectIsAuthorizing: state => state.isAuthorizing,
+    selectIsInitialAuthorizing: state => state.isInit && state.isAuthorizing,
 
     selectUser: state => state.user,
     selectToken: state => state.token,
   },
 });
 
-export const { selectIsAdmin, selectIsClient, selectIsAuthorized, selectUser, selectToken } = counterSlice.selectors;
+export const { selectIsAdmin, selectIsClient, selectIsAuthorized, selectIsAuthorizing, selectIsInitialAuthorizing, selectUser, selectToken } = counterSlice.selectors;
 export default counterSlice.reducer;

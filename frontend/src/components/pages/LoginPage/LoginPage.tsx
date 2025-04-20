@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
-import { login, selectIsAuthorized } from '@src/store/UserSlice';
+import { login, selectIsAuthorized, selectIsAuthorizing } from '@src/store/UserSlice';
 import { useEffect } from 'react';
 import style from './LoginPage.module.css';
 
@@ -17,16 +17,13 @@ export const LoginPage = () => {
   const { control, handleSubmit, setError } = useForm<FormInputs>();
 
   const dispatch = useAppDispatch();
-  const isAuthorizing = useAppSelector(state => state.user.isAuthorizing);
+  const isAuthorizing = useAppSelector(selectIsAuthorizing);
   const authError = useAppSelector(state => state.user.error);
-  const isAuthorized = useAppSelector(selectIsAuthorized);
 
   useEffect(() => {
     if (!authError) return;
     setError('login', { message: authError });
   }, [authError]);
-
-  if (isAuthorized) navigate('/requests/client', { replace: true });
 
   const onSubmit = (data: FormInputs) => dispatch(login(data));
 

@@ -8,6 +8,29 @@ https://www.mongodb.com/try/download/community
 
 `pip install -r requirements.txt`
 
+Перед запуском необходимо заполнить файл .env, имеющий структуру:
+
+```
+MONGO_DB_NAME=...
+MONGO_HOST=...
+MONGO_PORT=...
+MONGO_USER=...
+MONGO_PASSWORD=...
+```
+
+Пользователь, указанный в .env должен быть добавлен вручную в базу данных и обладать правами на чтение и запись:
+
+```
+use db_name
+db.createUser({
+  user: "username",
+  pwd: "password",
+  roles: [{ role: "readWrite", db: "db_name" }]
+})
+```
+
+Конкретные данные скрыты, поскольку являются чувствительными данными.
+
 Запуск осуществляется в той же папке командой:
 
 `python manage.py runserver`

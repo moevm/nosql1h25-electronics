@@ -8,57 +8,57 @@ type ProductGalleryProps = {
 };
 
 const ImageGallery: React.FC<ProductGalleryProps> = ({ images }: { images: string[] }) => {
-    const sliderRef = useRef<any>(null);
-    const [currentSlide, setCurrentSlide] = useState(0);
+  const sliderRef = useRef<any>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-    const sliderSettings = {
-        className: "center",
-        dots: true,
-        dotsClass: `slick-dots`,
-        swipeToSlide: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: false,
-        beforeChange: (_: number, next: number) => setCurrentSlide(next),
-        autoplay: true,
-        autoplaySpeed: 2000,
-    }
+  const sliderSettings = {
+    className: "center",
+    dots: true,
+    dotsClass: `slickы-dots`,
+    swipeToSlide: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+    beforeChange: (_: number, next: number) => setCurrentSlide(next),
+    autoplay: true,
+    autoplaySpeed: 2000,
+  }
 
-    const handlePrev = () => {
-        sliderRef.current?.slickPrev();
-    };
+  const handlePrev = () => {
+    sliderRef.current?.slickPrev();
+  };
 
-    const handleNext = () => {
-        sliderRef.current?.slickNext();
-    };
+  const handleNext = () => {
+    sliderRef.current?.slickNext();
+  };
 
-    const handleMouseEnter = () => {
-        sliderRef.current?.slickPause();
-    };
-    
-    const handleMouseLeave = () => {
-        sliderRef.current?.slickPlay();
-    };
+  const handleMouseEnter = () => {
+    sliderRef.current?.slickPause();
+  };
 
-    return (
-        <div className={styles.sliderContainer} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-            <Slider ref={sliderRef} {...sliderSettings}>
-                {images.map((src, idx) => (
-                    <img src={src} alt={`Фото ${idx}`} className={styles.slideImage}/>
-                ))}
-            </Slider>
+  const handleMouseLeave = () => {
+    sliderRef.current?.slickPlay();
+  };
 
-            <div className={`${styles.navZone} ${styles.leftNav}`} onClick={handlePrev}>
-                <ChevronLeft className={styles.arrowIcon} />
-            </div>
+  return (
+    <div className={styles.sliderContainer} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <Slider ref={sliderRef} {...sliderSettings}>
+        {images.map((src, idx) => (
+          <img src={src} alt={`Фото ${idx}`} className={styles.slideImage} />
+        ))}
+      </Slider>
 
-            <div className={`${styles.navZone} ${styles.rightNav}`} onClick={handleNext}>
-                <ChevronRight className={styles.arrowIcon} />
-            </div>
-        </div>
-    );
+      <div className={`${styles.navZone} ${styles.leftNav}`} onClick={handlePrev}>
+        <ChevronLeft className={styles.arrowIcon} />
+      </div>
+
+      <div className={`${styles.navZone} ${styles.rightNav}`} onClick={handleNext}>
+        <ChevronRight className={styles.arrowIcon} />
+      </div>
+    </div>
+  );
 };
 
 export default ImageGallery;

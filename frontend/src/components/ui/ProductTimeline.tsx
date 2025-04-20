@@ -32,7 +32,7 @@ const colorMap: Record<string, "primary" | "success" | "warning" | "error" | "in
   Closed: 'success',
 };
 
-const getDescription = (item: any) => {
+const getDescription = (item: TimelineItemType) => {
   switch (item.type) {
     case 'Created':
       return 'Заявка создана';

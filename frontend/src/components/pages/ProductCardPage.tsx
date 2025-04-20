@@ -1,9 +1,14 @@
 import { Box, Button, Container, Grid, Paper, Typography } from "@mui/material";
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
 import ImageGallery from "../ui/ImageGallery";
 import ProductTimeline, { TimelineItemType } from "../ui/ProductTimeline";
+import { Request } from '@src/api/models/Request';
+import { ApiService } from "@src/api";
+import NotFoundPage from "./NotFoundPage";
+import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
+import { AxiosError } from "axios";
 
 const mockData = {
   title: 'Ноутбук Lenovo ThinkPad',
@@ -51,14 +56,34 @@ const mockData = {
 };
 
 const ProductCardPage = () => {
-  const [product, setProduct] = useState<null | typeof mockData>(null);
+  const { id } = useParams<{ id: string }>();
+  
+  if(!id) {
+    return <NotFoundPage/>;
+  }
+  
+  const [product, setProduct] = useState<null | Request>(null);
+  const [error, setError] = useState<ErrorProps | null>(null);
 
   useEffect(() => {
-    // Заглушка под загрузку с сервера
-    setTimeout(() => {
-      setProduct(mockData);
-    }, 1000);
-  }, []);
+    if (!id) return;
+
+    ApiService.apiRequestsRetrieve({ id })
+      .then((data) => {
+        setProduct(data);
+      })
+      .catch((err) => {
+        setError({
+          title: err.code,
+          message: err.message,
+          showBackButton: false
+        });
+      });
+  }, [id]);
+
+  if(error){
+    return <ErrorMessage {...error}/>
+  }
 
   if (!product) {
     return <Loader />;
@@ -78,7 +103,7 @@ const ProductCardPage = () => {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={10}>
-              <ImageGallery images={mockData.images} />
+              <ImageGallery images={product.photos} />
             </Paper>
           </Grid>
 
@@ -100,7 +125,7 @@ const ProductCardPage = () => {
         <Typography variant="h5" gutterBottom>
           История операций
         </Typography>
-        <ProductTimeline timeline={product.timeline} />
+        <ProductTimeline timeline={product.statuses} />
       </Paper>
     </Container>
   );

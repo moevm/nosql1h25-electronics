@@ -52,6 +52,8 @@ const getDescription = (item: TimelineItemType) => {
 };
 
 const ProductTimeline = ({ timeline }: { timeline: TimelineItemType[] }) => {
+  return <Typography>Скоро добавим...</Typography>;
+
   const { ref, inView } = useInView({ threshold: 0.2 });
 
   return (

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-api": "bash ./generate-api.sh",
+    "generate-api-win": "powershell -ExecutionPolicy Bypass -File ./generate-api.ps1"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -17,9 +19,12 @@
     "@mui/lab": "^7.0.0-beta.11",
     "@mui/material": "^7.0.2",
     "@mui/x-date-pickers": "^7.28.3",
+    "axios": "^1.8.4",
     "dayjs": "^1.11.13",
+    "dotenv": "^16.5.0",
     "framer-motion": "^12.7.4",
     "mui-tel-input": "^9.0.0",
+    "openapi-typescript-codegen": "^0.29.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
@@ -27,7 +32,7 @@
     "react-router-dom": "^7.5.0",
     "react-slick": "^0.30.3",
     "slick-carousel": "^1.8.1",
-    "ts-deepmerge": "^7.0.2"  
+    "ts-deepmerge": "^7.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

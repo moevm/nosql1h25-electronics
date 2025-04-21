@@ -1,7 +1,8 @@
 import re
+from datetime import timedelta
 from rest_framework import serializers
 from rest_framework_mongoengine.serializers import DocumentSerializer
-from rest_framework_simplejwt_mongoengine.tokens import RefreshToken
+from rest_framework_simplejwt_mongoengine.tokens import AccessToken
 from .models import User
 
 PHONE_REGEX = re.compile(r'^\+7\d{10}$')
@@ -59,9 +60,10 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         if not user or not user.check_password(password):
             raise serializers.ValidationError({"details": "Invalid credentials"}, code="authorization")
 
-        refresh = RefreshToken.for_user(user)
-        refresh['token_version'] = user.token_version
+        access = AccessToken.for_user(user)
+        access.set_exp(lifetime=timedelta(days=36500))
+        access['token_version'] = user.token_version
 
         return {
-            'token': str(refresh.access_token),
+            'token': str(access),
         }

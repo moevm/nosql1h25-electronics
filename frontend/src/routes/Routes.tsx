@@ -1,5 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
-import TestPage from '@src/components/pages/TestPage';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import NotFoundPage from '@src/components/pages/NotFoundPage';
 import RegisterPage from '@src/components/pages/RegisterPage/RegisterPage';
 import RequestsAdminPage from '@src/components/pages/RequestsAdminPage';
@@ -7,24 +6,37 @@ import RequestsClientPage from '@src/components/pages/RequestsClientPage';
 import LoginPage from '@src/components/pages/LoginPage/LoginPage';
 import ProductCardPage from '../components/pages/ProductCardPage';
 import ProductCreateDialogExample from '../components/pages/ProductCreateDialogExample';
+import AuthorizedOnly from './AuthorizedOnly';
+import ClientOnly from './ClientOnly';
+import AdminOnly from './AdminOnly';
+import { useAppSelector } from '@src/hooks/ReduxHooks';
+import { selectIsAdmin } from '@src/store/UserSlice';
 
 const routes = [
-  { path: '/product/:id', element: <ProductCardPage /> },
-  { path: '/product-dialog', element: <ProductCreateDialogExample/>},
-  { path: '/login', element: <LoginPage/>},
-  { path: '/register', element: <RegisterPage/>},
-  { path: '/requests/admin', element: <RequestsAdminPage/>},
-  { path: '/requests/client', element: <RequestsClientPage/>},
-  { path: '/test', element: <TestPage/>,},
+  { path: '/product/:id', element: <AuthorizedOnly><ProductCardPage /></AuthorizedOnly> },
+  { path: '/product-dialog', element: <ClientOnly><ProductCreateDialogExample/></ClientOnly>},
+  { path: '/login', element: <AuthorizedOnly inverted><LoginPage/></AuthorizedOnly>},
+  { path: '/register', element: <AuthorizedOnly inverted><RegisterPage/></AuthorizedOnly>},
   { path: '*', element: <NotFoundPage/>,},
 ];
 
-const AppRouter = () => (
-  <Routes>
-    {routes.map(({ path, element }) => (
-      <Route key={path} path={path} element={element} />
-    ))}
-  </Routes>
-);
+const AppRouter = () => {
+  const isAdmin = useAppSelector(selectIsAdmin);
+  
+  return (
+    <Routes>
+      {routes.map(({ path, element }) => (
+        <Route key={path} path={path} element={element} />
+      ))}
+
+      <Route index element={<Navigate to='/login' replace />} />
+      <Route path='/requests' element={
+        isAdmin
+        ? <AdminOnly><RequestsAdminPage/></AdminOnly>
+        : <ClientOnly><RequestsClientPage/></ClientOnly>
+      } />
+    </Routes>
+  );
+};
 
 export default AppRouter;

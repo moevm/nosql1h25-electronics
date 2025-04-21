@@ -1,13 +1,12 @@
 import axios from 'axios';
 import requestInterceptor from './middleware/requestInterceptor';
 import errorInterceptor from './middleware/errorInterceptor';
-import forbiddenErrorInterceptor from './middleware/forbiddenErrorInterceptor';
 
 const apiClient = axios.create({
-  baseURL: process.env.BASE_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_BASE_URL || 'http://localhost:8000',
 });
 
 apiClient.interceptors.request.use(requestInterceptor);
-apiClient.interceptors.response.use(errorInterceptor, forbiddenErrorInterceptor);
+apiClient.interceptors.response.use(errorInterceptor);
 
 export default apiClient;

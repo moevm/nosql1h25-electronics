@@ -3,7 +3,7 @@ import requestInterceptor from './middleware/requestInterceptor';
 import errorInterceptor from './middleware/errorInterceptor';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_BASE_URL || 'http://localhost:8000',
 });
 
 apiClient.interceptors.request.use(requestInterceptor);

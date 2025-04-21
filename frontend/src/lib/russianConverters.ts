@@ -1,30 +1,29 @@
-import type { Status } from '@src/model/status';
-import { Category } from '@src/model/category';
+import type { CategoryEnum } from '@src/api';
 
-export const statusTypeToRussian = (type: Status['type']): string => {
-  const typeMap: Record<typeof type, string> = {
-    created: 'Создан',
+export const statusTypeToRussian = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    created_status: 'Создан',
     price_offer: 'Предложена цена',
     price_accept: 'Цена подтверждена',
     date_offer: 'Предложена дата встречи',
     date_accept: 'Дата встречи подтверждена',
-    closed: 'Закрыта',
+    closed_status: 'Закрыта',
   };
 
-  return typeMap[type];
+  return typeMap[type] ?? 'Неизвестный статус';
 };
 
-export const categoryToRussian = (category: Category): string => {
-  const categoryMap: Record<Category, string> = {
-    [Category.Laptop]: 'Ноутбук',
-    [Category.Smartphone]: 'Смартфон',
-    [Category.Tablet]: 'Планшет',
-    [Category.PC]: 'Персональный компьютер',
-    [Category.TV]: 'Телевизор',
-    [Category.Audio]: 'Наушники и колонки',
-    [Category.Console]: 'Игровые приставки',
-    [Category.Periphery]: 'Компьютерная периферия',
-    [Category.Other]: 'Прочее',
+export const categoryToRussian = (category: CategoryEnum): string => {
+  const categoryMap: Record<CategoryEnum, string> = {
+    laptop: 'Ноутбук',
+    smartphone: 'Смартфон',
+    tablet: 'Планшет',
+    pc: 'Персональный компьютер',
+    tv: 'Телевизор',
+    audio: 'Наушники и колонки',
+    console: 'Игровые приставки',
+    periphery: 'Компьютерная периферия',
+    other: 'Прочее',
   };
 
   return categoryMap[category];

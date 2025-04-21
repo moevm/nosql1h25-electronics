@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import json
 from pymongo import MongoClient
 from bson import ObjectId
+import base64
+from datetime import datetime
 
 load_dotenv()
 
@@ -26,13 +28,26 @@ def convert_objectids(obj):
                     new_obj[k] = ObjectId(v)
                 except Exception:
                     new_obj[k] = v
+            elif k == 'timestamp' and isinstance(v, str):
+                try:
+                    new_obj[k] = datetime.fromisoformat(v.replace('Z', '+00:00'))
+                except Exception:
+                    new_obj[k] = v
+            elif k == 'data' and isinstance(v, str):
+                try:
+                    new_obj[k] = base64.b64decode(v)
+                except Exception:
+                    new_obj[k] = v
+            elif k == 'photos' and isinstance(v, list):
+                new_obj[k] = [convert_objectids(item) for item in v]
+            elif k == 'statuses' and isinstance(v, list):
+                new_obj[k] = [convert_objectids(item) for item in v]
             else:
                 new_obj[k] = convert_objectids(v)
         return new_obj
     elif isinstance(obj, list):
         new_list = []
         for item in obj:
-            # Если элемент - строка и выглядит как ObjectId, преобразуем
             if isinstance(item, str) and len(item) == 24:
                 try:
                     new_list.append(ObjectId(item))
@@ -43,7 +58,6 @@ def convert_objectids(obj):
         return new_list
     else:
         return obj
-
 
 try:
     # подключаемся рутом чтобы все заполнить и создать

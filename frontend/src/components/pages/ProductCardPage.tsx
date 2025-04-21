@@ -57,32 +57,37 @@ const mockData = {
 
 const ProductCardPage = () => {
   const { id } = useParams<{ id: string }>();
-  
-  if(!id) {
-    return <NotFoundPage/>;
+
+  if (!id) {
+    return <NotFoundPage />;
   }
-  
+
   const [product, setProduct] = useState<null | Request>(null);
-  const [error, setError] = useState<ErrorProps | null>(null);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [errorProps, setErrorProps] = useState<ErrorProps | null>(null);
 
   useEffect(() => {
     if (!id) return;
 
-    ApiService.apiRequestsRetrieve({ id })
-      .then((data) => {
-        setProduct(data);
-      })
-      .catch((err) => {
-        setError({
-          title: err.code,
-          message: err.message,
-          showBackButton: false
+    const loadProduct = async (id: string) => {
+      setProduct(await ApiService.apiRequestsRetrieve({ id }));
+    }
+    
+    try {
+      loadProduct(id)
+    } catch (error) {
+      setIsError(true);
+      if (error instanceof AxiosError && error.response) {
+        setErrorProps({
+          title: `${error.response.status}: ${error.response.statusText}`,
+          message: error.message
         });
-      });
+      }
+    }
   }, [id]);
 
-  if(error){
-    return <ErrorMessage {...error}/>
+  if(isError){
+    return <ErrorMessage {...(errorProps || {})} />;
   }
 
   if (!product) {

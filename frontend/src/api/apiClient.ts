@@ -7,6 +7,6 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(requestInterceptor);
-apiClient.interceptors.response.use(errorInterceptor);
+apiClient.interceptors.response.use(response => response, errorInterceptor);
 
 export default apiClient;

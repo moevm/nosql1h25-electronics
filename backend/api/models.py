@@ -100,7 +100,7 @@ class ClosedStatus(Status):
         return obj
 
 
-class Request(Document):
+class ProductRequest(Document):
     title = StringField(required=True)
     description = StringField(required=True)
     address = StringField(required=True)

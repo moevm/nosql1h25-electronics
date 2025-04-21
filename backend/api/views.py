@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from .models import Request, Photo, CreatedStatus
+from .models import ProductRequest, Photo, CreatedStatus
 from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
 from datetime import datetime, time
 from bson import ObjectId
@@ -16,7 +16,7 @@ import base64
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
-    queryset = Request.objects.all()
+    queryset = ProductRequest.objects.all()
     serializer_class = RequestSerializer
     filter_backends = [OrderingFilter]
 
@@ -57,7 +57,7 @@ class RequestViewSet(ModelViewSet):
         validated_data["user_id"] = request.user.id
 
         try:
-            request_obj = Request(**validated_data)
+            request_obj = ProductRequest(**validated_data)
             request_obj.save()
         except Exception as e:
             return Response(
@@ -114,7 +114,7 @@ class RequestViewSet(ModelViewSet):
                 )
             me = True
 
-        queryset = Request.objects.all()
+        queryset = ProductRequest.objects.all()
 
         if title:
             queryset = queryset.filter(title__icontains=title)
@@ -202,10 +202,10 @@ class RequestViewSet(ModelViewSet):
     )
     def retrieve(self, request, pk=None, *args, **kwargs):
         try:
-            instance = Request.objects.get(id=pk)
+            instance = ProductRequest.objects.get(id=pk)
         except:
             return Response(
-                {"details": "Request not found"},
+                {"details": "ProductRequest not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -279,7 +279,7 @@ class PhotoViewSet(ModelViewSet):
 
 
 class DatabaseBackupViewSet(ModelViewSet):
-    queryset = Request.objects.all()
+    queryset = ProductRequest.objects.all()
     serializer_class = RequestSerializer
 
     @extend_schema(
@@ -317,7 +317,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
         # Экспорт requests
 
-        for obj in Request.objects.all():
+        for obj in ProductRequest.objects.all():
             obj_data = obj.to_mongo().to_dict()
 
             obj_data = {key: handle_objectid(value) for key, value in obj_data.items()}
@@ -356,9 +356,9 @@ class DatabaseBackupViewSet(ModelViewSet):
             for obj_data in data.get("requests", []):
                 fields = set(obj_data.keys())
                 if not required_request_fields.issubset(fields):
-                    raise ValueError(f"Missing required fields in Request: {required_request_fields - fields}")
+                    raise ValueError(f"Missing required fields in ProductRequest: {required_request_fields - fields}")
                 if not fields.issubset(required_request_fields):
-                    raise ValueError(f"Unexpected fields in Request: {fields - required_request_fields}")
+                    raise ValueError(f"Unexpected fields in ProductRequest: {fields - required_request_fields}")
 
                 for status in obj_data.get("statuses", []):
                     required_status_fields = {"type", "timestamp", "_cls"}
@@ -449,7 +449,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
             self.validate_backup_data(data)
 
-            Request.objects.all().delete()
+            ProductRequest.objects.all().delete()
             Photo.objects.all().delete()
             User.objects.all().delete()
 
@@ -464,7 +464,7 @@ class DatabaseBackupViewSet(ModelViewSet):
                                 custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
                             except ValueError:
                                 custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
-                Request(**obj_data).save()
+                ProductRequest(**obj_data).save()
 
             for obj_data in data.get("photos", []):
                 if "_id" in obj_data:

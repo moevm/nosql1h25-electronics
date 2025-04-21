@@ -1,4 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, Box, Typography, TextField, MenuItem, DialogActions, Button, Grid, Avatar } from "@mui/material";
+import { ApiService } from "@src/api";
+import { CategoryEnum } from "@src/api/models/CategoryEnum";
+import { categoryToRussian } from "@src/lib/russianConverters";
 import { useEffect, useMemo, useState } from "react";
 
 interface CreateRequestDialogProps {
@@ -7,7 +10,17 @@ interface CreateRequestDialogProps {
   onSubmit: (data: any) => void;
 }
 
-const fakeCategories = ['Ноутбуки', 'Телефоны', 'Видеокарты', 'Роботы'];
+const categoryEnumValues: CategoryEnum[] = [
+  'laptop', 
+  'smartphone', 
+  'tablet', 
+  'pc', 
+  'tv', 
+  'audio', 
+  'console', 
+  'periphery', 
+  'other'
+];
 
 const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogProps) => {
   const [form, setForm] = useState({
@@ -44,8 +57,10 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validate()) {
+      //ApiService.apiPhotosCreate();
+      //ApiService.apiRequestsCreate({...form});
       onSubmit(form);
       onClose();
     }
@@ -89,7 +104,7 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
         <TextField select fullWidth label="Категория" value={form.category}
           onChange={handleChange('category')} margin="normal"
           error={!!errors.category} helperText={errors.category}>
-          {fakeCategories.map((cat) => (
+          {categoryEnumValues.map((cat) => (
             <MenuItem key={cat} value={cat}>
               {cat}
             </MenuItem>

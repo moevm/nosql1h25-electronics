@@ -191,8 +191,7 @@ export const RequestsClientPage = () => {
               variant='contained'
               disabled={isLoggingOut}
               onClick={() => {
-                dispatch(logout())
-                dispatch(reset());
+                dispatch(logout()).then(() => dispatch(reset()));
               }}
             >
               { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }

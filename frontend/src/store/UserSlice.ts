@@ -1,50 +1,56 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { sleep } from '@src/lib/Sleep';
-import { admin, client } from '@src/model/data.example';
-import { User } from '@src/model/user';
+import { AuthService, UserResponse, ApiError } from '@src/api';
 
 export const initLogin = createAsyncThunk(
   'user/initLogin',
   async (_: unknown, { rejectWithValue }) => {
-    await sleep(1000);
-
     const token = localStorage.getItem('token');
-    if (token) return { token, user: localStorage.getItem('role') === 'admin' ? admin : client };
+    if (!token) return rejectWithValue(null);
 
-    return rejectWithValue(null);
+    try {
+      const user = await AuthService.authMeRetrieve();
+
+      return { token, user };
+    } catch {
+      return rejectWithValue(null);
+    }
   },
 );
 
 export const login = createAsyncThunk(
   'user/login',
   async ({ login, password }: { login: string, password: string }, { rejectWithValue }) => {
-    await sleep(1000);
 
-    if (login === 'client' && password === 'password') {
-      localStorage.setItem('token', '123');
-      localStorage.setItem('role', 'client'); // пока нет нормального механизма авторизации сделано так, потом этот параметр снесется
-      return { token: '123', user: client };
-    }
-    if (login === 'admin' && password === 'password') { 
-      localStorage.setItem('token', '123');
-      localStorage.setItem('role', 'admin');
-      return { token: '123', user: admin }; 
-    }
+    try {
+      const { token } = await AuthService.authLoginCreate({ requestBody: { login, password }});
+      localStorage.setItem('token', token);
+      const user = await AuthService.authMeRetrieve();
 
-    return rejectWithValue('Неправильный логин или пароль');
+      return { token, user };
+    } catch (e) {
+      localStorage.clear();
+      if (!(e instanceof ApiError)) return rejectWithValue('Неизвестная ошибка');
+
+      if (e.body?.details === 'Invalid input') return rejectWithValue('Неправильный логин или пароль');
+      
+      return rejectWithValue('Неизвестная ошибка');
+    }
   },
 );
 
 export const logout = createAsyncThunk(
   'user/logout',
   async () => {
-    await sleep(1000)
-    localStorage.clear();
+    try {
+      await AuthService.authLogoutCreate();
+    } finally {
+      localStorage.clear();
+    }
   },
 );
 
 export interface UserState {
-  user?: User;
+  user?: UserResponse;
   token?: string;
   error?: string;
   isAuthorizing: boolean;
@@ -79,6 +85,10 @@ export const userSlice = createSlice({
     .addCase(logout.pending, state => {
       state.isLoggingOut = true;
     }).addCase(logout.fulfilled, state => {
+      state.user = undefined;
+      state.token = undefined;
+      state.isLoggingOut = false;
+    }).addCase(logout.rejected, state => {
       state.user = undefined;
       state.token = undefined;
       state.isLoggingOut = false;

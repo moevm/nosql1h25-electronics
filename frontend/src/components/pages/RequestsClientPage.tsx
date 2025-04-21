@@ -237,7 +237,7 @@ export const RequestsClientPage = () => {
 
           { isRequestsLoading 
             ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 
-            : requestsData !== undefined 
+            : !!requestsData && requestsData.length > 0
             ? <RequestsTable requests={requestsData}/> 
             : <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><Typography variant='h4'>Пусто</Typography></Box> 
           }

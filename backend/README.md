@@ -52,7 +52,7 @@ docker compose build --no-cache && docker compose up
 
 ```
 MONGO_DB_NAME=db_name
-MONGO_HOST=mongodb
+MONGO_HOST=db
 MONGO_PORT=27017
 MONGO_PASSWORD=user_password
 MONGO_USER=username

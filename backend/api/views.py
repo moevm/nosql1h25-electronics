@@ -170,7 +170,7 @@ class RequestViewSet(ModelViewSet):
 
         if author:
             matching_users = [
-                user.id for user in User.objects.filter(fullname=author)
+                user.id for user in User.objects.filter(fullname__icontains=author)
             ]
 
             queryset = queryset.filter(user_id__in=matching_users)

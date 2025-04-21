@@ -2,8 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Photo } from '../models/Photo';
 import type { PhotoResponse } from '../models/PhotoResponse';
-import type { Request } from '../models/Request';
+import type { ProductRequest } from '../models/ProductRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -44,23 +45,29 @@ export class ApiService {
      * @returns PhotoResponse
      * @throws ApiError
      */
-    public static apiPhotosCreate(): CancelablePromise<PhotoResponse> {
+    public static apiPhotosCreate({
+        requestBody,
+    }: {
+        requestBody: Photo,
+    }): CancelablePromise<PhotoResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/photos/',
+            body: requestBody,
+            mediaType: 'application/json',
         });
     }
     /**
-     * Получить фото
-     * Позволяет получить фото по его ID.
-     * @returns any No response body
+     * Загрузить фото
+     * Загружает фото в базу данных.
+     * @returns PhotoResponse
      * @throws ApiError
      */
     public static apiPhotosRetrieve({
         id,
     }: {
         id: string,
-    }): CancelablePromise<any> {
+    }): CancelablePromise<PhotoResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/photos/{id}/',
@@ -72,7 +79,7 @@ export class ApiService {
     /**
      * Получить список заявок
      * Возвращает список заявок с возможностью фильтрации по разным критериям.
-     * @returns Request
+     * @returns ProductRequest
      * @throws ApiError
      */
     public static apiRequestsList({
@@ -122,7 +129,7 @@ export class ApiService {
          * Фильтрация по дате окончания (формат YYYY-MM-DD)
          */
         to?: string,
-    }): CancelablePromise<Array<Request>> {
+    }): CancelablePromise<Array<ProductRequest>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/requests/',
@@ -142,14 +149,14 @@ export class ApiService {
     /**
      * Создать новую заявку
      * Позволяет пользователю создать новую заявку.
-     * @returns Request
+     * @returns ProductRequest
      * @throws ApiError
      */
     public static apiRequestsCreate({
         requestBody,
     }: {
-        requestBody: Request,
-    }): CancelablePromise<Request> {
+        requestBody: ProductRequest,
+    }): CancelablePromise<ProductRequest> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/requests/',
@@ -160,42 +167,20 @@ export class ApiService {
     /**
      * Получить заявку
      * Позволяет получить заявку по её ID с проверкой прав доступа.
-     * @returns Request
+     * @returns ProductRequest
      * @throws ApiError
      */
     public static apiRequestsRetrieve({
         id,
     }: {
         id: string,
-    }): CancelablePromise<Request> {
+    }): CancelablePromise<ProductRequest> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/requests/{id}/',
             path: {
                 'id': id,
             },
-        });
-    }
-    /**
-     * ViewSet для работы с заявками
-     * @returns Request
-     * @throws ApiError
-     */
-    public static apiRequestsUpdate({
-        id,
-        requestBody,
-    }: {
-        id: string,
-        requestBody: Request,
-    }): CancelablePromise<Request> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/requests/{id}/',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
         });
     }
     /**

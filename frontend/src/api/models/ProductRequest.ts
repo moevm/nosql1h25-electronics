@@ -41,7 +41,7 @@ import type { CategoryEnum } from './CategoryEnum';
  *
  * All other fields are mapped to ``DocumentField`` and probably will work wrong.
  */
-export type Request = {
+export type ProductRequest = {
     readonly id: string;
     readonly statuses: Array<any>;
     readonly user_id: string;

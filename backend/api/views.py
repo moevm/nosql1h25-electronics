@@ -228,7 +228,7 @@ class PhotoViewSet(ModelViewSet):
     @extend_schema(
         summary="Загрузить фото",
         description="Загружает фото в базу данных.",
-        request=None,
+        request=PhotoSerializer,
         responses={
             200: PhotoResponseSerializer,
             400: ErrorResponseSerializer,

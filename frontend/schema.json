@@ -134,6 +134,26 @@
                 "tags": [
                     "api"
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Photo"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Photo"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Photo"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "security": [
                     {
                         "JWT": []
@@ -186,8 +206,8 @@
         "/api/photos/{id}/": {
             "get": {
                 "operationId": "api_photos_retrieve",
-                "description": "Позволяет получить фото по его ID.",
-                "summary": "Получить фото",
+                "description": "Загружает фото в базу данных.",
+                "summary": "Загрузить фото",
                 "parameters": [
                     {
                         "in": "path",
@@ -208,7 +228,24 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "No response body"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PhotoResponse"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": ""
                     },
                     "401": {
                         "content": {
@@ -220,7 +257,7 @@
                         },
                         "description": ""
                     },
-                    "404": {
+                    "403": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -328,7 +365,7 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/Request"
+                                        "$ref": "#/components/schemas/ProductRequest"
                                     }
                                 }
                             }
@@ -378,17 +415,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Request"
+                                "$ref": "#/components/schemas/ProductRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/Request"
+                                "$ref": "#/components/schemas/ProductRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/Request"
+                                "$ref": "#/components/schemas/ProductRequest"
                             }
                         }
                     },
@@ -404,7 +441,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Request"
+                                    "$ref": "#/components/schemas/ProductRequest"
                                 }
                             }
                         },
@@ -471,7 +508,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Request"
+                                    "$ref": "#/components/schemas/ProductRequest"
                                 }
                             }
                         },
@@ -502,60 +539,6 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "put": {
-                "operationId": "api_requests_update",
-                "description": "ViewSet для работы с заявками",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "api"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Request"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Request"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Request"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Request"
                                 }
                             }
                         },
@@ -971,6 +954,23 @@
                     "details"
                 ]
             },
+            "Photo": {
+                "type": "object",
+                "description": "Serializer for Documents.\n\nRecognized primitve fields:\n\n    * ``StringField``\n    * ``URLField``\n    * ``EmailField``\n    * ``IntField``\n    * ``LongField``\n    * ``FloatField``\n    * ``DecimalField``\n    * ``BooleanField``\n    * ``DateTimeField``\n    * ``ComplexDateTimeField``\n    * ``ObjectIdField``\n    * ``SequenceField`` (assumes it has integer counter)\n    * ``UUIDField``\n    * ``GeoPointField``\n    * ``GeoJsonBaseField`` (all those fields)\n    * ``DateField``\n\nCompound fields: ``ListField`` and ``DictField`` are mapped to corresponding DRF fields, with respect to nested field specification.\n\nThe ``ReferenceField`` is handled like ``ForeignKey`` in DRF: there nested serializer autogenerated if serializer depth greater then 0, otherwise it's handled by it's own (results as ``str(id)``).\n\nFor ``EmbeddedDocumentField`` also nested serializer autogenerated for non-zero depth, otherwise it is skipped. TODO: THIS IS PROBABLY WRONG AND SHOULD BE FIXED.\n\nGeneric fields ``GenericReferenceField`` and ``GenericEmbeddedDocumentField`` are handled by their own with corresponding serializer fields.\n\nNot well supported or untested:\n\n    ``FileField``\n    ``ImageField``\n    ``BinaryField``\n\nAll other fields are mapped to ``DocumentField`` and probably will work wrong.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "data": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "data",
+                    "id"
+                ]
+            },
             "PhotoResponse": {
                 "type": "object",
                 "description": "Serializer for Documents.\n\nRecognized primitve fields:\n\n    * ``StringField``\n    * ``URLField``\n    * ``EmailField``\n    * ``IntField``\n    * ``LongField``\n    * ``FloatField``\n    * ``DecimalField``\n    * ``BooleanField``\n    * ``DateTimeField``\n    * ``ComplexDateTimeField``\n    * ``ObjectIdField``\n    * ``SequenceField`` (assumes it has integer counter)\n    * ``UUIDField``\n    * ``GeoPointField``\n    * ``GeoJsonBaseField`` (all those fields)\n    * ``DateField``\n\nCompound fields: ``ListField`` and ``DictField`` are mapped to corresponding DRF fields, with respect to nested field specification.\n\nThe ``ReferenceField`` is handled like ``ForeignKey`` in DRF: there nested serializer autogenerated if serializer depth greater then 0, otherwise it's handled by it's own (results as ``str(id)``).\n\nFor ``EmbeddedDocumentField`` also nested serializer autogenerated for non-zero depth, otherwise it is skipped. TODO: THIS IS PROBABLY WRONG AND SHOULD BE FIXED.\n\nGeneric fields ``GenericReferenceField`` and ``GenericEmbeddedDocumentField`` are handled by their own with corresponding serializer fields.\n\nNot well supported or untested:\n\n    ``FileField``\n    ``ImageField``\n    ``BinaryField``\n\nAll other fields are mapped to ``DocumentField`` and probably will work wrong.",
@@ -984,32 +984,7 @@
                     "id"
                 ]
             },
-            "Register": {
-                "type": "object",
-                "description": "Serializer for Documents.\n\nRecognized primitve fields:\n\n    * ``StringField``\n    * ``URLField``\n    * ``EmailField``\n    * ``IntField``\n    * ``LongField``\n    * ``FloatField``\n    * ``DecimalField``\n    * ``BooleanField``\n    * ``DateTimeField``\n    * ``ComplexDateTimeField``\n    * ``ObjectIdField``\n    * ``SequenceField`` (assumes it has integer counter)\n    * ``UUIDField``\n    * ``GeoPointField``\n    * ``GeoJsonBaseField`` (all those fields)\n    * ``DateField``\n\nCompound fields: ``ListField`` and ``DictField`` are mapped to corresponding DRF fields, with respect to nested field specification.\n\nThe ``ReferenceField`` is handled like ``ForeignKey`` in DRF: there nested serializer autogenerated if serializer depth greater then 0, otherwise it's handled by it's own (results as ``str(id)``).\n\nFor ``EmbeddedDocumentField`` also nested serializer autogenerated for non-zero depth, otherwise it is skipped. TODO: THIS IS PROBABLY WRONG AND SHOULD BE FIXED.\n\nGeneric fields ``GenericReferenceField`` and ``GenericEmbeddedDocumentField`` are handled by their own with corresponding serializer fields.\n\nNot well supported or untested:\n\n    ``FileField``\n    ``ImageField``\n    ``BinaryField``\n\nAll other fields are mapped to ``DocumentField`` and probably will work wrong.",
-                "properties": {
-                    "login": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "type": "string",
-                        "writeOnly": true
-                    },
-                    "fullname": {
-                        "type": "string"
-                    },
-                    "phone": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "fullname",
-                    "login",
-                    "password",
-                    "phone"
-                ]
-            },
-            "Request": {
+            "ProductRequest": {
                 "type": "object",
                 "description": "Serializer for Documents.\n\nRecognized primitve fields:\n\n    * ``StringField``\n    * ``URLField``\n    * ``EmailField``\n    * ``IntField``\n    * ``LongField``\n    * ``FloatField``\n    * ``DecimalField``\n    * ``BooleanField``\n    * ``DateTimeField``\n    * ``ComplexDateTimeField``\n    * ``ObjectIdField``\n    * ``SequenceField`` (assumes it has integer counter)\n    * ``UUIDField``\n    * ``GeoPointField``\n    * ``GeoJsonBaseField`` (all those fields)\n    * ``DateField``\n\nCompound fields: ``ListField`` and ``DictField`` are mapped to corresponding DRF fields, with respect to nested field specification.\n\nThe ``ReferenceField`` is handled like ``ForeignKey`` in DRF: there nested serializer autogenerated if serializer depth greater then 0, otherwise it's handled by it's own (results as ``str(id)``).\n\nFor ``EmbeddedDocumentField`` also nested serializer autogenerated for non-zero depth, otherwise it is skipped. TODO: THIS IS PROBABLY WRONG AND SHOULD BE FIXED.\n\nGeneric fields ``GenericReferenceField`` and ``GenericEmbeddedDocumentField`` are handled by their own with corresponding serializer fields.\n\nNot well supported or untested:\n\n    ``FileField``\n    ``ImageField``\n    ``BinaryField``\n\nAll other fields are mapped to ``DocumentField`` and probably will work wrong.",
                 "properties": {
@@ -1059,6 +1034,31 @@
                     "statuses",
                     "title",
                     "user_id"
+                ]
+            },
+            "Register": {
+                "type": "object",
+                "description": "Serializer for Documents.\n\nRecognized primitve fields:\n\n    * ``StringField``\n    * ``URLField``\n    * ``EmailField``\n    * ``IntField``\n    * ``LongField``\n    * ``FloatField``\n    * ``DecimalField``\n    * ``BooleanField``\n    * ``DateTimeField``\n    * ``ComplexDateTimeField``\n    * ``ObjectIdField``\n    * ``SequenceField`` (assumes it has integer counter)\n    * ``UUIDField``\n    * ``GeoPointField``\n    * ``GeoJsonBaseField`` (all those fields)\n    * ``DateField``\n\nCompound fields: ``ListField`` and ``DictField`` are mapped to corresponding DRF fields, with respect to nested field specification.\n\nThe ``ReferenceField`` is handled like ``ForeignKey`` in DRF: there nested serializer autogenerated if serializer depth greater then 0, otherwise it's handled by it's own (results as ``str(id)``).\n\nFor ``EmbeddedDocumentField`` also nested serializer autogenerated for non-zero depth, otherwise it is skipped. TODO: THIS IS PROBABLY WRONG AND SHOULD BE FIXED.\n\nGeneric fields ``GenericReferenceField`` and ``GenericEmbeddedDocumentField`` are handled by their own with corresponding serializer fields.\n\nNot well supported or untested:\n\n    ``FileField``\n    ``ImageField``\n    ``BinaryField``\n\nAll other fields are mapped to ``DocumentField`` and probably will work wrong.",
+                "properties": {
+                    "login": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true
+                    },
+                    "fullname": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "fullname",
+                    "login",
+                    "password",
+                    "phone"
                 ]
             },
             "TokenResponse": {

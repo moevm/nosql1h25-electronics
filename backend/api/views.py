@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from .models import Request, Photo, CreatedStatus
-from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
+from .models import ProductRequest, Photo, CreatedStatus
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
@@ -16,22 +16,22 @@ import base64
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
-    queryset = Request.objects.all()
-    serializer_class = RequestSerializer
+    queryset = ProductRequest.objects.all()
+    serializer_class = ProductRequestSerializer
     filter_backends = [OrderingFilter]
 
     @extend_schema(
         summary="Создать новую заявку",
         description="Позволяет пользователю создать новую заявку.",
-        request=RequestSerializer,
+        request=ProductRequestSerializer,
         responses={
-            201: RequestSerializer,
+            201: ProductRequestSerializer,
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer
         },
     )
-    def create(self, request, *args, **kwargs):
+    def postRequests(self, request, *args, **kwargs):
         """POST запрос для создания заявки с кастомной логикой"""
         user = request.user
         if user.is_admin:
@@ -57,7 +57,7 @@ class RequestViewSet(ModelViewSet):
         validated_data["user_id"] = request.user.id
 
         try:
-            request_obj = Request(**validated_data)
+            request_obj = ProductRequest(**validated_data)
             request_obj.save()
         except Exception as e:
             return Response(
@@ -84,13 +84,13 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
         ],
         responses={
-            200: RequestSerializer(many=True),
+            200: ProductRequestSerializer(many=True),
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
         }
     )
-    def list(self, request, *args, **kwargs):
+    def getRequests(self, request, *args, **kwargs):
         user = request.user
 
         # Получаем параметры фильтрации
@@ -114,7 +114,7 @@ class RequestViewSet(ModelViewSet):
                 )
             me = True
 
-        queryset = Request.objects.all()
+        queryset = ProductRequest.objects.all()
 
         if title:
             queryset = queryset.filter(title__icontains=title)
@@ -170,7 +170,7 @@ class RequestViewSet(ModelViewSet):
 
         if author:
             matching_users = [
-                user.id for user in User.objects.filter(fullname=author)
+                user.id for user in User.objects.filter(fullname__icontains=author)
             ]
 
             queryset = queryset.filter(user_id__in=matching_users)
@@ -194,18 +194,18 @@ class RequestViewSet(ModelViewSet):
         summary="Получить заявку",
         description="Позволяет получить заявку по её ID с проверкой прав доступа.",
         responses={
-            200: RequestSerializer,
+            200: ProductRequestSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
             404: ErrorResponseSerializer,
         }
     )
-    def retrieve(self, request, pk=None, *args, **kwargs):
+    def getRequestsByID(self, request, pk=None, *args, **kwargs):
         try:
-            instance = Request.objects.get(id=pk)
+            instance = ProductRequest.objects.get(id=pk)
         except:
             return Response(
-                {"details": "Request not found"},
+                {"details": "ProductRequest not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -216,7 +216,7 @@ class RequestViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = RequestSerializer(instance)
+        serializer = ProductRequestSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -228,7 +228,7 @@ class PhotoViewSet(ModelViewSet):
     @extend_schema(
         summary="Загрузить фото",
         description="Загружает фото в базу данных.",
-        request=None,
+        request=PhotoSerializer,
         responses={
             200: PhotoResponseSerializer,
             400: ErrorResponseSerializer,
@@ -236,7 +236,7 @@ class PhotoViewSet(ModelViewSet):
             403: ErrorResponseSerializer,
         }
     )
-    def create(self, request, *args, **kwargs):
+    def postPhotos(self, request, *args, **kwargs):
         """POST запрос для загрузки фотографии"""
         user = request.user
 
@@ -265,7 +265,7 @@ class PhotoViewSet(ModelViewSet):
             404: ErrorResponseSerializer,
         }
     )
-    def retrieve(self, request, *args, **kwargs):
+    def getPhotos(self, request, *args, **kwargs):
         """GET запрос для получения фотографии по ID"""
         user = request.user
 
@@ -279,8 +279,8 @@ class PhotoViewSet(ModelViewSet):
 
 
 class DatabaseBackupViewSet(ModelViewSet):
-    queryset = Request.objects.all()
-    serializer_class = RequestSerializer
+    queryset = ProductRequest.objects.all()
+    serializer_class = ProductRequestSerializer
 
     @extend_schema(
         summary="Экспорт резервной копии",
@@ -291,7 +291,7 @@ class DatabaseBackupViewSet(ModelViewSet):
             403: ErrorResponseSerializer,
         }
     )
-    def export_backup(self, request, *args, **kwargs):
+    def getBackup(self, request, *args, **kwargs):
         """Экспорт данных всех коллекций базы данных"""
         user = request.user
         if not user.is_admin:
@@ -317,7 +317,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
         # Экспорт requests
 
-        for obj in Request.objects.all():
+        for obj in ProductRequest.objects.all():
             obj_data = obj.to_mongo().to_dict()
 
             obj_data = {key: handle_objectid(value) for key, value in obj_data.items()}
@@ -356,9 +356,9 @@ class DatabaseBackupViewSet(ModelViewSet):
             for obj_data in data.get("requests", []):
                 fields = set(obj_data.keys())
                 if not required_request_fields.issubset(fields):
-                    raise ValueError(f"Missing required fields in Request: {required_request_fields - fields}")
+                    raise ValueError(f"Missing required fields in ProductRequest: {required_request_fields - fields}")
                 if not fields.issubset(required_request_fields):
-                    raise ValueError(f"Unexpected fields in Request: {fields - required_request_fields}")
+                    raise ValueError(f"Unexpected fields in ProductRequest: {fields - required_request_fields}")
 
                 for status in obj_data.get("statuses", []):
                     required_status_fields = {"type", "timestamp", "_cls"}
@@ -431,7 +431,7 @@ class DatabaseBackupViewSet(ModelViewSet):
             500: ErrorResponseSerializer,
         }
     )
-    def import_backup(self, request, *args, **kwargs):
+    def postBackup(self, request, *args, **kwargs):
         """Импорт данных всех коллекций из файла"""
         user = request.user
         if not user.is_admin:
@@ -449,7 +449,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
             self.validate_backup_data(data)
 
-            Request.objects.all().delete()
+            ProductRequest.objects.all().delete()
             Photo.objects.all().delete()
             User.objects.all().delete()
 
@@ -464,7 +464,7 @@ class DatabaseBackupViewSet(ModelViewSet):
                                 custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
                             except ValueError:
                                 custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
-                Request(**obj_data).save()
+                ProductRequest(**obj_data).save()
 
             for obj_data in data.get("photos", []):
                 if "_id" in obj_data:

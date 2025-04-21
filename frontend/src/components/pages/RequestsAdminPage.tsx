@@ -1,4 +1,4 @@
-import { Button, Paper, Stack, Typography, Select, MenuItem, Box, Container } from '@mui/material';
+import { Button, Paper, Stack, Typography, Select, MenuItem, Box, Container, CircularProgress } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
 import { CheckboxFormField, TextFormField } from '@src/components/ui/FormFields';
@@ -8,13 +8,16 @@ import { Status } from '@src/model/status';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 
-import { requests as requestsData } from '@src/model/data.example';
+import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
+import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
+import { reset, selectAdminForm, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
+import { useEffect } from 'react';
 
-interface FormInputs {
+export interface RequestsAdminFormInputs {
   fromDate?: DateType;
   toDate?: DateType;
   status: Status['type'] | 'any';
-  client?: string;
+  author?: string;
   helpedResolving: boolean;
   category: Category | 'any';
   title?: string;
@@ -22,7 +25,7 @@ interface FormInputs {
 }
 
 interface FormFieldProps {
-  control: Control<FormInputs>;
+  control: Control<RequestsAdminFormInputs>;
 }
 
 const FromDateFormField = (props: FormFieldProps) => (
@@ -130,10 +133,31 @@ const CategoryFormField = (props: FormFieldProps) => (
 );
 
 export const RequestsClientPage = () => {
-  const { control, handleSubmit } = useForm<FormInputs>();
+  const { control, handleSubmit, setValue } = useForm<RequestsAdminFormInputs>();
+  
+  const dispatch = useAppDispatch();
+  const isLoggingOut = useAppSelector(selectIsLoggingOut);
 
-  const onSubmit = (data: FormInputs) => {
-    alert(JSON.stringify(data));
+  const isRequestsLoading = useAppSelector(selectIsLoading);
+  const requestsData = useAppSelector(selectRequests);
+  const fieldsValues = useAppSelector(selectAdminForm);
+
+  useEffect(() => {
+    if (fieldsValues.fromDate) setValue('fromDate', fieldsValues.toDate);
+    if (fieldsValues.toDate) setValue('toDate', fieldsValues.toDate);
+    if (fieldsValues.status) setValue('status', fieldsValues.status);
+    if (fieldsValues.author) setValue('author', fieldsValues.author);
+    if (fieldsValues.helpedResolving) setValue('helpedResolving', fieldsValues.helpedResolving);
+    if (fieldsValues.category) setValue('category', fieldsValues.category);
+    if (fieldsValues.title) setValue('title', fieldsValues.title);
+    if (fieldsValues.description) setValue('description', fieldsValues.description);
+
+    dispatch(updateRequests(null));
+  }, []);
+
+  const onSubmit = (data: RequestsAdminFormInputs) => {
+    dispatch(updateFields(data));
+    dispatch(updateRequests(null));
   };
 
   return (
@@ -147,6 +171,15 @@ export const RequestsClientPage = () => {
             <Button variant='contained'>Экспорт БД</Button>
             <Button variant='contained'>Импорт БД</Button>
             <Button variant='contained'>Статистика</Button>
+            <Button 
+              variant='contained' 
+              disabled={isLoggingOut} 
+              onClick={() => {
+                dispatch(logout()).then(() => dispatch(reset()));
+              }}
+            >
+              { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
+            </Button>
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
@@ -166,7 +199,7 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Клиент:</Typography>
-            <TextFormField placeholder='ФИО' name='client' control={control} />
+            <TextFormField placeholder='ФИО' name='author' control={control} />
           </Stack>
 
           <CheckboxFormField label='Участвовал в разрешении' name='helpedResolving' control={control} />
@@ -192,7 +225,12 @@ export const RequestsClientPage = () => {
             />
           </Box>
 
-          <RequestsTable requests={requestsData}/> 
+          { isRequestsLoading 
+            ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 
+            : !!requestsData && requestsData.length > 0 
+            ? <RequestsTable requests={requestsData}/> 
+            : <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><Typography variant='h4'>Пусто</Typography></Box> 
+          }
         </Stack>
       </Paper>
     </Container>

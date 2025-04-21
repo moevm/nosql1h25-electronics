@@ -8,4 +8,3 @@ pymongo==4.12.0
 python-dotenv==1.1.0
 setuptools==78.1.0
 drf-spectacular==0.28.0
-django-rest-framework-mongoengine==3.4.1

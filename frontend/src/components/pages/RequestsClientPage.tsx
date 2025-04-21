@@ -8,8 +8,9 @@ import { TextFormField } from '@src/components/ui/FormFields';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CategoryEnum } from '@src/api';
+import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
 
 export interface RequestsClientFormInputs {
   from?: DateType;
@@ -161,6 +162,8 @@ export const RequestsClientPage = () => {
   const requestsData = useAppSelector(selectRequests);
   const fieldsValues = useAppSelector(selectClientForm);
 
+  const [ isCreateDialogOpened, setIsCreateDialogOpened ] = useState(false);
+
   useEffect(() => {
     if (fieldsValues.from) setValue('from', fieldsValues.from);
     if (fieldsValues.to) setValue('to', fieldsValues.to);
@@ -223,7 +226,7 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' alignItems='end' gap={2}>
             <Stack direction='row' alignItems='center' gap={1}>
-              <Typography variant='body1'>Соритровать по:</Typography>
+              <Typography variant='body1'>Соритровать по:</Typography> {/* FIXME: нормальную сортировку сделать */}
               <SortFieldFormField control={control} />
               <Button variant='contained' onClick={handleSubmit(onSubmit)}>Сортировать</Button>
             </Stack>
@@ -232,6 +235,16 @@ export const RequestsClientPage = () => {
               <TextFormField placeholder='Название...' name='title' control={control} />
               <TextFormField placeholder='Описание...' name='description' control={control} />
             </Stack>
+          </Stack>
+
+          <Stack direction='row' gap={1}>
+            <CreateRequestDialog
+              open={isCreateDialogOpened}
+              onClose={() => setIsCreateDialogOpened(false)}
+              onSubmit={() => dispatch(updateRequests(null))}
+            />
+
+            <Button variant='contained' onClick={() => setIsCreateDialogOpened(true)}>Создать заявку</Button>
           </Stack>
 
           { isRequestsLoading 

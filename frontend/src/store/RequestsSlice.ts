@@ -7,8 +7,7 @@ import { ApiError, ApiService, ProductRequest } from '@src/api';
 export const updateRequests = createAsyncThunk(
   'requests/updateRequests',
   async (_: unknown, { getState, rejectWithValue }) => {
-    const { clientForm, adminForm } = (getState() as RootState).requests; // на будущее чтобы не гадать
-
+    const { clientForm, adminForm } = (getState() as RootState).requests;
     const modifiedAdminForm = { ...adminForm };
     if (adminForm.me === false) modifiedAdminForm.me = undefined; 
 

@@ -38,3 +38,25 @@ db.createUser({
 Документация разработанного API доступна после запуска по адресу:
 
 `http://localhost:8000/api/swagger/`
+
+
+## Запуск через докер
+
+Для запуска проекта необходимо выполнить команду
+
+```bash
+docker compose build --no-cache && docker compose up
+```
+
+Для корректного запуска необходим файл `.env` с таким содержанием
+
+```
+MONGO_DB_NAME=db_name
+MONGO_HOST=mongodb
+MONGO_PORT=27017
+MONGO_PASSWORD=user_password
+MONGO_USER=username
+
+MONGO_ROOT_USERNAME=root_username
+MONGO_ROOT_PASSWORD=root_password
+```

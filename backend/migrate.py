@@ -21,7 +21,6 @@ def convert_objectids(obj):
     if isinstance(obj, dict):
         new_obj = {}
         for k, v in obj.items():
-            # Преобразуем ключи '_id' и все ключи, которые заканчиваются на '_id'
             if (k == '_id' or k.endswith('_id')) and isinstance(v, str):
                 try:
                     new_obj[k] = ObjectId(v)
@@ -31,7 +30,17 @@ def convert_objectids(obj):
                 new_obj[k] = convert_objectids(v)
         return new_obj
     elif isinstance(obj, list):
-        return [convert_objectids(item) for item in obj]
+        new_list = []
+        for item in obj:
+            # Если элемент - строка и выглядит как ObjectId, преобразуем
+            if isinstance(item, str) and len(item) == 24:
+                try:
+                    new_list.append(ObjectId(item))
+                except Exception:
+                    new_list.append(item)
+            else:
+                new_list.append(convert_objectids(item))  # Рекурсивный вызов
+        return new_list
     else:
         return obj
 

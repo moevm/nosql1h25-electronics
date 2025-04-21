@@ -2,7 +2,7 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import Request, Photo, CreatedStatus, PriceOfferStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -39,13 +39,13 @@ class ClosedStatusSerializer(DocumentSerializer):
         model = ClosedStatus
         fields = '__all__'
 
-class RequestSerializer(DocumentSerializer):
+class ProductRequestSerializer(DocumentSerializer):
     statuses = serializers.ListField(read_only=True)
     user_id = serializers.CharField(source="user_id.id", read_only=True)
     photos = serializers.ListField(child=serializers.CharField())
 
     class Meta:
-        model = Request
+        model = ProductRequest
         fields = '__all__'
 
     def to_representation(self, instance):

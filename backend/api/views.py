@@ -8,7 +8,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
 from .models import ProductRequest, Photo, CreatedStatus
-from .serializers import RequestSerializer, PhotoSerializer, PhotoResponseSerializer
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
@@ -17,15 +17,15 @@ import base64
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
     queryset = ProductRequest.objects.all()
-    serializer_class = RequestSerializer
+    serializer_class = ProductRequestSerializer
     filter_backends = [OrderingFilter]
 
     @extend_schema(
         summary="Создать новую заявку",
         description="Позволяет пользователю создать новую заявку.",
-        request=RequestSerializer,
+        request=ProductRequestSerializer,
         responses={
-            201: RequestSerializer,
+            201: ProductRequestSerializer,
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer
@@ -84,7 +84,7 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
         ],
         responses={
-            200: RequestSerializer(many=True),
+            200: ProductRequestSerializer(many=True),
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
@@ -194,7 +194,7 @@ class RequestViewSet(ModelViewSet):
         summary="Получить заявку",
         description="Позволяет получить заявку по её ID с проверкой прав доступа.",
         responses={
-            200: RequestSerializer,
+            200: ProductRequestSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
             404: ErrorResponseSerializer,
@@ -216,7 +216,7 @@ class RequestViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = RequestSerializer(instance)
+        serializer = ProductRequestSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -280,7 +280,7 @@ class PhotoViewSet(ModelViewSet):
 
 class DatabaseBackupViewSet(ModelViewSet):
     queryset = ProductRequest.objects.all()
-    serializer_class = RequestSerializer
+    serializer_class = ProductRequestSerializer
 
     @extend_schema(
         summary="Экспорт резервной копии",

@@ -39,7 +39,7 @@ class ClosedStatusSerializer(DocumentSerializer):
         model = ClosedStatus
         fields = '__all__'
 
-class RequestSerializer(DocumentSerializer):
+class ProductRequestSerializer(DocumentSerializer):
     statuses = serializers.ListField(read_only=True)
     user_id = serializers.CharField(source="user_id.id", read_only=True)
     photos = serializers.ListField(child=serializers.CharField())

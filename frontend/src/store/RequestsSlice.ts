@@ -1,37 +1,42 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RequestsAdminFormInputs } from '@src/components/pages/RequestsAdminPage';
 import { RequestsClientFormInputs } from '@src/components/pages/RequestsClientPage';
-import { sleep } from '@src/lib/Sleep';
-import { requests as requestsData } from '@src/model/data.example';
-import { Request } from '@src/model/request';
 import { RootState } from './Store';
+import { ApiError, ApiService, ProductRequest } from '@src/api';
 
 export const updateRequests = createAsyncThunk(
   'requests/updateRequests',
-  async (_: unknown, { getState }) => {
-    await sleep(1000);
-
+  async (_: unknown, { getState, rejectWithValue }) => {
     const { clientForm, adminForm } = (getState() as RootState).requests; // на будущее чтобы не гадать
 
-    if ((getState() as RootState).user.user!.role === 'admin') {
-      const targetForm = adminForm;
-      // делаем запросы...
-    }
-    else {
-      const targetForm = clientForm;
-      // делаем запросы...
-    }
+    const modifiedAdminForm = { ...adminForm };
+    if (adminForm.me === false) modifiedAdminForm.me = undefined; 
 
-    return requestsData.map(value => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
+    let targetForm;
+
+    if ((getState() as RootState).user.user!.role === 'admin') targetForm = modifiedAdminForm;
+    else targetForm = clientForm;
+    
+    const { from, to, status, category, ...restFields } = targetForm;
+
+    try {
+      return await ApiService.apiRequestsList({ 
+        from: from?.format('YYYY-MM-DD'), 
+        to: to?.format('YYYY-MM-DD'),
+        status: status === 'any' ? undefined : status,
+        category: category === 'any' ? undefined : category,
+        ...restFields,
+      });
+    } catch (e) {
+      if (e instanceof ApiError) console.log(e);
+      return rejectWithValue(null);
+    }
   },
 );
 
-
 export type RequestsState = {
   isLoading: boolean;
-  requests?: Request[];
+  requests?: ProductRequest[];
   clientForm: Partial<RequestsClientFormInputs>;
   adminForm: Partial<RequestsAdminFormInputs>;
 };
@@ -46,10 +51,13 @@ export const requestsSlice = createSlice({
   name: 'requests',
   initialState,
   reducers: {
-    updateFields: (state, action: PayloadAction<Partial<RequestsClientFormInputs> | Partial<RequestsAdminFormInputs>>) => {
-      Object.assign(state, action.payload);
+    updateClientFields: (state, action: PayloadAction<Partial<RequestsClientFormInputs>>) => {
+      Object.assign(state.clientForm, action.payload);
     },
-    reset: state => initialState,
+    updateAdminFields: (state, action: PayloadAction<Partial<RequestsAdminFormInputs>>) => {
+      Object.assign(state.adminForm, action.payload);
+    },
+    reset: () => initialState,
   },
   extraReducers: builder => {
     builder.addCase(updateRequests.pending, state => {
@@ -69,6 +77,6 @@ export const requestsSlice = createSlice({
   },
 });
 
-export const { updateFields, reset } = requestsSlice.actions;
+export const { updateClientFields, updateAdminFields, reset } = requestsSlice.actions;
 export const { selectAdminForm, selectClientForm, selectRequests, selectIsLoading } = requestsSlice.selectors;
 export default requestsSlice.reducer;

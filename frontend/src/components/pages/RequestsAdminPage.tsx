@@ -10,7 +10,7 @@ import { Control, Controller, useForm } from 'react-hook-form';
 
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
-import { reset, selectFields, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
+import { reset, selectAdminForm, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect } from 'react';
 
 export interface RequestsAdminFormInputs {
@@ -140,17 +140,17 @@ export const RequestsClientPage = () => {
 
   const isRequestsLoading = useAppSelector(selectIsLoading);
   const requestsData = useAppSelector(selectRequests);
-  const fieldsValue = useAppSelector(selectFields) as Partial<RequestsAdminFormInputs>;
+  const fieldsValues = useAppSelector(selectAdminForm);
 
   useEffect(() => {
-    if (fieldsValue.fromDate) setValue('fromDate', fieldsValue.toDate);
-    if (fieldsValue.toDate) setValue('toDate', fieldsValue.toDate);
-    if (fieldsValue.status) setValue('status', fieldsValue.status);
-    if (fieldsValue.author) setValue('author', fieldsValue.author);
-    if (fieldsValue.helpedResolving) setValue('helpedResolving', fieldsValue.helpedResolving);
-    if (fieldsValue.category) setValue('category', fieldsValue.category);
-    if (fieldsValue.title) setValue('title', fieldsValue.title);
-    if (fieldsValue.description) setValue('description', fieldsValue.description);
+    if (fieldsValues.fromDate) setValue('fromDate', fieldsValues.toDate);
+    if (fieldsValues.toDate) setValue('toDate', fieldsValues.toDate);
+    if (fieldsValues.status) setValue('status', fieldsValues.status);
+    if (fieldsValues.author) setValue('author', fieldsValues.author);
+    if (fieldsValues.helpedResolving) setValue('helpedResolving', fieldsValues.helpedResolving);
+    if (fieldsValues.category) setValue('category', fieldsValues.category);
+    if (fieldsValues.title) setValue('title', fieldsValues.title);
+    if (fieldsValues.description) setValue('description', fieldsValues.description);
 
     dispatch(updateRequests(null));
   }, []);

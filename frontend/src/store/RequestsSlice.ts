@@ -11,7 +11,16 @@ export const updateRequests = createAsyncThunk(
   async (_: unknown, { getState }) => {
     await sleep(1000);
 
-    const { isLoading, requests, ...fields } = (getState() as RootState).requests; // на будущее чтобы не гадать
+    const { clientForm, adminForm } = (getState() as RootState).requests; // на будущее чтобы не гадать
+
+    if ((getState() as RootState).user.user!.role === 'admin') {
+      const targetForm = adminForm;
+      // делаем запросы...
+    }
+    else {
+      const targetForm = clientForm;
+      // делаем запросы...
+    }
 
     return requestsData.map(value => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
@@ -23,10 +32,14 @@ export const updateRequests = createAsyncThunk(
 export type RequestsState = {
   isLoading: boolean;
   requests?: Request[];
-} & ( Partial<RequestsClientFormInputs> | Partial<RequestsAdminFormInputs> );
+  clientForm: Partial<RequestsClientFormInputs>;
+  adminForm: Partial<RequestsAdminFormInputs>;
+};
 
 const initialState: RequestsState = {
   isLoading: false,
+  clientForm: {},
+  adminForm: {},
 };
 
 export const requestsSlice = createSlice({
@@ -49,15 +62,13 @@ export const requestsSlice = createSlice({
     })
   },
   selectors: {
-    selectFields: state => {
-      const { isLoading, requests, ...fields } = state;
-      return fields;
-    },
+    selectAdminForm: state => state.adminForm,
+    selectClientForm: state => state.clientForm,
     selectRequests: state => state.requests,
     selectIsLoading: state => state.isLoading,
   },
 });
 
 export const { updateFields, reset } = requestsSlice.actions;
-export const { selectFields, selectRequests, selectIsLoading } = requestsSlice.selectors;
+export const { selectAdminForm, selectClientForm, selectRequests, selectIsLoading } = requestsSlice.selectors;
 export default requestsSlice.reducer;

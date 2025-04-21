@@ -31,7 +31,7 @@ class RequestViewSet(ModelViewSet):
             403: ErrorResponseSerializer
         },
     )
-    def create(self, request, *args, **kwargs):
+    def postRequests(self, request, *args, **kwargs):
         """POST запрос для создания заявки с кастомной логикой"""
         user = request.user
         if user.is_admin:
@@ -90,7 +90,7 @@ class RequestViewSet(ModelViewSet):
             403: ErrorResponseSerializer,
         }
     )
-    def list(self, request, *args, **kwargs):
+    def getRequests(self, request, *args, **kwargs):
         user = request.user
 
         # Получаем параметры фильтрации
@@ -200,7 +200,7 @@ class RequestViewSet(ModelViewSet):
             404: ErrorResponseSerializer,
         }
     )
-    def retrieve(self, request, pk=None, *args, **kwargs):
+    def getRequestsByID(self, request, pk=None, *args, **kwargs):
         try:
             instance = ProductRequest.objects.get(id=pk)
         except:
@@ -236,7 +236,7 @@ class PhotoViewSet(ModelViewSet):
             403: ErrorResponseSerializer,
         }
     )
-    def create(self, request, *args, **kwargs):
+    def postPhotos(self, request, *args, **kwargs):
         """POST запрос для загрузки фотографии"""
         user = request.user
 
@@ -265,7 +265,7 @@ class PhotoViewSet(ModelViewSet):
             404: ErrorResponseSerializer,
         }
     )
-    def retrieve(self, request, *args, **kwargs):
+    def getPhotos(self, request, *args, **kwargs):
         """GET запрос для получения фотографии по ID"""
         user = request.user
 
@@ -291,7 +291,7 @@ class DatabaseBackupViewSet(ModelViewSet):
             403: ErrorResponseSerializer,
         }
     )
-    def export_backup(self, request, *args, **kwargs):
+    def getBackup(self, request, *args, **kwargs):
         """Экспорт данных всех коллекций базы данных"""
         user = request.user
         if not user.is_admin:
@@ -431,7 +431,7 @@ class DatabaseBackupViewSet(ModelViewSet):
             500: ErrorResponseSerializer,
         }
     )
-    def import_backup(self, request, *args, **kwargs):
+    def postBackup(self, request, *args, **kwargs):
         """Импорт данных всех коллекций из файла"""
         user = request.user
         if not user.is_admin:

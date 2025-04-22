@@ -239,7 +239,7 @@ class PhotoViewSet(ModelViewSet):
     serializer_class = PhotoSerializer
 
     def get_permissions(self):
-        if self.action in == 'getPhotos':
+        if self.action == 'getPhotos':
             return [AllowAny()]
         return [IsAuthenticated()]
 

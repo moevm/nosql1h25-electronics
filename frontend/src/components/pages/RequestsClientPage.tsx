@@ -181,6 +181,10 @@ export const RequestsClientPage = () => {
     dispatch(updateRequests(null));
   };
 
+  const onLogout = () => {
+    dispatch(logout()).then(() => dispatch(reset()));
+  };
+
   return (
     <Container maxWidth='lg'>
       <Paper elevation={5} sx={{ mt: 3, p: 3 }}>
@@ -192,9 +196,7 @@ export const RequestsClientPage = () => {
             <Button
               variant='contained'
               disabled={isLoggingOut}
-              onClick={() => {
-                dispatch(logout()).then(() => dispatch(reset()));
-              }}
+              onClick={onLogout}
             >
               { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
             </Button>

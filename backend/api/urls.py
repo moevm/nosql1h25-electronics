@@ -6,7 +6,7 @@ urlpatterns = [
     path('requests/<str:pk>/', RequestViewSet.as_view({'get': 'getRequestsByID'}), name='request_detail'),
 
     path('photos/', PhotoViewSet.as_view({'post': 'postPhotos'}), name='photo_list_create'),
-    path('photos/<str:pk>/', PhotoViewSet.as_view({'get': 'postPhotos'}), name='photo_detail'),
+    path('photos/<str:pk>/', PhotoViewSet.as_view({'get': 'getPhotos'}), name='photo_detail'),
 
     path('backup/', DatabaseBackupViewSet.as_view({'get': 'getBackup', 'post': 'postBackup'}), name='backup')
 ]

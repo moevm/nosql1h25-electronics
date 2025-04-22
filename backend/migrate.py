@@ -59,6 +59,7 @@ def convert_objectids(obj):
     else:
         return obj
 
+
 try:
     # подключаемся рутом чтобы все заполнить и создать
     client = MongoClient(MONGO_ROOT_URI)
@@ -85,7 +86,7 @@ try:
                        roles=[{"role": "readWrite", "db": MONGO_DB_NAME}])
             print(f"User '{MONGO_USER}' created with readWrite access to '{MONGO_DB_NAME}'.")
         else:
-            print(f"User '{MONGO_USER}' already exists. Skipping user creation.")  # Добавлено сообщение
+            print(f"User '{MONGO_USER}' already exists. Skipping user creation.")
     except Exception as e:
         print(f"Error creating or checking user: {e}")
         raise

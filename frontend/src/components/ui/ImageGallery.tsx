@@ -13,16 +13,16 @@ const ImageGallery = ({ images }: ProductGalleryProps) => {
 
   const sliderSettings = {
     className: "center",
-    dots: true,
+    dots: images.length > 1,
     dotsClass: `slick-dots`,
-    swipeToSlide: true,
-    infinite: true,
+    swipeToSlide: images.length > 1,
+    infinite: images.length > 1,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
     arrows: false,
     beforeChange: (_: number, next: number) => setCurrentSlide(next),
-    autoplay: true,
+    autoplay: images.length > 1,
     autoplaySpeed: 2000,
   }
 
@@ -50,13 +50,17 @@ const ImageGallery = ({ images }: ProductGalleryProps) => {
         ))}
       </Slider>
 
-      <div className={`${styles.navZone} ${styles.leftNav}`} onClick={handlePrev}>
-        <ChevronLeft className={styles.arrowIcon} />
-      </div>
+      {images.length > 1 && (
+        <div>
+          <div className={`${styles.navZone} ${styles.leftNav}`} onClick={handlePrev}>
+            <ChevronLeft className={styles.arrowIcon} />
+          </div>
 
-      <div className={`${styles.navZone} ${styles.rightNav}`} onClick={handleNext}>
-        <ChevronRight className={styles.arrowIcon} />
-      </div>
+          <div className={`${styles.navZone} ${styles.rightNav}`} onClick={handleNext}>
+            <ChevronRight className={styles.arrowIcon} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

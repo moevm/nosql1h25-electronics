@@ -5,6 +5,7 @@ from authapp.serializers import ErrorResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
 from .models import ProductRequest, Photo, CreatedStatus
@@ -237,6 +238,12 @@ class PhotoViewSet(ModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
+    def get_permissions(self):
+        if self.action == 'getPhotos':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+
     @extend_schema(
         summary="Загрузить фото",
         description="Загружает фото в базу данных.",
@@ -284,10 +291,11 @@ class PhotoViewSet(ModelViewSet):
         summary="Получить фото",
         description="Позволяет получить фото по его ID.",
         responses={
-            200: None,
+            200: OpenApiResponse(description="BINARY формат данных"),
             401: ErrorResponseSerializer,
             404: ErrorResponseSerializer,
-        }
+        },
+        auth=[]
     )
     def getPhotos(self, request, *args, **kwargs):
         """GET запрос для получения фотографии по ID"""
@@ -485,6 +493,8 @@ class DatabaseBackupViewSet(ModelViewSet):
 
             self.validate_backup_data(data)
 
+            current_versions = {str(u.id): u.token_version for u in User.objects.all()}
+
             ProductRequest.objects.all().delete()
             Photo.objects.all().delete()
             User.objects.all().delete()
@@ -518,6 +528,13 @@ class DatabaseBackupViewSet(ModelViewSet):
                             obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
                         except ValueError:
                             obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+
+                user_id_str = str(obj_data["id"])
+                old_version = current_versions.get(user_id_str, -1)
+                backup_version = obj_data.get("token_version", 0)
+
+                obj_data["token_version"] = max(backup_version, old_version + 1)
+
                 User(**obj_data).save()
 
         except ValueError as validation_error:

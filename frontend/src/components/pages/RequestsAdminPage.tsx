@@ -179,14 +179,9 @@ export const RequestsClientPage = () => {
     if (!e.target.files) return;
 
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
 
     try {
-      //await ApiService.apiBackupCreate({ requestBody: file });
-      const response = await fetch('http://localhost:8000/api/backup/', { method: 'POST', headers: { Authorization: `Bearer ${localStorage.token}` }, body: formData });
-      
-      if (!response.ok) throw new Error();
+      await ApiService.apiBackupCreate({ formData: { file }});
 
       alert('Данные успешно импортированы');
       dispatch(logout()).then(() => dispatch(reset()));

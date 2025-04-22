@@ -291,7 +291,7 @@ class PhotoViewSet(ModelViewSet):
         summary="Получить фото",
         description="Позволяет получить фото по его ID.",
         responses={
-            200: None,
+            200: OpenApiResponse(description="BINARY формат данных"),
             401: ErrorResponseSerializer,
             404: ErrorResponseSerializer,
         },

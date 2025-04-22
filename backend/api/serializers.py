@@ -52,6 +52,10 @@ class ProductRequestSerializer(DocumentSerializer):
         """Переопределяем метод для исключения _cls из statuses"""
         representation = super().to_representation(instance)
 
+        if "photos" in representation:
+            updated_photos = [f"http://localhost:8000/api/photos/{str(photo.id)}/" for photo in instance.photos]
+            representation["photos"] = updated_photos
+
         if "statuses" in representation:
             updated_statuses = []
             for custom_status in instance.statuses:

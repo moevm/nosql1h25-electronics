@@ -4,56 +4,11 @@ import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
 import ImageGallery from "../ui/ImageGallery";
 import ProductTimeline, { TimelineItemType } from "../ui/ProductTimeline";
-import { Request } from '@src/api/models/Request';
-import { ApiService } from "@src/api";
+import { ApiService, ProductRequest } from "@src/api";
 import NotFoundPage from "./NotFoundPage";
 import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
 
-const mockData = {
-  title: 'Ноутбук Lenovo ThinkPad',
-  description: 'Надёжный ноутбук для работы и учёбы с процессором Intel i7 и 16 ГБ ОЗУ.',
-  category: 'Электроника',
-  price: '55 000 ₽',
-  address: 'г. Москва, ул. Примерная, д. 12',
-  images: [
-    'https://mobile-review.com/all/wp-content/uploads/2022/02/anons-73.jpg',
-    'https://expertvybor.ru/images/wp-content/uploads/2019/03/2019-03-20_11-03-09.png',
-    'https://data-protect.in.ua/wp-content/uploads/2023/06/notebook-entry-level-buyers-guide-2018-big.jpg',
-  ],
-  timeline: [
-    {
-      type: 'Created',
-      date: '2025-04-01T10:00:00Z',
-    },
-    {
-      type: 'PriceOffer',
-      date: '2025-04-02T12:00:00Z',
-      price: 1500,
-    },
-    {
-      type: 'PriceAccept',
-      date: '2025-04-02T15:30:00Z',
-      user_id: 101,
-    },
-    {
-      type: 'DateOffer',
-      date: '2025-04-03T09:00:00Z',
-      user_id: 101,
-    },
-    {
-      type: 'DateAccept',
-      date: '2025-04-03T12:00:00Z',
-      user_id: 202,
-    },
-    {
-      type: 'Closed',
-      date: '2025-04-04T18:45:00Z',
-      user_id: 101,
-      success: true,
-    },
-  ] as TimelineItemType[]
-};
 
 const ProductCardPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -62,7 +17,7 @@ const ProductCardPage = () => {
     return <NotFoundPage />;
   }
 
-  const [product, setProduct] = useState<null | Request>(null);
+  const [product, setProduct] = useState<null | ProductRequest>(null);
   const [isError, setIsError] = useState<boolean>(false);
   const [errorProps, setErrorProps] = useState<ErrorProps | null>(null);
 

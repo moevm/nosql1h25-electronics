@@ -3,6 +3,7 @@ from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
 from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+import os
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -53,7 +54,7 @@ class ProductRequestSerializer(DocumentSerializer):
         representation = super().to_representation(instance)
 
         if "photos" in representation:
-            updated_photos = [f"http://localhost:8000/api/photos/{str(photo.id)}/" for photo in instance.photos]
+            updated_photos = [f"{os.getenv('BASE_URL')}/api/photos/{str(photo.id)}/" for photo in instance.photos]
             representation["photos"] = updated_photos
 
         if "statuses" in representation:

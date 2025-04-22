@@ -485,6 +485,8 @@ class DatabaseBackupViewSet(ModelViewSet):
 
             self.validate_backup_data(data)
 
+            current_versions = {str(u.id): u.token_version for u in User.objects.all()}
+
             ProductRequest.objects.all().delete()
             Photo.objects.all().delete()
             User.objects.all().delete()
@@ -518,6 +520,13 @@ class DatabaseBackupViewSet(ModelViewSet):
                             obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
                         except ValueError:
                             obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+
+                user_id_str = str(obj_data["id"])
+                old_version = current_versions.get(user_id_str, -1)
+                backup_version = obj_data.get("token_version", 0)
+
+                obj_data["token_version"] = max(backup_version, old_version + 1)
+
                 User(**obj_data).save()
 
         except ValueError as validation_error:

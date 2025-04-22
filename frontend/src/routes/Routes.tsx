@@ -5,7 +5,6 @@ import RequestsAdminPage from '@src/components/pages/RequestsAdminPage';
 import RequestsClientPage from '@src/components/pages/RequestsClientPage';
 import LoginPage from '@src/components/pages/LoginPage/LoginPage';
 import ProductCardPage from '../components/pages/ProductCardPage';
-import ProductCreateDialogExample from '../components/pages/ProductCreateDialogExample';
 import AuthorizedOnly from './AuthorizedOnly';
 import ClientOnly from './ClientOnly';
 import AdminOnly from './AdminOnly';
@@ -14,7 +13,6 @@ import { selectIsAdmin } from '@src/store/UserSlice';
 
 const routes = [
   { path: '/product/:id', element: <AuthorizedOnly><ProductCardPage /></AuthorizedOnly> },
-  { path: '/product-dialog', element: <ClientOnly><ProductCreateDialogExample/></ClientOnly>},
   { path: '/login', element: <AuthorizedOnly inverted><LoginPage/></AuthorizedOnly>},
   { path: '/register', element: <AuthorizedOnly inverted><RegisterPage/></AuthorizedOnly>},
   { path: '*', element: <NotFoundPage/>,},

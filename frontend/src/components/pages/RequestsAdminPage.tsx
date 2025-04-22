@@ -5,12 +5,12 @@ import { CheckboxFormField, TextFormField } from '@src/components/ui/FormFields'
 import { DateType } from '@src/model/misc';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
-
+import { saveAs } from 'file-saver';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFields, updateRequests } from '@src/store/RequestsSlice';
-import { useEffect } from 'react';
-import { CategoryEnum } from '@src/api';
+import { useEffect, useRef } from 'react';
+import { ApiService, CategoryEnum } from '@src/api';
 
 export interface RequestsAdminFormInputs {
   from?: DateType;
@@ -141,6 +141,8 @@ export const RequestsClientPage = () => {
   const requestsData = useAppSelector(selectRequests);
   const fieldsValues = useAppSelector(selectAdminForm);
 
+  const backupImportRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (fieldsValues.from) setValue('from', fieldsValues.from);
     if (fieldsValues.to) setValue('to', fieldsValues.to);
@@ -159,6 +161,41 @@ export const RequestsClientPage = () => {
     dispatch(updateRequests(null));
   };
 
+  const onExportBackup = () => {
+    ApiService.apiBackupRetrieve().then(data => {
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      saveAs(blob, `backup-${dayjs().format('YYYY-MM-DD-HH-mm-ss')}.json`);
+      alert('Данные успешно экспортированы'); // по макету
+    }).catch(() => alert('Ошибка экспорта данных'));
+  };
+
+  const onImportBackup = async () => {
+    if (!confirm('Это действие сотрёт все существующие данные в БД и заменит их теми, что в файле. Вы уверены, что хотите продолжить?')) return;
+
+    backupImportRef.current?.click();
+  };
+
+  const onBackupFileChanged = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+
+    const file = e.target.files[0];
+
+    try {
+      await ApiService.apiBackupCreate({ formData: { file }});
+
+      alert('Данные успешно импортированы');
+      dispatch(logout()).then(() => dispatch(reset()));
+    } catch {
+      alert('Ошибка импорта данных');
+    }
+    
+    e.target.value = '';
+  };
+
+  const onLogout = () => {
+    dispatch(logout()).then(() => dispatch(reset()));
+  };
+
   return (
     <Container maxWidth='lg'>
       <Paper elevation={5} sx={{ mt: 3, p: 3 }}>
@@ -167,15 +204,20 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1}>
             <Button variant='contained'>Профиль</Button>
-            <Button variant='contained'>Экспорт БД</Button>
-            <Button variant='contained'>Импорт БД</Button>
+            <Button variant='contained' onClick={onExportBackup}>Экспорт БД</Button>
+            <Button variant='contained' onClick={onImportBackup}>Импорт БД</Button>
+            <input
+              ref={backupImportRef}
+              style={{ display: 'none' }}
+              type='file'
+              accept='application/JSON'
+              onChange={onBackupFileChanged} 
+            />
             <Button variant='contained'>Статистика</Button>
             <Button 
               variant='contained' 
               disabled={isLoggingOut} 
-              onClick={() => {
-                dispatch(logout()).then(() => dispatch(reset()));
-              }}
+              onClick={onLogout}
             >
               { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
             </Button>

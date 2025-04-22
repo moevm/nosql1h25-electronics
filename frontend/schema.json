@@ -202,8 +202,8 @@
         "/api/photos/{id}/": {
             "get": {
                 "operationId": "api_photos_retrieve",
-                "description": "Загружает фото в базу данных.",
-                "summary": "Загрузить фото",
+                "description": "Позволяет получить фото по его ID.",
+                "summary": "Получить фото",
                 "parameters": [
                     {
                         "in": "path",
@@ -224,24 +224,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PhotoResponse"
-                                }
-                            }
-                        },
-                        "description": ""
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        },
-                        "description": ""
+                        "description": "No response body"
                     },
                     "401": {
                         "content": {
@@ -253,7 +236,7 @@
                         },
                         "description": ""
                     },
-                    "403": {
+                    "404": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -320,6 +303,14 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Сортировка записей (title, description, address, category, fullname, last_update)"
                     },
                     {
                         "in": "query",

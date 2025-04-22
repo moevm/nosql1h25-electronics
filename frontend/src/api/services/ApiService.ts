@@ -67,16 +67,16 @@ export class ApiService {
         });
     }
     /**
-     * Загрузить фото
-     * Загружает фото в базу данных.
-     * @returns PhotoResponse
+     * Получить фото
+     * Позволяет получить фото по его ID.
+     * @returns any No response body
      * @throws ApiError
      */
     public static apiPhotosRetrieve({
         id,
     }: {
         id: string,
-    }): CancelablePromise<PhotoResponse> {
+    }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/photos/{id}/',
@@ -98,6 +98,7 @@ export class ApiService {
         from,
         me,
         ordering,
+        sort,
         status,
         title,
         to,
@@ -127,6 +128,10 @@ export class ApiService {
          */
         ordering?: string,
         /**
+         * Сортировка записей (title, description, address, category, fullname, last_update)
+         */
+        sort?: string,
+        /**
          * Фильтрация по статусу заявки
          */
         status?: string,
@@ -149,6 +154,7 @@ export class ApiService {
                 'from': from,
                 'me': me,
                 'ordering': ordering,
+                'sort': sort,
                 'status': status,
                 'title': title,
                 'to': to,

@@ -8,8 +8,9 @@ import { TextFormField } from '@src/components/ui/FormFields';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CategoryEnum } from '@src/api';
+import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
 
 export interface RequestsClientFormInputs {
   from?: DateType;
@@ -18,7 +19,7 @@ export interface RequestsClientFormInputs {
   category: CategoryEnum | 'any';
   title?: string;
   description?: string;
-  ordering: 'title' | 'category' | 'status' | 'date' | 'client' | 'me' | 'any';
+  sort: 'title' | 'category' | 'description' | 'address' | 'fullname' | 'last_update' | 'any';
 }
 
 interface FormFieldProps {
@@ -132,7 +133,7 @@ const CategoryFormField = (props: FormFieldProps) => (
 const SortFieldFormField = (props: FormFieldProps) => (
   <Controller 
     {...props}
-    name='ordering'
+    name='sort'
     render={({ field }) => (
       <Select 
         value={field.value} 
@@ -140,11 +141,8 @@ const SortFieldFormField = (props: FormFieldProps) => (
       >
         <MenuItem value='any'>-</MenuItem>
         <MenuItem value='title'>Названию</MenuItem>
+        <MenuItem value='last_update'>Последнему обновлению</MenuItem>
         <MenuItem value='category'>Категории</MenuItem>
-        <MenuItem value='status'>Статусу</MenuItem>
-        <MenuItem value='date'>Дате назначения статуса</MenuItem>
-        <MenuItem value='client'>Клиенту</MenuItem>
-        <MenuItem value='me'>Участию в разрешении</MenuItem>
       </Select>
     )}
     defaultValue='any'
@@ -161,6 +159,8 @@ export const RequestsClientPage = () => {
   const requestsData = useAppSelector(selectRequests);
   const fieldsValues = useAppSelector(selectClientForm);
 
+  const [ isCreateDialogOpened, setIsCreateDialogOpened ] = useState(false);
+
   useEffect(() => {
     if (fieldsValues.from) setValue('from', fieldsValues.from);
     if (fieldsValues.to) setValue('to', fieldsValues.to);
@@ -168,7 +168,7 @@ export const RequestsClientPage = () => {
     if (fieldsValues.category) setValue('category', fieldsValues.category);
     if (fieldsValues.title) setValue('title', fieldsValues.title);
     if (fieldsValues.description) setValue('description', fieldsValues.description);
-    if (fieldsValues.ordering) setValue('ordering', fieldsValues.ordering);
+    if (fieldsValues.sort) setValue('sort', fieldsValues.sort);
 
     dispatch(updateRequests(null));
   }, []);
@@ -176,6 +176,10 @@ export const RequestsClientPage = () => {
   const onSubmit = (data: RequestsClientFormInputs) => {
     dispatch(updateClientFields(data));
     dispatch(updateRequests(null));
+  };
+
+  const onLogout = () => {
+    dispatch(logout()).then(() => dispatch(reset()));
   };
 
   return (
@@ -189,9 +193,7 @@ export const RequestsClientPage = () => {
             <Button
               variant='contained'
               disabled={isLoggingOut}
-              onClick={() => {
-                dispatch(logout()).then(() => dispatch(reset()));
-              }}
+              onClick={onLogout}
             >
               { isLoggingOut ? <CircularProgress size={25} /> : 'Выход' }
             </Button>
@@ -232,6 +234,16 @@ export const RequestsClientPage = () => {
               <TextFormField placeholder='Название...' name='title' control={control} />
               <TextFormField placeholder='Описание...' name='description' control={control} />
             </Stack>
+          </Stack>
+
+          <Stack direction='row' gap={1}>
+            <CreateRequestDialog
+              open={isCreateDialogOpened}
+              onClose={() => setIsCreateDialogOpened(false)}
+              onSubmit={() => dispatch(updateRequests(null))}
+            />
+
+            <Button variant='contained' onClick={() => setIsCreateDialogOpened(true)}>Создать заявку</Button>
           </Stack>
 
           { isRequestsLoading 

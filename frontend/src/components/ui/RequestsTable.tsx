@@ -2,12 +2,15 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import { categoryToRussian, statusTypeToRussian } from "@src/lib/russianConverters";
 import { ProductRequest } from "@src/api";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 export interface RequestsTableProps {
   requests: ProductRequest[],
 }
 
 export const RequestsTable = ({ requests }: RequestsTableProps) => {
+  const navigate = useNavigate();
+
   return (
     <TableContainer>
       <Table>
@@ -24,7 +27,7 @@ export const RequestsTable = ({ requests }: RequestsTableProps) => {
             <TableRow 
               hover 
               sx={{ cursor: 'pointer' }} 
-              onClick={() => alert(request.id)} 
+              onClick={() => navigate(`/product/${request.id}`)} 
               key={request.id}
             >
               <TableCell>{request.title}</TableCell>

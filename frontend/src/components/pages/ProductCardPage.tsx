@@ -8,6 +8,7 @@ import { ApiService, ProductRequest } from "@src/api";
 import NotFoundPage from "./NotFoundPage";
 import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
+import { categoryToRussian } from "@src/lib/russianConverters";
 
 
 const ProductCardPage = () => {
@@ -25,7 +26,9 @@ const ProductCardPage = () => {
     if (!id) return;
 
     const loadProduct = async (id: string) => {
-      setProduct(await ApiService.apiRequestsRetrieve({ id }));
+      const response = await ApiService.apiRequestsRetrieve({ id });
+      console.log(response);
+      setProduct(response);
     }
     
     try {
@@ -70,7 +73,7 @@ const ProductCardPage = () => {
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="h5" gutterBottom>{product.title}</Typography>
             <Typography variant="body1" component="p" >{product.description}</Typography>
-            <Typography variant="body2" gutterBottom><strong>Категория:</strong> {product.category}</Typography>
+            <Typography variant="body2" gutterBottom><strong>Категория:</strong> {categoryToRussian(product.category)}</Typography>
             <Typography variant="body2" gutterBottom><strong>Цена:</strong> {product.price}</Typography>
             <Typography variant="body2" gutterBottom><strong>Адрес:</strong> {product.address}</Typography>
 

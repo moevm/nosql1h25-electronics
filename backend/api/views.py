@@ -239,7 +239,7 @@ class PhotoViewSet(ModelViewSet):
     serializer_class = PhotoSerializer
 
     def get_permissions(self):
-        if self.action in ['postPhotos', 'getPhotos']:
+        if self.action in == 'getPhotos':
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -265,8 +265,7 @@ class PhotoViewSet(ModelViewSet):
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
-        },
-        auth=[]
+        }
     )
     def postPhotos(self, request, *args, **kwargs):
         """POST запрос для загрузки фотографии"""

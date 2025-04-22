@@ -3,23 +3,22 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
 import { CheckboxFormField, TextFormField } from '@src/components/ui/FormFields';
 import { DateType } from '@src/model/misc';
-import { Category } from '@src/model/category';
-import { Status } from '@src/model/status';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
-import { reset, selectAdminForm, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
+import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect } from 'react';
+import { CategoryEnum } from '@src/api';
 
 export interface RequestsAdminFormInputs {
-  fromDate?: DateType;
-  toDate?: DateType;
-  status: Status['type'] | 'any';
+  from?: DateType;
+  to?: DateType;
+  status: string;
   author?: string;
-  helpedResolving: boolean;
-  category: Category | 'any';
+  me: boolean;
+  category: CategoryEnum | 'any';
   title?: string;
   description?: string;
 }
@@ -31,7 +30,7 @@ interface FormFieldProps {
 const FromDateFormField = (props: FormFieldProps) => (
   <Controller 
     {...props}
-    name='fromDate'
+    name='from'
     render={({ field, fieldState }) => (
       <DatePicker 
         maxDate={dayjs()}
@@ -59,7 +58,7 @@ const FromDateFormField = (props: FormFieldProps) => (
 const ToDateFormField = (props: FormFieldProps) => (
   <Controller 
     {...props}
-    name='toDate'
+    name='to'
     render={({ field, fieldState }) => (
       <DatePicker 
         maxDate={dayjs()}
@@ -75,10 +74,10 @@ const ToDateFormField = (props: FormFieldProps) => (
     )}
     rules={{
       validate: { 
-        required: (value, { fromDate }) => {
+        required: (value, { from }) => {
           if (!value) return;
           if (value > dayjs()) return 'Выбрана дата из будущего';
-          if (fromDate && value < fromDate) return 'Дата конца раньше даты начала';
+          if (from && value < from) return 'Дата конца раньше даты начала';
         },
       },
     }}
@@ -95,12 +94,12 @@ const StatusFormField = (props: FormFieldProps) => (
         onChange={field.onChange}
       >
         <MenuItem value='any'>Все</MenuItem>
-        <MenuItem value='created'>Создана</MenuItem>
-        <MenuItem value='price_offer'>Предложена цена</MenuItem>
-        <MenuItem value='price_accept'>Цена подтверждена</MenuItem>
-        <MenuItem value='date_offer'>Предложена дата</MenuItem>
-        <MenuItem value='date_accept'>Дата подтверждена</MenuItem>
-        <MenuItem value='closed'>Закрыта</MenuItem>
+        <MenuItem value='created_status'>Создана</MenuItem>
+        <MenuItem value='price_offer_status'>Предложена цена</MenuItem>
+        <MenuItem value='price_accept_status'>Цена подтверждена</MenuItem>
+        <MenuItem value='date_offer_status'>Предложена дата</MenuItem>
+        <MenuItem value='date_accept_status'>Дата подтверждена</MenuItem>
+        <MenuItem value='closed_status'>Закрыта</MenuItem>
       </Select>
     )}
     defaultValue='any'
@@ -117,15 +116,15 @@ const CategoryFormField = (props: FormFieldProps) => (
       onChange={field.onChange}
     >
       <MenuItem value='any'>Всё</MenuItem>
-      <MenuItem value={Category.Laptop}>Ноутбук</MenuItem>
-      <MenuItem value={Category.Smartphone}>Смартфон</MenuItem>
-      <MenuItem value={Category.Tablet}>Планшет</MenuItem>
-      <MenuItem value={Category.PC}>Персональный компьютер</MenuItem>
-      <MenuItem value={Category.TV}>Телевизор</MenuItem>
-      <MenuItem value={Category.Audio}>Наушники и колонки</MenuItem>
-      <MenuItem value={Category.Console}>Игровые приставки</MenuItem>
-      <MenuItem value={Category.Periphery}>Комьютерная периферия</MenuItem>
-      <MenuItem value={Category.Other}>Прочее</MenuItem>
+      <MenuItem value='laptop'>Ноутбук</MenuItem>
+      <MenuItem value='smartphone'>Смартфон</MenuItem>
+      <MenuItem value='tablet'>Планшет</MenuItem>
+      <MenuItem value='pc'>Персональный компьютер</MenuItem>
+      <MenuItem value='tv'>Телевизор</MenuItem>
+      <MenuItem value='audio'>Наушники и колонки</MenuItem>
+      <MenuItem value='console'>Игровые приставки</MenuItem>
+      <MenuItem value='periphery'>Комьютерная периферия</MenuItem>
+      <MenuItem value='other'>Прочее</MenuItem>
     </Select>
   )}
   defaultValue='any'
@@ -143,11 +142,11 @@ export const RequestsClientPage = () => {
   const fieldsValues = useAppSelector(selectAdminForm);
 
   useEffect(() => {
-    if (fieldsValues.fromDate) setValue('fromDate', fieldsValues.toDate);
-    if (fieldsValues.toDate) setValue('toDate', fieldsValues.toDate);
+    if (fieldsValues.from) setValue('from', fieldsValues.from);
+    if (fieldsValues.to) setValue('to', fieldsValues.to);
     if (fieldsValues.status) setValue('status', fieldsValues.status);
     if (fieldsValues.author) setValue('author', fieldsValues.author);
-    if (fieldsValues.helpedResolving) setValue('helpedResolving', fieldsValues.helpedResolving);
+    if (fieldsValues.me) setValue('me', fieldsValues.me);
     if (fieldsValues.category) setValue('category', fieldsValues.category);
     if (fieldsValues.title) setValue('title', fieldsValues.title);
     if (fieldsValues.description) setValue('description', fieldsValues.description);
@@ -156,7 +155,7 @@ export const RequestsClientPage = () => {
   }, []);
 
   const onSubmit = (data: RequestsAdminFormInputs) => {
-    dispatch(updateFields(data));
+    dispatch(updateAdminFields(data));
     dispatch(updateRequests(null));
   };
 
@@ -202,7 +201,7 @@ export const RequestsClientPage = () => {
             <TextFormField placeholder='ФИО' name='author' control={control} />
           </Stack>
 
-          <CheckboxFormField label='Участвовал в разрешении' name='helpedResolving' control={control} />
+          <CheckboxFormField label='Участвовал в разрешении' name='me' control={control} />
 
           <Box sx={{
             display: 'grid',

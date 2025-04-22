@@ -1,9 +1,10 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import type { Request } from "@src/model/request";
 import { categoryToRussian, statusTypeToRussian } from "@src/lib/russianConverters";
+import { ProductRequest } from "@src/api";
+import dayjs from "dayjs";
 
 export interface RequestsTableProps {
-  requests: Request[],
+  requests: ProductRequest[],
 }
 
 export const RequestsTable = ({ requests }: RequestsTableProps) => {
@@ -29,7 +30,7 @@ export const RequestsTable = ({ requests }: RequestsTableProps) => {
               <TableCell>{request.title}</TableCell>
               <TableCell>{categoryToRussian(request.category)}</TableCell>
               <TableCell>{statusTypeToRussian(request.statuses.at(-1)!.type)}</TableCell>
-              <TableCell>{request.statuses.at(-1)!.timestamp.format('DD.MM.YYYY')}</TableCell>
+              <TableCell>{dayjs(request.statuses.at(-1)!.timestamp).format('DD.MM.YYYY')}</TableCell>
             </TableRow>
           )) } 
         </TableBody>

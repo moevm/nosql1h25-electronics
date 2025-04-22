@@ -1,25 +1,24 @@
 import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress, Box } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
-import { Category } from '@src/model/category';
 import type { DateType } from '@src/model/misc';
-import type { Status } from '@src/model/status';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/FormFields';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
-import { reset, selectClientForm, selectIsLoading, selectRequests, updateFields, updateRequests } from '@src/store/RequestsSlice';
+import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect } from 'react';
+import { CategoryEnum } from '@src/api';
 
 export interface RequestsClientFormInputs {
-  fromDate?: DateType;
-  toDate?: DateType;
-  status: Status['type'] | 'any';
-  category: Category | 'any';
+  from?: DateType;
+  to?: DateType;
+  status: string;
+  category: CategoryEnum | 'any';
   title?: string;
   description?: string;
-  sortField: 'title' | 'category' | 'status' | 'date' | 'client' | 'me' | 'any';
+  ordering: 'title' | 'category' | 'status' | 'date' | 'client' | 'me' | 'any';
 }
 
 interface FormFieldProps {
@@ -29,7 +28,7 @@ interface FormFieldProps {
 const FromDateFormField = (props: FormFieldProps) => (
   <Controller 
     {...props}
-    name='fromDate'
+    name='from'
     render={({ field, fieldState }) => (
       <DatePicker 
         maxDate={dayjs()}
@@ -57,7 +56,7 @@ const FromDateFormField = (props: FormFieldProps) => (
 const ToDateFormField = (props: FormFieldProps) => (
   <Controller 
     {...props}
-    name='toDate'
+    name='to'
     render={({ field, fieldState }) => (
       <DatePicker 
         maxDate={dayjs()}
@@ -73,10 +72,10 @@ const ToDateFormField = (props: FormFieldProps) => (
     )}
     rules={{
       validate: { 
-        required: (value, { fromDate }) => {
+        required: (value, { from }) => {
           if (!value) return;
           if (value > dayjs()) return 'Выбрана дата из будущего';
-          if (fromDate && value < fromDate) return 'Дата конца раньше даты начала';
+          if (from && value < from) return 'Дата конца раньше даты начала';
         },
       },
     }}
@@ -93,12 +92,12 @@ const StatusFormField = (props: FormFieldProps) => (
         onChange={field.onChange}
       >
         <MenuItem value='any'>Все</MenuItem>
-        <MenuItem value='created'>Создана</MenuItem>
-        <MenuItem value='price_offer'>Предложена цена</MenuItem>
-        <MenuItem value='price_accept'>Цена подтверждена</MenuItem>
-        <MenuItem value='date_offer'>Предложена дата</MenuItem>
-        <MenuItem value='date_accept'>Дата подтверждена</MenuItem>
-        <MenuItem value='closed'>Закрыта</MenuItem>
+        <MenuItem value='created_status'>Создана</MenuItem>
+        <MenuItem value='price_offer_status'>Предложена цена</MenuItem>
+        <MenuItem value='price_accept_status'>Цена подтверждена</MenuItem>
+        <MenuItem value='date_offer_status'>Предложена дата</MenuItem>
+        <MenuItem value='date_accept_status'>Дата подтверждена</MenuItem>
+        <MenuItem value='closed_status'>Закрыта</MenuItem>
       </Select>
     )}
     defaultValue='any'
@@ -115,15 +114,15 @@ const CategoryFormField = (props: FormFieldProps) => (
         onChange={field.onChange}
       >
         <MenuItem value='any'>Всё</MenuItem>
-        <MenuItem value={Category.Laptop}>Ноутбук</MenuItem>
-        <MenuItem value={Category.Smartphone}>Смартфон</MenuItem>
-        <MenuItem value={Category.Tablet}>Планшет</MenuItem>
-        <MenuItem value={Category.PC}>Персональный компьютер</MenuItem>
-        <MenuItem value={Category.TV}>Телевизор</MenuItem>
-        <MenuItem value={Category.Audio}>Наушники и колонки</MenuItem>
-        <MenuItem value={Category.Console}>Игровые приставки</MenuItem>
-        <MenuItem value={Category.Periphery}>Комьютерная периферия</MenuItem>
-        <MenuItem value={Category.Other}>Прочее</MenuItem>
+        <MenuItem value='laptop'>Ноутбук</MenuItem>
+        <MenuItem value='smartphone'>Смартфон</MenuItem>
+        <MenuItem value='tablet'>Планшет</MenuItem>
+        <MenuItem value='pc'>Персональный компьютер</MenuItem>
+        <MenuItem value='tv'>Телевизор</MenuItem>
+        <MenuItem value='audio'>Наушники и колонки</MenuItem>
+        <MenuItem value='console'>Игровые приставки</MenuItem>
+        <MenuItem value='periphery'>Комьютерная периферия</MenuItem>
+        <MenuItem value='other'>Прочее</MenuItem>
       </Select>
     )}
     defaultValue='any'
@@ -133,7 +132,7 @@ const CategoryFormField = (props: FormFieldProps) => (
 const SortFieldFormField = (props: FormFieldProps) => (
   <Controller 
     {...props}
-    name='sortField'
+    name='ordering'
     render={({ field }) => (
       <Select 
         value={field.value} 
@@ -163,19 +162,19 @@ export const RequestsClientPage = () => {
   const fieldsValues = useAppSelector(selectClientForm);
 
   useEffect(() => {
-    if (fieldsValues.fromDate) setValue('fromDate', fieldsValues.toDate);
-    if (fieldsValues.toDate) setValue('toDate', fieldsValues.toDate);
+    if (fieldsValues.from) setValue('from', fieldsValues.from);
+    if (fieldsValues.to) setValue('to', fieldsValues.to);
     if (fieldsValues.status) setValue('status', fieldsValues.status);
     if (fieldsValues.category) setValue('category', fieldsValues.category);
     if (fieldsValues.title) setValue('title', fieldsValues.title);
     if (fieldsValues.description) setValue('description', fieldsValues.description);
-    if (fieldsValues.sortField) setValue('sortField', fieldsValues.sortField);
+    if (fieldsValues.ordering) setValue('ordering', fieldsValues.ordering);
 
     dispatch(updateRequests(null));
   }, []);
 
   const onSubmit = (data: RequestsClientFormInputs) => {
-    dispatch(updateFields(data));
+    dispatch(updateClientFields(data));
     dispatch(updateRequests(null));
   };
 

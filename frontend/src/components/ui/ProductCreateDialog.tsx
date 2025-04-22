@@ -1,4 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, Box, Typography, TextField, MenuItem, DialogActions, Button, Grid, Avatar } from "@mui/material";
+import { ApiService, ProductRequest } from "@src/api";
+import { CategoryEnum } from "@src/api/models/CategoryEnum";
+import { categoryToRussian } from "@src/lib/russianConverters";
 import { useEffect, useMemo, useState } from "react";
 
 interface CreateRequestDialogProps {
@@ -7,16 +10,35 @@ interface CreateRequestDialogProps {
   onSubmit: (data: any) => void;
 }
 
-const fakeCategories = ['Ноутбуки', 'Телефоны', 'Видеокарты', 'Роботы'];
+const categoryEnumValues: CategoryEnum[] = [
+  'laptop',
+  'smartphone',
+  'tablet',
+  'pc',
+  'tv',
+  'audio',
+  'console',
+  'periphery',
+  'other'
+];
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogProps) => {
-  const [form, setForm] = useState({
-    images: [] as File[],
+  const [form, setForm] = useState<Partial<ProductRequest> & { images: File[] }>({
+    images: [],
     title: '',
-    category: '',
     description: '',
     address: '',
-    price: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -34,18 +56,54 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!form.title.trim()) newErrors.title = 'Введите название';
+    if (!form.title?.trim()) newErrors.title = 'Введите название';
     if (!form.category) newErrors.category = 'Выберите категорию';
-    if (!form.description.trim()) newErrors.description = 'Введите описание';
-    if (!form.address.trim()) newErrors.address = 'Введите адрес';
+    if (!form.description?.trim()) newErrors.description = 'Введите описание';
+    if (!form.address?.trim()) newErrors.address = 'Введите адрес';
     if (!form.price || Number(form.price) <= 0) newErrors.price = 'Укажите цену больше 0';
     if (form.images.length === 0) newErrors.images = 'Загрузите хотя бы одно изображение';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const uploadPhotos = async (images: File[]) => {
+    const uploads = images.map(async (image) => {
+      const response = await ApiService.apiPhotosCreate({
+        formData: { photo: image }
+      });
+      return response.id;
+    });
+  
+    const photosIds = await Promise.all(uploads);
+    return photosIds;
+  }
+
+  const handleSubmit = async () => {
     if (validate()) {
+      const photos = await uploadPhotos(form.images);
+      const { title, description, address, category, price } = form;
+
+      if (!title || !description || !address || !category || !price) {
+        validate();
+        console.warn("Не все поля заполнены");
+        return;
+      }
+
+      const response = await ApiService.apiRequestsCreate({
+        requestBody: {
+          id: '',
+          statuses: [],
+          user_id: '',
+          photos,
+          title,
+          description,
+          address,
+          category,
+          price,
+        }
+      })
+
+      console.log(response);
       onSubmit(form);
       onClose();
     }
@@ -77,7 +135,7 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
 
           <Grid container spacing={1} mt={1}>
             {imagePreviews.map((p, index) => (
-              <Avatar variant="rounded" src={p.url} alt={`фото-${index}`} sx={{ width: 64, height: 64 }}/>
+              <Avatar variant="rounded" src={p.url} alt={`фото-${index}`} sx={{ width: 64, height: 64 }} />
             ))}
           </Grid>
         </Box>
@@ -89,9 +147,9 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
         <TextField select fullWidth label="Категория" value={form.category}
           onChange={handleChange('category')} margin="normal"
           error={!!errors.category} helperText={errors.category}>
-          {fakeCategories.map((cat) => (
+          {categoryEnumValues.map((cat) => (
             <MenuItem key={cat} value={cat}>
-              {cat}
+              {categoryToRussian(cat)}
             </MenuItem>
           ))}
         </TextField>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
-import { login, selectIsAuthorized, selectIsAuthorizing } from '@src/store/UserSlice';
+import { login, selectIsAuthorizing } from '@src/store/UserSlice';
 import { useEffect } from 'react';
 import style from './LoginPage.module.css';
 

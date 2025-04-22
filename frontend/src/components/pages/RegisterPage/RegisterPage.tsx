@@ -1,10 +1,12 @@
-import { Paper, Typography, Button, Stack, Container } from '@mui/material';
+import { Paper, Typography, Button, Stack, Container, CircularProgress } from '@mui/material';
 import { MuiTelInput, classes } from 'mui-tel-input';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
 import style from './RegisterPage.module.css';
+import { useState } from 'react';
+import { ApiError, AuthService } from '@src/api';
 
 interface FormInputs {
   login: string;
@@ -51,10 +53,36 @@ const PhoneFormField = ({ control }: FormFieldProps) => (
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit } = useForm<FormInputs>();
+  const { control, handleSubmit, setError } = useForm<FormInputs>();
 
-  const onSubmit = (data: FormInputs) => {
-    alert(JSON.stringify(data));
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const onSubmit = async (data: FormInputs) => {
+    setIsRegistering(true);
+
+    try {
+      await AuthService.authRegisterCreate({
+        requestBody: {
+          fullname: data.fullname,
+          login: data.login,
+          password: data.password,
+          phone: data.phone.replace(/[ ()-]/g, ''),
+        },
+      });
+
+      navigate('/login');
+    } catch (e) {
+      if (!(e instanceof ApiError)) 
+        setError('login', { message: 'Неизвестная ошибка' });
+      else if (e.body?.details && e.body.details.startsWith('login')) 
+        setError('login', { message: 'Логин уже занят' });
+      else if (e.body?.details && e.body.details.startsWith('phone'))
+        setError('phone', { message: 'Нормер телефона уже занят' });
+      else 
+        setError('login', { message: 'Неизвестная ошибка' });
+    }
+
+    setIsRegistering(false);
   };
 
   return (
@@ -84,7 +112,9 @@ export const RegisterPage = () => {
           </Stack>
 
           <Stack direction='column' gap={1}>
-            <Button variant='contained' onClick={handleSubmit(onSubmit)}>Зарегистрироваться</Button>
+            <Button variant='contained' onClick={handleSubmit(onSubmit)} disabled={isRegistering}>
+              { isRegistering ? <CircularProgress size={25} /> : 'Зарегистрироваться' }
+            </Button>
             <Button onClick={() => navigate('/login')}>Авторизация</Button>
           </Stack>
         </Stack>

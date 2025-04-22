@@ -62,7 +62,7 @@ class RequestViewSet(ModelViewSet):
         except Exception as e:
             return Response(
                 {"details": f"Failed to save request"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         response_serializer = self.get_serializer(request_obj)
@@ -82,6 +82,9 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="category", description="Фильтрация по категории заявки", required=False, type=str),
             OpenApiParameter(name="author", description="Фильтрация по автору заявки", required=False, type=str),
             OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
+            OpenApiParameter(name="sort",
+                             description="Сортировка записей (title, description, address, category, fullname, last_update)",
+                             required=False, type=str)
         ],
         responses={
             200: ProductRequestSerializer(many=True),
@@ -105,6 +108,7 @@ class RequestViewSet(ModelViewSet):
             'category') is not None else None
         author = str(request.query_params.get('author')) if request.query_params.get('author') is not None else None
         me = str(request.query_params.get('me')) if request.query_params.get('me') is not None else None
+        sort = str(request.query_params.get('sort')) if request.query_params.get('sort') is not None else None
 
         if user.role == "client":
             if author:
@@ -186,6 +190,14 @@ class RequestViewSet(ModelViewSet):
                             filtered_queryset.append(request_obj)
                             break
             queryset = queryset.filter(id__in=[obj.id for obj in filtered_queryset])
+
+        if sort:
+            if sort in ["title", "description", "address", "category"]:
+                queryset = queryset.order_by(sort)
+            elif sort == "fullname":
+                queryset = sorted(queryset, key=lambda x: x.user_id.fullname.lower())
+            elif sort == "last_update":
+                queryset = sorted(queryset, key=lambda x: x.statuses[-1]["timestamp"], reverse=True)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

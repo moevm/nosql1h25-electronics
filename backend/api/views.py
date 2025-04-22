@@ -5,6 +5,7 @@ from authapp.serializers import ErrorResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
 from .models import ProductRequest, Photo, CreatedStatus
@@ -237,6 +238,12 @@ class PhotoViewSet(ModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
+    def get_permissions(self):
+        if self.action in ['postPhotos', 'getPhotos']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+
     @extend_schema(
         summary="Загрузить фото",
         description="Загружает фото в базу данных.",
@@ -258,7 +265,8 @@ class PhotoViewSet(ModelViewSet):
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
-        }
+        },
+        auth=[]
     )
     def postPhotos(self, request, *args, **kwargs):
         """POST запрос для загрузки фотографии"""
@@ -287,7 +295,8 @@ class PhotoViewSet(ModelViewSet):
             200: None,
             401: ErrorResponseSerializer,
             404: ErrorResponseSerializer,
-        }
+        },
+        auth=[]
     )
     def getPhotos(self, request, *args, **kwargs):
         """GET запрос для получения фотографии по ID"""

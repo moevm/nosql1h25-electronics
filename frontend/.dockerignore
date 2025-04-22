@@ -1,0 +1,15 @@
+.idea/
+.env
+.DS_Store
+.editorconfig
+.gitignore
+.dockerignore
+
+node_modules/
+dist/
+scripts/
+
+package-lock.json
+eslint.config.js
+generate-api.*
+schema.json

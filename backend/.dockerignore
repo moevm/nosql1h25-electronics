@@ -1,7 +1,0 @@
-.DS_Store
-.env
-venv/
-.idea/
-__pycache__/
-.venv/
-README.md

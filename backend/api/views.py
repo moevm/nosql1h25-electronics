@@ -228,7 +228,19 @@ class PhotoViewSet(ModelViewSet):
     @extend_schema(
         summary="Загрузить фото",
         description="Загружает фото в базу данных.",
-        request=PhotoSerializer,
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'photo': {
+                        'type': 'string',
+                        'format': 'binary',
+                        'description': 'Файл изображения (до 5MB)'
+                    }
+                },
+                'required': ['photo']
+            }
+        },
         responses={
             200: PhotoResponseSerializer,
             400: ErrorResponseSerializer,
@@ -254,7 +266,7 @@ class PhotoViewSet(ModelViewSet):
         photo = Photo.create(data=photo_data.read())
         photo.save()
 
-        return Response({"photo_id": str(photo.id)}, status=status.HTTP_201_CREATED)
+        return Response({"id": str(photo.id)}, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         summary="Получить фото",
@@ -422,7 +434,19 @@ class DatabaseBackupViewSet(ModelViewSet):
     @extend_schema(
         summary="Импорт резервной копии",
         description="Позволяет импортировать данные всех коллекций из JSON файла.",
-        request=OpenApiTypes.BINARY,
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'file': {
+                        'type': 'string',
+                        'format': 'binary',
+                        'description': 'JSON файл резервной копии'
+                    }
+                },
+                'required': ['file']
+            }
+        },
         responses={
             200: OpenApiResponse(description="Резервная копия успешно импортирована"),
             400: ErrorResponseSerializer,

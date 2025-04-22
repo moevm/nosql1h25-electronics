@@ -28,7 +28,7 @@ def convert_objectids(obj):
                     new_obj[k] = ObjectId(v)
                 except Exception:
                     new_obj[k] = v
-            elif k == 'timestamp' and isinstance(v, str):
+            elif k in ('creation_date', 'edit_date', 'timestamp') and isinstance(v, str):
                 try:
                     new_obj[k] = datetime.fromisoformat(v.replace('Z', '+00:00'))
                 except Exception:
@@ -39,7 +39,16 @@ def convert_objectids(obj):
                 except Exception:
                     new_obj[k] = v
             elif k == 'photos' and isinstance(v, list):
-                new_obj[k] = [convert_objectids(item) for item in v]
+                photo_objects = []
+                for photo_id in v:
+                    if isinstance(photo_id, str):
+                        try:
+                            photo_objects.append(ObjectId(photo_id))
+                        except Exception:
+                            photo_objects.append(photo_id)
+                    else:
+                        photo_objects.append(photo_id)
+                new_obj[k] = photo_objects
             elif k == 'statuses' and isinstance(v, list):
                 new_obj[k] = [convert_objectids(item) for item in v]
             else:
@@ -54,7 +63,7 @@ def convert_objectids(obj):
                 except Exception:
                     new_list.append(item)
             else:
-                new_list.append(convert_objectids(item))  # Рекурсивный вызов
+                new_list.append(convert_objectids(item))
         return new_list
     else:
         return obj

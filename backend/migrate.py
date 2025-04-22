@@ -75,14 +75,17 @@ try:
     db = client[MONGO_DB_NAME]
 
     try:
-        if MONGO_USER not in [user['user'] for user in db.system.users.find()]:
+        users_info = db.command("usersInfo", {"user": MONGO_USER, "db": MONGO_DB_NAME})
+        users = users_info.get("users", [])
+
+        if not users:
             print(f"User '{MONGO_USER}' does not exist. Creating...")
             db.command("createUser", MONGO_USER,
-                             pwd=MONGO_PASSWORD,
-                             roles=[{"role": "readWrite", "db": MONGO_DB_NAME}])
+                       pwd=MONGO_PASSWORD,
+                       roles=[{"role": "readWrite", "db": MONGO_DB_NAME}])
             print(f"User '{MONGO_USER}' created with readWrite access to '{MONGO_DB_NAME}'.")
         else:
-            print(f"User '{MONGO_USER}' already exists.")
+            print(f"User '{MONGO_USER}' already exists. Skipping user creation.")  # Добавлено сообщение
     except Exception as e:
         print(f"Error creating or checking user: {e}")
         raise

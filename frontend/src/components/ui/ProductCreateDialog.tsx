@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent, Box, Typography, TextField, MenuItem, DialogActions, Button, Grid, Avatar } from "@mui/material";
-import { ApiService, Photo, ProductRequest } from "@src/api";
+import { ApiService, ProductRequest } from "@src/api";
 import { CategoryEnum } from "@src/api/models/CategoryEnum";
 import { categoryToRussian } from "@src/lib/russianConverters";
 import { useEffect, useMemo, useState } from "react";
@@ -11,14 +11,14 @@ interface CreateRequestDialogProps {
 }
 
 const categoryEnumValues: CategoryEnum[] = [
-  'laptop', 
-  'smartphone', 
-  'tablet', 
-  'pc', 
-  'tv', 
-  'audio', 
-  'console', 
-  'periphery', 
+  'laptop',
+  'smartphone',
+  'tablet',
+  'pc',
+  'tv',
+  'audio',
+  'console',
+  'periphery',
   'other'
 ];
 
@@ -61,35 +61,26 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
     if (!form.description?.trim()) newErrors.description = 'Введите описание';
     if (!form.address?.trim()) newErrors.address = 'Введите адрес';
     if (!form.price || Number(form.price) <= 0) newErrors.price = 'Укажите цену больше 0';
-    //if (form.images.length === 0) newErrors.images = 'Загрузите хотя бы одно изображение';
+    if (form.images.length === 0) newErrors.images = 'Загрузите хотя бы одно изображение';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const uploadPhotos = async (images: File[]) => {
-    const photosData = await Promise.all(
-      images.map((image) => fileToBase64(image))
-    );
-
-    const photoRequests = photosData.map((data) => ({
-      data,
-    } as Photo));
-
-    const photosIds = [] as string[];
-    
-    photoRequests.forEach(async pr => {
+    const uploads = images.map(async (image) => {
       const response = await ApiService.apiPhotosCreate({
-        requestBody: pr,
+        formData: { photo: image }
       });
-      photosIds.push(response.id)
-    })
+      return response.id;
+    });
+  
+    const photosIds = await Promise.all(uploads);
     return photosIds;
   }
 
   const handleSubmit = async () => {
     if (validate()) {
-      const photos = [] as string[]//await uploadPhotos(form.images);
-      console.log(photos);
+      const photos = await uploadPhotos(form.images);
       const { title, description, address, category, price } = form;
 
       if (!title || !description || !address || !category || !price) {
@@ -98,7 +89,7 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
         return;
       }
 
-      ApiService.apiRequestsCreate({
+      const response = await ApiService.apiRequestsCreate({
         requestBody: {
           id: '',
           statuses: [],
@@ -111,6 +102,8 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
           price,
         }
       })
+
+      console.log(response);
       onSubmit(form);
       onClose();
     }
@@ -142,7 +135,7 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
 
           <Grid container spacing={1} mt={1}>
             {imagePreviews.map((p, index) => (
-              <Avatar variant="rounded" src={p.url} alt={`фото-${index}`} sx={{ width: 64, height: 64 }}/>
+              <Avatar variant="rounded" src={p.url} alt={`фото-${index}`} sx={{ width: 64, height: 64 }} />
             ))}
           </Grid>
         </Box>

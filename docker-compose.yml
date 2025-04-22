@@ -1,13 +1,20 @@
 version: '3.8'
 
 services:
-  backend:
-    build: .
+  frontend:
+    build: ./frontend
     ports:
-      - "127.0.0.1:8000:8000"
+      - 8000:80
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    build: ./backend
     env_file:
       - .env
     environment:
+      BASE_URL: ""
       MONGO_HOST: db
       MONGO_PORT: 27017
     depends_on:
@@ -21,7 +28,6 @@ services:
     env_file:
       - .env
     environment:
-      BASE_URL: ""
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
 

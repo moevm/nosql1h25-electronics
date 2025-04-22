@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent, Box, Typography, TextField, MenuItem, DialogActions, Button, Grid, Avatar } from "@mui/material";
-import { ApiService } from "@src/api";
+import { ApiService, Photo, ProductRequest } from "@src/api";
 import { CategoryEnum } from "@src/api/models/CategoryEnum";
 import { categoryToRussian } from "@src/lib/russianConverters";
 import { useEffect, useMemo, useState } from "react";
@@ -22,14 +22,23 @@ const categoryEnumValues: CategoryEnum[] = [
   'other'
 ];
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogProps) => {
-  const [form, setForm] = useState({
-    images: [] as File[],
+  const [form, setForm] = useState<Partial<ProductRequest> & { images: File[] }>({
+    images: [],
     title: '',
-    category: '',
     description: '',
     address: '',
-    price: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,20 +56,61 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!form.title.trim()) newErrors.title = 'Введите название';
+    if (!form.title?.trim()) newErrors.title = 'Введите название';
     if (!form.category) newErrors.category = 'Выберите категорию';
-    if (!form.description.trim()) newErrors.description = 'Введите описание';
-    if (!form.address.trim()) newErrors.address = 'Введите адрес';
+    if (!form.description?.trim()) newErrors.description = 'Введите описание';
+    if (!form.address?.trim()) newErrors.address = 'Введите адрес';
     if (!form.price || Number(form.price) <= 0) newErrors.price = 'Укажите цену больше 0';
-    if (form.images.length === 0) newErrors.images = 'Загрузите хотя бы одно изображение';
+    //if (form.images.length === 0) newErrors.images = 'Загрузите хотя бы одно изображение';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const uploadPhotos = async (images: File[]) => {
+    const photosData = await Promise.all(
+      images.map((image) => fileToBase64(image))
+    );
+
+    const photoRequests = photosData.map((data) => ({
+      data,
+    } as Photo));
+
+    const photosIds = [] as string[];
+    
+    photoRequests.forEach(async pr => {
+      const response = await ApiService.apiPhotosCreate({
+        requestBody: pr,
+      });
+      photosIds.push(response.id)
+    })
+    return photosIds;
+  }
+
   const handleSubmit = async () => {
     if (validate()) {
-      //ApiService.apiPhotosCreate();
-      //ApiService.apiRequestsCreate({...form});
+      const photos = [] as string[]//await uploadPhotos(form.images);
+      console.log(photos);
+      const { title, description, address, category, price } = form;
+
+      if (!title || !description || !address || !category || !price) {
+        validate();
+        console.warn("Не все поля заполнены");
+        return;
+      }
+
+      ApiService.apiRequestsCreate({
+        requestBody: {
+          id: '',
+          statuses: [],
+          user_id: '',
+          photos,
+          title,
+          description,
+          address,
+          category,
+          price,
+        }
+      })
       onSubmit(form);
       onClose();
     }
@@ -106,7 +156,7 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
           error={!!errors.category} helperText={errors.category}>
           {categoryEnumValues.map((cat) => (
             <MenuItem key={cat} value={cat}>
-              {cat}
+              {categoryToRussian(cat)}
             </MenuItem>
           ))}
         </TextField>

@@ -10,7 +10,6 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { CategoryEnum } from './models/CategoryEnum';
 export type { CustomTokenObtainPair } from './models/CustomTokenObtainPair';
 export type { ErrorResponse } from './models/ErrorResponse';
-export type { Photo } from './models/Photo';
 export type { PhotoResponse } from './models/PhotoResponse';
 export type { ProductRequest } from './models/ProductRequest';
 export type { Register } from './models/Register';

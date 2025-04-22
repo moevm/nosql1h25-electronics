@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Photo } from '../models/Photo';
 import type { PhotoResponse } from '../models/PhotoResponse';
 import type { ProductRequest } from '../models/ProductRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -28,15 +27,20 @@ export class ApiService {
      * @throws ApiError
      */
     public static apiBackupCreate({
-        requestBody,
+        formData,
     }: {
-        requestBody?: Blob,
+        formData?: {
+            /**
+             * JSON файл резервной копии
+             */
+            file: Blob;
+        },
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/backup/',
-            body: requestBody,
-            mediaType: 'application/json',
+            formData: formData,
+            mediaType: 'multipart/form-data',
         });
     }
     /**
@@ -46,15 +50,20 @@ export class ApiService {
      * @throws ApiError
      */
     public static apiPhotosCreate({
-        requestBody,
+        formData,
     }: {
-        requestBody: Photo,
+        formData?: {
+            /**
+             * Файл изображения (до 5MB)
+             */
+            photo: Blob;
+        },
     }): CancelablePromise<PhotoResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/photos/',
-            body: requestBody,
-            mediaType: 'application/json',
+            formData: formData,
+            mediaType: 'multipart/form-data',
         });
     }
     /**

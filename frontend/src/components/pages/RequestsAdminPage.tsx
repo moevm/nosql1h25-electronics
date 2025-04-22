@@ -9,7 +9,7 @@ import { saveAs } from 'file-saver';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFields, updateRequests } from '@src/store/RequestsSlice';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ApiService, CategoryEnum } from '@src/api';
 
 export interface RequestsAdminFormInputs {
@@ -141,6 +141,8 @@ export const RequestsClientPage = () => {
   const requestsData = useAppSelector(selectRequests);
   const fieldsValues = useAppSelector(selectAdminForm);
 
+  const backupImportRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (fieldsValues.from) setValue('from', fieldsValues.from);
     if (fieldsValues.to) setValue('to', fieldsValues.to);
@@ -167,6 +169,25 @@ export const RequestsClientPage = () => {
     }).catch(() => alert('Ошибка экспорта данных'));
   };
 
+  const onImportBackup = async () => {
+    if (!confirm('Это действие сотрёт все существующие данные в БД и заменит их теми, что в файле. Вы уверены, что хотите продолжить?')) return;
+
+    backupImportRef.current?.click();
+  };
+
+  const onBackupFileChanged = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+
+    const file = e.target.files[0];
+
+    try {
+      await ApiService.apiBackupCreate({ requestBody: file });
+      alert('Данные успешно импортированы');
+    } catch {
+      alert('Ошибка импорта данных');
+    }
+  };
+
   const onLogout = () => {
     dispatch(logout()).then(() => dispatch(reset()));
   };
@@ -180,7 +201,14 @@ export const RequestsClientPage = () => {
           <Stack direction='row' gap={1}>
             <Button variant='contained'>Профиль</Button>
             <Button variant='contained' onClick={onExportBackup}>Экспорт БД</Button>
-            <Button variant='contained'>Импорт БД</Button>
+            <Button variant='contained' onClick={onImportBackup}>Импорт БД</Button>
+            <input
+              ref={backupImportRef}
+              style={{ display: 'none' }}
+              type='file'
+              accept='application/JSON'
+              onChange={onBackupFileChanged} 
+            />
             <Button variant='contained'>Статистика</Button>
             <Button 
               variant='contained' 

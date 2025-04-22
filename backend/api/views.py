@@ -62,7 +62,7 @@ class RequestViewSet(ModelViewSet):
         except Exception as e:
             return Response(
                 {"details": f"Failed to save request"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         response_serializer = self.get_serializer(request_obj)

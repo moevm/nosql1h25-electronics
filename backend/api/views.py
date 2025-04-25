@@ -232,6 +232,41 @@ class RequestViewSet(ModelViewSet):
         serializer = ProductRequestSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Обновить актуальный статус заявки",
+        description="Позволяет добавить новый статус заявке. Обязательным является указание поля type. Остальные поля необходимо указывать в зависимости от типа заявки.",
+        request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Тип статуса заявки (например, created_status, price_offer_status, date_accept_status)."
+                },
+                "price": {
+                    "type": "number",
+                    "description": "Цена для статуса price_offer_status (обязательно для этого типа)."
+                },
+                "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Дата для статуса date_offer_status (обязательно для этого типа)."
+                },
+                "success": {
+                    "type": "boolean",
+                    "description": "Результат закрытия заявки для статуса closed_status (обязательно для этого типа)."
+                }
+            },
+            "required": ["type"]
+        }
+    },
+        responses={
+            201: ProductRequestSerializer,  # Успешно создана заявка
+            400: ErrorResponseSerializer,  # Ошибка ввода данных
+            401: ErrorResponseSerializer,  # Пользователь не авторизован
+            403: ErrorResponseSerializer  # У пользователя недостаточно прав
+        }
+    )
     def putRequests(self, request, pk=None, *args, **kwargs):
         user = request.user
 
@@ -240,7 +275,7 @@ class RequestViewSet(ModelViewSet):
         except ProductRequest.DoesNotExist:
             return Response({"details": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if product_request.user_id != user and not user.is_admin:
+        if product_request.user_id.id != user.id and not user.is_admin:
             return Response({"details": "Not your request"}, status=status.HTTP_403_FORBIDDEN)
 
         status_type = request.data.get("type")
@@ -251,7 +286,7 @@ class RequestViewSet(ModelViewSet):
         if last_status.type != "created_status":
             last_initiator = last_status.user_id
         else:
-            last_initiator = product_request.author
+            last_initiator = product_request.user_id
 
         if status_type == "price_offer_status" and last_status.type not in ["created_status", "price_offer_status"]:
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
@@ -275,13 +310,22 @@ class RequestViewSet(ModelViewSet):
             return Response({"details": "You can't initiate date offers"}, status=status.HTTP_403_FORBIDDEN)
 
         if status_type == "price_offer_status" and last_status.type == "price_offer_status" and (user.is_admin == last_initiator.is_admin):
-            return Response({"details": "You can't do two offers in a row"}, status=status.status.HTTP_403_FORBIDDEN)
+            return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
 
         if status_type == "date_offer_status" and last_status.type == "date_offer_status" and (user.is_admin == last_initiator.is_admin):
-            return Response({"details": "You can't do two offers in a row"}, status=status.status.HTTP_403_FORBIDDEN)
+            return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
 
         if status_type == "closed_status" and request.data.get("success") and not user.is_admin:
-            return Response({"details": "You can't confirm succesful closing"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"details": "You can't confirm successful closing"}, status=status.HTTP_403_FORBIDDEN)
+
+        if status_type == "price_accept_status" and (user.is_admin == last_initiator.is_admin):
+            return Response({"details": "You can't accept price"}, status=status.HTTP_403_FORBIDDEN)
+
+        if status_type == "date_accept_status" and (user.is_admin == last_initiator.is_admin):
+            return Response({"details": "You can't accept date"}, status=status.HTTP_403_FORBIDDEN)
+
+        if last_status.type == "closed_status":
+            return Response({"details": "Request already closed"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             new_status = None

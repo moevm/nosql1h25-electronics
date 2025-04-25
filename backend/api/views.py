@@ -282,7 +282,8 @@ class RequestViewSet(ModelViewSet):
         except Exception as e:
             return Response({"details": "Missing fields for specific status type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"details": "Status updated successfully"}, status=status.HTTP_200_OK)
+        response_serializer = self.get_serializer(product_request)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class PhotoViewSet(ModelViewSet):

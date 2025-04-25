@@ -247,6 +247,27 @@ class RequestViewSet(ModelViewSet):
         if not status_type:
             return Response({"details": "Missing field: type"}, status=status.HTTP_400_BAD_REQUEST)
 
+        last_status = product_request.statuses[-1]
+        if last_status.type != "created_status":
+            last_initiator = last_status.user_id
+        else:
+            last_initiator = product_request.author
+
+        if status_type == "price_offer_status" and last_status.type not in ["created_status", "price_offer_status"]:
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if status_type == "price_accept_status" and last_status.type not in ["price_offer_status"]:
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if status_type == "date_offer_status" and last_status.type not in ["created_status", "date_offer_status", "price_accept_status"]:
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if status_type == "date_accept_status" and last_status.type not in ["date_offer_status"]:
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if status_type == "closed_status" and request.data.get("success") and last_status.type not in ["date_accept_status"]:
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             new_status = None
 

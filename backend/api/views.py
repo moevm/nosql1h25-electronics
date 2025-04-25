@@ -8,7 +8,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from .models import ProductRequest, Photo, CreatedStatus
+from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer
 from datetime import datetime, time
 from bson import ObjectId
@@ -231,6 +231,58 @@ class RequestViewSet(ModelViewSet):
 
         serializer = ProductRequestSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def putRequests(self, request, pk=None, *args, **kwargs):
+        user = request.user
+
+        try:
+            product_request = ProductRequest.objects.get(id=pk)
+        except ProductRequest.DoesNotExist:
+            return Response({"details": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if product_request.user_id != user and not user.is_admin:
+            return Response({"details": "Not your request"}, status=status.HTTP_403_FORBIDDEN)
+
+        status_type = request.data.get("type")
+        if not status_type:
+            return Response({"details": "Missing field: type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            new_status = None
+
+            if status_type == "price_offer_status":
+                new_status = PriceOfferStatus.create(
+                    price=request.data.get("price"),
+                    user_id=user.id
+                )
+
+            elif status_type == "price_accept_status":
+                new_status = PriceAcceptStatus.create(user_id=user.id)
+
+            elif status_type == "date_offer_status":
+                new_status = DateOfferStatus.create(
+                    date=datetime.fromisoformat(request.data.get("date")),
+                    user_id=user.id
+                )
+
+            elif status_type == "date_accept_status":
+                new_status = DateAcceptStatus.create(user_id=user.id)
+
+            elif status_type == "closed_status":
+                new_status = ClosedStatus.create(
+                    success=request.data.get("success"),
+                    user_id=user.id
+                )
+
+            else:
+                return Response({"details": "Invalid status type"}, status=status.HTTP_400_BAD_REQUEST)
+
+            product_request.add_status(new_status)
+
+        except Exception as e:
+            return Response({"details": "Missing fields for specific status type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"details": "Status updated successfully"}, status=status.HTTP_200_OK)
 
 
 class PhotoViewSet(ModelViewSet):

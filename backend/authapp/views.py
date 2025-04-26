@@ -1,10 +1,11 @@
+from datetime import datetime
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer, UserResponseSerializer, \
-    ErrorResponseSerializer, TokenResponseSerializer
+    ErrorResponseSerializer, TokenResponseSerializer, UserEditRequestSerializer
 
 
 class AuthViewSet(viewsets.GenericViewSet):
@@ -66,9 +67,33 @@ class AuthViewSet(viewsets.GenericViewSet):
         },
     )
     @action(detail=False, methods=['get'], url_path='me')
-    def me(self, request):
+    def getMe(self, request):
         serializer = UserResponseSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=UserEditRequestSerializer,
+        responses={
+            200: OpenApiResponse(response=UserResponseSerializer, description="Current user info"),
+            400: OpenApiResponse(response=ErrorResponseSerializer, description="Incorrect field"),
+            401: OpenApiResponse(response=ErrorResponseSerializer, description="Authorization required"),
+            403: OpenApiResponse(response=ErrorResponseSerializer,
+                                 description="You do not have permission to perform this action"),
+        },
+    )
+    @action(detail=False, methods=['put'], url_path='me')
+    def putMe(self, request):
+        user = request.user
+        serializer = UserEditRequestSerializer(data=request.data, context={'request': request}, partial=True)
+        if serializer.is_valid():
+            updated_user = serializer.update(user, serializer.validated_data)
+            return Response(UserResponseSerializer(updated_user).data, status=status.HTTP_200_OK)
+
+        errors = serializer.errors
+        for field in ['fullname', 'phone']:
+            if field in errors:
+                return Response({"details": f"{field} - {errors[field][0]}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"details": "Incorrect field"}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         request=serializers.Serializer,

@@ -25,6 +25,11 @@ class PriceOfferStatusSerializer(DocumentSerializer):
         model = PriceOfferStatus
         fields = '__all__'
 
+class PriceAcceptStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = PriceAcceptStatus
+        fields = '__all__'
+
 class DateOfferStatusSerializer(DocumentSerializer):
     class Meta:
         model = DateOfferStatus

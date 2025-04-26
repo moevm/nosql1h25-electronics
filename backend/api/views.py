@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
 from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
-from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
@@ -235,39 +235,15 @@ class RequestViewSet(ModelViewSet):
     @extend_schema(
         summary="Обновить актуальный статус заявки",
         description="Позволяет добавить новый статус заявке. Обязательным является указание поля type. Остальные поля необходимо указывать в зависимости от типа заявки.",
-        request={
-        "application/json": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "description": "Тип статуса заявки (например, created_status, price_offer_status, date_accept_status)."
-                },
-                "price": {
-                    "type": "number",
-                    "description": "Цена для статуса price_offer_status (обязательно для этого типа)."
-                },
-                "date": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Дата для статуса date_offer_status (обязательно для этого типа)."
-                },
-                "success": {
-                    "type": "boolean",
-                    "description": "Результат закрытия заявки для статуса closed_status (обязательно для этого типа)."
-                }
-            },
-            "required": ["type"]
-        }
-    },
+        request=StatusSerializer,
         responses={
-            201: ProductRequestSerializer,  # Успешно создана заявка
-            400: ErrorResponseSerializer,  # Ошибка ввода данных
-            401: ErrorResponseSerializer,  # Пользователь не авторизован
-            403: ErrorResponseSerializer  # У пользователя недостаточно прав
+            201: StatusSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer
         }
     )
-    def putRequests(self, request, pk=None, *args, **kwargs):
+    def postRequestsStatuses(self, request, pk=None, *args, **kwargs):
         user = request.user
 
         try:
@@ -362,7 +338,7 @@ class RequestViewSet(ModelViewSet):
         except Exception as e:
             return Response({"details": "Missing fields for specific status type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        response_serializer = self.get_serializer(product_request)
+        response_serializer = StatusSerializer(new_status)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 

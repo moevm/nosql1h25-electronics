@@ -22,8 +22,8 @@ class StatusSerializer(DocumentSerializer):
         fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
 
     type = serializers.CharField(required=True)
-    timestamp = serializers.DateTimeField(default=datetime.utcnow)
-    user_id = serializers.CharField(required=False)
+    timestamp = serializers.DateTimeField(default=datetime.utcnow, read_only=True)
+    user_id = serializers.CharField(required=False, source="user_id.id",  read_only=True)
     price = serializers.FloatField(required=False)
     date = serializers.DateTimeField(required=False)
     success = serializers.BooleanField(required=False)

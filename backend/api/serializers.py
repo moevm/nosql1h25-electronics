@@ -2,8 +2,9 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 import os
+from datetime import datetime
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -14,6 +15,18 @@ class PhotoResponseSerializer(DocumentSerializer):
     class Meta:
         model = Photo
         fields = ['id']
+
+class StatusSerializer(DocumentSerializer):
+    class Meta:
+        model = Status  # Базовая модель
+        fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
+
+    type = serializers.CharField(required=True)
+    timestamp = serializers.DateTimeField(default=datetime.utcnow)
+    user_id = serializers.CharField(required=False)
+    price = serializers.FloatField(required=False)
+    date = serializers.DateTimeField(required=False)
+    success = serializers.BooleanField(required=False)
 
 class CreatedStatusSerializer(DocumentSerializer):
     class Meta:
@@ -46,7 +59,7 @@ class ClosedStatusSerializer(DocumentSerializer):
         fields = '__all__'
 
 class ProductRequestSerializer(DocumentSerializer):
-    statuses = serializers.ListField(read_only=True)
+    statuses = StatusSerializer(many=True, read_only=True)
     user_id = serializers.CharField(source="user_id.id", read_only=True)
     photos = serializers.ListField(child=serializers.CharField())
 

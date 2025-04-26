@@ -2,7 +2,7 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 import os
 
 class PhotoSerializer(DocumentSerializer):

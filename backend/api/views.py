@@ -307,6 +307,8 @@ class RequestViewSet(ModelViewSet):
             new_status = None
 
             if status_type == "price_offer_status":
+                if request.data.get("price") <= 0:
+                    raise Exception
                 new_status = PriceOfferStatus.create(
                     price=request.data.get("price"),
                     user_id=user.id
@@ -325,6 +327,8 @@ class RequestViewSet(ModelViewSet):
                 new_status = DateAcceptStatus.create(user_id=user.id)
 
             elif status_type == "closed_status":
+                if request.data.get("success") is not True and request.data.get("success") is not False:
+                    raise Exception
                 new_status = ClosedStatus.create(
                     success=request.data.get("success"),
                     user_id=user.id

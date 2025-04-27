@@ -59,7 +59,7 @@ MONGO_HOST=db
 MONGO_PORT=27017
 MONGO_PASSWORD=user_password
 MONGO_USER=username
-SECRET_KEY=...
+SECRET_KEY=django-insecure-#vzf3%=9q%34)r68^f&ui(t&%**s=(!#vl(0@j^w7o$-ka^9a@
 
 MONGO_ROOT_USERNAME=root_username
 MONGO_ROOT_PASSWORD=root_password

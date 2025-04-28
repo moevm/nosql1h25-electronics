@@ -21,7 +21,17 @@ class StatusSerializer(DocumentSerializer):
         model = Status  # Базовая модель
         fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
 
-    type = serializers.CharField(required=True)
+    type = serializers.ChoiceField(
+        choices=[
+            'created_status',
+            'price_offer_status',
+            'price_accept_status',
+            'date_offer_status',
+            'date_accept_status',
+            'closed_status'
+        ],
+        required=True
+    )
     timestamp = serializers.DateTimeField(default=datetime.utcnow, read_only=True)
     user_id = serializers.CharField(required=False, source="user_id.id",  read_only=True)
     price = serializers.FloatField(required=False)

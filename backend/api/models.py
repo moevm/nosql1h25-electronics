@@ -34,7 +34,9 @@ class Photo(Document):
 
 class Status(EmbeddedDocument):
     timestamp = DateTimeField(default=datetime.utcnow)
-    type = StringField()
+    type = StringField(choices=[
+        'created_status', 'price_offer_status', 'price_accept_status', 'date_offer_status', 'date_accept_status', 'closed_status'
+    ], required=True)
 
     meta = {'allow_inheritance': True}
 

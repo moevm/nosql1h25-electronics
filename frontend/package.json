@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-api": "bash ./generate-api.sh",
+    "generate-api:docker": "bash ./generate-api.sh --docker",
     "generate-api-win": "powershell -ExecutionPolicy Bypass -File ./generate-api.ps1",
+    "generate-api-win:docker": "powershell -ExecutionPolicy Bypass -File ./generate-api.ps1 --docker",
     "patch-request": "node ./scripts/postgenerate.cjs"
   },
   "dependencies": {

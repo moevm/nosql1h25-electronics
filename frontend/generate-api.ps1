@@ -6,7 +6,19 @@ if (-Not (Test-Path $gitBashPath)) {
     exit 1
 }
 
-& "$gitBashPath" "$scriptPath"
+$dockerFlag = $false
+
+foreach ($arg in $args) {
+    if ($arg -eq "--docker") {
+        $dockerFlag = $true
+    }
+}
+
+if ($dockerFlag) {
+    & "$gitBashPath" "$scriptPath" "--docker"
+} else {
+    & "$gitBashPath" "$scriptPath"
+}
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Success"

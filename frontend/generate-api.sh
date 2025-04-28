@@ -1,12 +1,42 @@
 #!/bin/bash
 
+USE_DOCKER=false
+
+for arg in "$@"
+do
+  if [ "$arg" == "--docker" ]; then
+    USE_DOCKER=true
+  fi
+done
+
 BACKEND_SWAGGER_PATH="./schema.json"
 FRONTEND_API_DIR="./src/api"
 TMP_DIR="./tmp/openapi_codegen_tmp"
 
-echo "generating schema.json"
-python ../backend/manage.py spectacular --format openapi-json --file schema.json
+if [ "$USE_DOCKER" = true ]; then
+  echo "generating schema.json using Docker..."
 
+  echo "running backend container..."
+  docker-compose -f ../docker-compose.yml up --build backend -d
+  echo "backend container is running"
+
+  echo "executing swagger generation in backend..."
+  docker-compose -f ../docker-compose.yml exec backend python manage.py spectacular --format openapi-json --file /app/schema.json
+  
+  echo "executing swagger generation in backend..."
+  cp ../backend/schema.json ./schema.json
+else
+  echo "generating schema.json locally..."
+  
+  python ../backend/manage.py spectacular --format openapi-json --file schema.json
+fi
+
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to generate schema.json (command failed)"
+  exit 1
+fi
+
+echo "swagger file succesfully generated"
 echo "generating API client..."
 
 mkdir -p "$TMP_DIR"

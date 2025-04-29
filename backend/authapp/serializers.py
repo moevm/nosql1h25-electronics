@@ -1,5 +1,5 @@
 import re
-from datetime import timedelta, datetime
+from datetime import timedelta
 from rest_framework import serializers
 from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken
@@ -48,31 +48,35 @@ class UserResponseSerializer(DocumentSerializer):
         fields = ('user_id', 'fullname', 'role', 'phone', 'creation_date', 'edit_date')
 
 
-class UserEditRequestSerializer(serializers.Serializer):
-    fullname = serializers.CharField(required=False, allow_blank=True, default=None)
-    phone = serializers.CharField(required=False, allow_blank=True, default=None)
+class UserEditRequestSerializer(DocumentSerializer):
+    fullname = serializers.CharField(required=False)
+    phone = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ('fullname', 'phone')
+
+    def validate_fullname(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Fullname cannot be empty or only spaces")
+        return value
 
     def validate_phone(self, value):
-        if value is None:
-            return value
-
+        if not value.strip():
+            raise serializers.ValidationError("Phone cannot be empty or only spaces")
         if not PHONE_REGEX.match(value):
             raise serializers.ValidationError("Phone number format is invalid. Expected format: +7XXXXXXXXXX")
 
         request = self.context.get('request')
         if request:
             user_exists = User.objects(phone=value).first()
-            if user_exists and user_exists != request.user:
+            if user_exists and user_exists.id != request.user.id:
                 raise serializers.ValidationError("Phone number already exists")
         return value
 
     def update(self, instance, validated_data):
         instance.update(**validated_data)
         return instance
-
-    class Meta:
-        model = User
-        fields = ('fullname', 'phone')
 
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):

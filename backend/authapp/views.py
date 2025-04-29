@@ -90,10 +90,8 @@ class AuthViewSet(viewsets.GenericViewSet):
             return Response(UserResponseSerializer(updated_user).data, status=status.HTTP_200_OK)
 
         errors = serializer.errors
-        for field in ['fullname', 'phone']:
-            if field in errors:
-                return Response({"details": f"{field} - {errors[field][0]}"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"details": "Incorrect field"}, status=status.HTTP_400_BAD_REQUEST)
+        error_messages = "; ".join(f"{field} - {errors[field][0]}" for field in errors)
+        return Response({"details": error_messages}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         request=serializers.Serializer,

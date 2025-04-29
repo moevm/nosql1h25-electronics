@@ -21,6 +21,14 @@ class RequestViewSet(ModelViewSet):
     serializer_class = ProductRequestSerializer
     filter_backends = [OrderingFilter]
 
+    ALLOWED_PREVIOUS_STATUSES = {
+        "price_offer_status": ["created_status", "price_offer_status"],
+        "price_accept_status": ["price_offer_status"],
+        "date_offer_status": ["created_status", "date_offer_status", "price_accept_status"],
+        "date_accept_status": ["date_offer_status"],
+        "closed_status": ["created_status", "price_offer_status", "price_accept_status", "date_offer_status", "date_accept_status"]
+    }
+
     @extend_schema(
         summary="Создать новую заявку",
         description="Позволяет пользователю создать новую заявку.",
@@ -267,19 +275,10 @@ class RequestViewSet(ModelViewSet):
         if last_status.type == "closed_status":
             return Response({"details": "Request already closed"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if status_type == "price_offer_status" and last_status.type not in ["created_status", "price_offer_status"]:
+        if last_status.type not in self.ALLOWED_PREVIOUS_STATUSES.get(status_type, []):
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if status_type == "price_accept_status" and last_status.type not in ["price_offer_status"]:
-            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if status_type == "date_offer_status" and last_status.type not in ["created_status", "date_offer_status", "price_accept_status"]:
-            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if status_type == "date_accept_status" and last_status.type not in ["date_offer_status"]:
-            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if status_type == "closed_status" and request.data.get("success") and last_status.type not in ["date_accept_status"]:
+        if status_type == "closed_status" and request.data.get("success") and last_status.type != "date_accept_status":
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
 
         if status_type == "price_offer_status" and last_status.type != "price_offer_status" and not user.is_admin:

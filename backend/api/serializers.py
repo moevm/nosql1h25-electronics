@@ -17,10 +17,6 @@ class PhotoResponseSerializer(DocumentSerializer):
         fields = ['id']
 
 class StatusSerializer(DocumentSerializer):
-    class Meta:
-        model = Status  # Базовая модель
-        fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
-
     type = serializers.ChoiceField(
         choices=[
             'created_status',
@@ -37,6 +33,10 @@ class StatusSerializer(DocumentSerializer):
     price = serializers.FloatField(required=False)
     date = serializers.DateTimeField(required=False)
     success = serializers.BooleanField(required=False)
+
+    class Meta:
+        model = Status  # Базовая модель
+        fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
 
 class CreatedStatusSerializer(DocumentSerializer):
     class Meta:

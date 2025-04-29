@@ -264,6 +264,9 @@ class RequestViewSet(ModelViewSet):
         else:
             last_initiator = product_request.user_id
 
+        if last_status.type == "closed_status":
+            return Response({"details": "Request already closed"}, status=status.HTTP_400_BAD_REQUEST)
+
         if status_type == "price_offer_status" and last_status.type not in ["created_status", "price_offer_status"]:
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -299,9 +302,6 @@ class RequestViewSet(ModelViewSet):
 
         if status_type == "date_accept_status" and (user.is_admin == last_initiator.is_admin):
             return Response({"details": "You can't accept date"}, status=status.HTTP_403_FORBIDDEN)
-
-        if last_status.type == "closed_status":
-            return Response({"details": "Request already closed"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             new_status = None

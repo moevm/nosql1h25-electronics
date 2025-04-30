@@ -549,3 +549,12 @@ class DatabaseBackupViewSet(ModelViewSet):
 class UserViewSet(ModelViewSet):
     queryset = ProductRequest.objects.all()
 
+    def getUserById(self, request, *args, **kwargs):
+        try:
+            instance = ProductRequest.objects.get(id=pk)
+        except:
+            return Response(
+                {"details": "ProductRequest not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+

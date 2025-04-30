@@ -558,3 +558,12 @@ class UserViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        user = request.user
+        if not user.is_admin and str(instance.user_id.id) != str(user.id):
+            return Response(
+                {"details": "You do not have permission to view this request."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = ProductRequestSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)

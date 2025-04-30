@@ -2,7 +2,7 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
 from datetime import datetime
 
@@ -18,14 +18,7 @@ class PhotoResponseSerializer(DocumentSerializer):
 
 class StatusSerializer(DocumentSerializer):
     type = serializers.ChoiceField(
-        choices=[
-            'created_status',
-            'price_offer_status',
-            'price_accept_status',
-            'date_offer_status',
-            'date_accept_status',
-            'closed_status'
-        ],
+        choices=STATUS_TYPES,
         required=True
     )
     timestamp = serializers.DateTimeField(read_only=True)

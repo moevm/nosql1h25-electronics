@@ -38,8 +38,8 @@ class StatusSerializer(DocumentSerializer):
         fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
 
     def validate(self, data):
-        if self.REQUIRED_FIELDS.get(data.get('type'), False) and not data.get(self.REQUIRED_FIELDS.get(data.get('type'), False)):
-            raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'), False)}")
+        if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:
+            raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'))}")
         data['timestamp'] = datetime.utcnow()
         return data
 

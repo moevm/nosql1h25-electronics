@@ -29,6 +29,16 @@ class RequestViewSet(ModelViewSet):
         "closed_status": ["created_status", "price_offer_status", "price_accept_status", "date_offer_status", "date_accept_status"]
     }
 
+    FORBIDDEN_INITIATIONS = {
+        "price_offer_status": lambda user,
+                                     last_initiator: not user.is_admin and last_status.type != "price_offer_status",
+        "date_offer_status": lambda user,
+                                    last_initiator: not user.is_admin and last_status.type != "date_offer_status",
+        "price_accept_status": lambda user, last_initiator: user.is_admin == last_initiator.is_admin,
+        "date_accept_status": lambda user, last_initiator: user.is_admin == last_initiator.is_admin,
+        "closed_status": lambda user, last_initiator: not user.is_admin and request.data.get("success"),
+    }
+
     @extend_schema(
         summary="Создать новую заявку",
         description="Позволяет пользователю создать новую заявку.",
@@ -281,26 +291,15 @@ class RequestViewSet(ModelViewSet):
         if status_type == "closed_status" and request.data.get("success") and last_status.type != "date_accept_status":
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if status_type == "price_offer_status" and last_status.type != "price_offer_status" and not user.is_admin:
-            return Response({"details": "You can't initiate price offers"}, status=status.HTTP_403_FORBIDDEN)
-
-        if status_type == "date_offer_status" and last_status.type != "date_offer_status" and not user.is_admin:
-            return Response({"details": "You can't initiate date offers"}, status=status.HTTP_403_FORBIDDEN)
+        forbidden_check = FORBIDDEN_INITIATIONS.get(status_type)
+        if forbidden_check and forbidden_check(user, last_initiator):
+            return Response({"details": "Forbidden action"}, status=status.HTTP_403_FORBIDDEN)
 
         if status_type == "price_offer_status" and last_status.type == "price_offer_status" and (user.is_admin == last_initiator.is_admin):
             return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
 
         if status_type == "date_offer_status" and last_status.type == "date_offer_status" and (user.is_admin == last_initiator.is_admin):
             return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
-
-        if status_type == "closed_status" and request.data.get("success") and not user.is_admin:
-            return Response({"details": "You can't confirm successful closing"}, status=status.HTTP_403_FORBIDDEN)
-
-        if status_type == "price_accept_status" and (user.is_admin == last_initiator.is_admin):
-            return Response({"details": "You can't accept price"}, status=status.HTTP_403_FORBIDDEN)
-
-        if status_type == "date_accept_status" and (user.is_admin == last_initiator.is_admin):
-            return Response({"details": "You can't accept date"}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             new_status = None

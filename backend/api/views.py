@@ -31,12 +31,12 @@ class RequestViewSet(ModelViewSet):
 
     FORBIDDEN_INITIATIONS = {
         "price_offer_status": lambda user,
-                                     last_initiator: not user.is_admin and last_status.type != "price_offer_status",
+                                     last_initiator, last_status, request: not user.is_admin and last_status.type != "price_offer_status",
         "date_offer_status": lambda user,
-                                    last_initiator: not user.is_admin and last_status.type != "date_offer_status",
-        "price_accept_status": lambda user, last_initiator: user.is_admin == last_initiator.is_admin,
-        "date_accept_status": lambda user, last_initiator: user.is_admin == last_initiator.is_admin,
-        "closed_status": lambda user, last_initiator: not user.is_admin and request.data.get("success"),
+                                    last_initiator, last_status, request: not user.is_admin and last_status.type != "date_offer_status",
+        "price_accept_status": lambda user, last_initiator, last_status, request: user.is_admin == last_initiator.is_admin,
+        "date_accept_status": lambda user, last_initiator, last_status, request: user.is_admin == last_initiator.is_admin,
+        "closed_status": lambda user, last_initiator, last_status, request: not user.is_admin and request.data.get("success"),
     }
 
     @extend_schema(
@@ -269,6 +269,15 @@ class RequestViewSet(ModelViewSet):
         except ProductRequest.DoesNotExist:
             return Response({"details": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        serializer = StatusSerializer(data=request.data, context={'request': request})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(
+                {"details": "Invalid request data"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if product_request.user_id.id != user.id and not user.is_admin:
             return Response({"details": "Not your request"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -292,7 +301,7 @@ class RequestViewSet(ModelViewSet):
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
 
         forbidden_check = self.FORBIDDEN_INITIATIONS.get(status_type)
-        if forbidden_check and forbidden_check(user, last_initiator):
+        if forbidden_check and forbidden_check(user, last_initiator, last_status, request):
             return Response({"details": "Forbidden action"}, status=status.HTTP_403_FORBIDDEN)
 
         if status_type == last_status.type and user.is_admin == last_initiator.is_admin:
@@ -302,8 +311,6 @@ class RequestViewSet(ModelViewSet):
             new_status = None
 
             if status_type == "price_offer_status":
-                if request.data.get("price") <= 0:
-                    raise Exception
                 new_status = PriceOfferStatus.create(
                     price=request.data.get("price"),
                     user_id=user.id
@@ -322,8 +329,6 @@ class RequestViewSet(ModelViewSet):
                 new_status = DateAcceptStatus.create(user_id=user.id)
 
             elif status_type == "closed_status":
-                if request.data.get("success") is not True and request.data.get("success") is not False:
-                    raise Exception
                 new_status = ClosedStatus.create(
                     success=request.data.get("success"),
                     user_id=user.id

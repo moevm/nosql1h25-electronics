@@ -35,8 +35,35 @@ class StatusSerializer(DocumentSerializer):
     success = serializers.BooleanField(required=False)
 
     class Meta:
-        model = Status  # Базовая модель
+        model = Status
         fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
+
+    def validate_status_type(self, value):
+        """Проверка, что тип статуса - строка"""
+        if not isinstance(value, str):
+            raise serializers.ValidationError("Address must be a string.")
+        return value
+
+    def validate_price(self, value):
+        """Проверка, что цена - положительное число"""
+        if value <= 0:
+            raise serializers.ValidationError("Price must be a positive number.")
+        return value
+
+    def validate_success(self, value):
+        """Проверка, что успешность закрытия - логическое значение"""
+        if not isinstance(value, bool):
+            raise serializers.ValidationError("Success must be a bool.")
+        return value
+
+    def validate_date(self, value):
+        """Проверка, что дата находится в формате UTC"""
+        try:
+            parsed_date = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+        except ValueError:
+            raise serializers.ValidationError(
+                "Date must be in ISO 8601 format with milliseconds and UTC.")
+        return parsed_date
 
 class CreatedStatusSerializer(DocumentSerializer):
     class Meta:

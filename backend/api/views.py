@@ -547,7 +547,6 @@ class DatabaseBackupViewSet(ModelViewSet):
 
 
 class UserViewSet(ModelViewSet):
-    queryset = ProductRequest.objects.all()
 
     @extend_schema(
         summary="Получить данные пользователя",
@@ -559,13 +558,21 @@ class UserViewSet(ModelViewSet):
             404: ErrorResponseSerializer,
         }
     )
-    def getUserById(self, request, pk=None, *args, **kwargs):
+    def getUserById(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if not pk:
+            return Response({"details": "Missing pk"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            instance = self.get_object()
-        except:
+            instance = User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return Response({"details": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        if not user.is_admin and str(user.id) != str(pk):
             return Response(
-                {"details": "Not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"details": "You do not have permission to do backup"},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         serializer = UserResponseSerializer(instance)

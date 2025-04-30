@@ -11,6 +11,7 @@ import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect, useRef } from 'react';
 import { ApiService, CategoryEnum } from '@src/api';
+import { useNavigate } from 'react-router-dom';
 
 export interface RequestsAdminFormInputs {
   from?: DateType;
@@ -132,6 +133,7 @@ const CategoryFormField = (props: FormFieldProps) => (
 );
 
 export const RequestsClientPage = () => {
+  const navigate = useNavigate();
   const { control, handleSubmit, setValue } = useForm<RequestsAdminFormInputs>();
   
   const dispatch = useAppDispatch();
@@ -192,8 +194,9 @@ export const RequestsClientPage = () => {
     e.target.value = '';
   };
 
-  const onLogout = () => {
-    dispatch(logout()).then(() => dispatch(reset()));
+  const onLogout = async () => {
+    await dispatch(logout())
+    dispatch(reset());
   };
 
   return (
@@ -203,7 +206,7 @@ export const RequestsClientPage = () => {
           <Typography variant='h4'>Список заявок</Typography>
 
           <Stack direction='row' gap={1}>
-            <Button variant='contained'>Профиль</Button>
+            <Button variant='contained' onClick={() => navigate('/profile')}>Профиль</Button>
             <Button variant='contained' onClick={onExportBackup}>Экспорт БД</Button>
             <Button variant='contained' onClick={onImportBackup}>Импорт БД</Button>
             <input

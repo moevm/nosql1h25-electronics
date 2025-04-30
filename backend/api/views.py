@@ -295,10 +295,7 @@ class RequestViewSet(ModelViewSet):
         if forbidden_check and forbidden_check(user, last_initiator):
             return Response({"details": "Forbidden action"}, status=status.HTTP_403_FORBIDDEN)
 
-        if status_type == "price_offer_status" and last_status.type == "price_offer_status" and (user.is_admin == last_initiator.is_admin):
-            return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
-
-        if status_type == "date_offer_status" and last_status.type == "date_offer_status" and (user.is_admin == last_initiator.is_admin):
+        if status_type == last_status.type and user.is_admin == last_initiator.is_admin:
             return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
 
         try:

@@ -4,14 +4,13 @@
 .env
 .editorconfig
 .gitignore
-Dockerfile
+*Dockerfile
+compose.*.yml
 .dockerignore
 
 node_modules/
 dist/
-scripts/
 
 package-lock.json
 eslint.config.js
-generate-api.*
 schema.json

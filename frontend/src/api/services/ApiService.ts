@@ -69,7 +69,7 @@ export class ApiService {
     /**
      * Получить фото
      * Позволяет получить фото по его ID.
-     * @returns any No response body
+     * @returns any BINARY формат данных
      * @throws ApiError
      */
     public static apiPhotosRetrieve({

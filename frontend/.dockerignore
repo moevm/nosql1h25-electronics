@@ -1,8 +1,10 @@
 .idea/
-.env
+.vscode/
 .DS_Store
+.env
 .editorconfig
 .gitignore
+Dockerfile
 .dockerignore
 
 node_modules/

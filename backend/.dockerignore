@@ -2,6 +2,7 @@
 .env
 .DS_Store
 README.md
+Dockerfile
 .dockerignore
 
 **/__pycache__/

@@ -29,7 +29,7 @@ class StatusSerializer(DocumentSerializer):
         required=True
     )
     timestamp = serializers.DateTimeField(read_only=True)
-    user_id = serializers.CharField(required=False, source="user_id.id",  read_only=True)
+    user_id = serializers.CharField(source="user_id.id", read_only=True)
     price = serializers.FloatField(required=False)
     date = serializers.DateTimeField(required=False)
     success = serializers.BooleanField(required=False)

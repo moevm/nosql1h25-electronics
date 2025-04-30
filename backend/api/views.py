@@ -558,5 +558,5 @@ class UserViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        serializer = ProductRequestSerializer(instance)
+        serializer = UserResponseSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)

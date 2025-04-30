@@ -28,7 +28,7 @@ class StatusSerializer(DocumentSerializer):
         ],
         required=True
     )
-    timestamp = serializers.DateTimeField(default=datetime.utcnow, read_only=True)
+    timestamp = serializers.DateTimeField(read_only=True)
     user_id = serializers.CharField(required=False, source="user_id.id",  read_only=True)
     price = serializers.FloatField(required=False)
     date = serializers.DateTimeField(required=False)
@@ -47,12 +47,13 @@ class StatusSerializer(DocumentSerializer):
     def validate(self, data):
         if self.REQUIRED_FIELDS.get(data.get('type'), False) and not data.get(self.REQUIRED_FIELDS.get(data.get('type'), False)):
             raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'), False)}")
+        data['timestamp'] = datetime.utcnow()
         return data
 
     def validate_status_type(self, value):
         """Проверка, что тип статуса - строка"""
         if not isinstance(value, str):
-            raise serializers.ValidationError("Address must be a string.")
+            raise serializers.ValidationError("Status type must be a string.")
         return value
 
     def validate_price(self, value):
@@ -67,14 +68,6 @@ class StatusSerializer(DocumentSerializer):
             raise serializers.ValidationError("Success must be a bool.")
         return value
 
-    def validate_date(self, value):
-        """Проверка, что дата находится в формате UTC"""
-        try:
-            parsed_date = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
-        except ValueError:
-            raise serializers.ValidationError(
-                "Date must be in ISO 8601 format with milliseconds and UTC.")
-        return parsed_date
 
 class CreatedStatusSerializer(DocumentSerializer):
     class Meta:

@@ -316,15 +316,6 @@ class RequestViewSet(ModelViewSet):
 
         new_status = None
 
-        STATUS_CREATORS = {
-            "price_offer_status": lambda data, user: PriceOfferStatus.create(price=data["price"], user_id=user.id),
-            "price_accept_status": lambda data, user: PriceAcceptStatus.create(user_id=user.id),
-            "date_offer_status": lambda data, user: DateOfferStatus.create(date=datetime.fromisoformat(data["date"]),
-                                                                           user_id=user.id),
-            "date_accept_status": lambda data, user: DateAcceptStatus.create(user_id=user.id),
-            "closed_status": lambda data, user: ClosedStatus.create(success=data["success"], user_id=user.id),
-        }
-
         creator = self.STATUS_CREATORS.get(status_type)
         new_status = creator(request.data, user)
         product_request.add_status(new_status)

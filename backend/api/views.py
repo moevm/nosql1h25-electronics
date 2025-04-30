@@ -1,7 +1,7 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
 from drf_spectacular.types import OpenApiTypes
-from authapp.serializers import ErrorResponseSerializer
+from authapp.serializers import ErrorResponseSerializer, UserResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
@@ -544,3 +544,8 @@ class DatabaseBackupViewSet(ModelViewSet):
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return JsonResponse({"details": "Backup successfully imported"}, status=status.HTTP_200_OK)
+
+
+class UserViewSet(ModelViewSet):
+    queryset = ProductRequest.objects.all()
+

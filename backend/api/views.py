@@ -549,20 +549,13 @@ class DatabaseBackupViewSet(ModelViewSet):
 class UserViewSet(ModelViewSet):
     queryset = ProductRequest.objects.all()
 
-    def getUserById(self, request, *args, **kwargs):
+    def getUserById(self, request, pk=None, *args, **kwargs):
         try:
-            instance = ProductRequest.objects.get(id=pk)
+            instance = self.get_object()
         except:
             return Response(
-                {"details": "ProductRequest not found"},
+                {"details": "Not found"},
                 status=status.HTTP_404_NOT_FOUND
-            )
-
-        user = request.user
-        if not user.is_admin and str(instance.user_id.id) != str(user.id):
-            return Response(
-                {"details": "You do not have permission to view this request."},
-                status=status.HTTP_403_FORBIDDEN
             )
 
         serializer = ProductRequestSerializer(instance)

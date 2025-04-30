@@ -549,6 +549,16 @@ class DatabaseBackupViewSet(ModelViewSet):
 class UserViewSet(ModelViewSet):
     queryset = ProductRequest.objects.all()
 
+    @extend_schema(
+        summary="Получить данные пользователя",
+        description="Позволяет получить данные пользователя по его id.",
+        responses={
+            200: ProductRequestSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        }
+    )
     def getUserById(self, request, pk=None, *args, **kwargs):
         try:
             instance = self.get_object()

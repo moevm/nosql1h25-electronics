@@ -34,9 +34,20 @@ class StatusSerializer(DocumentSerializer):
     date = serializers.DateTimeField(required=False)
     success = serializers.BooleanField(required=False)
 
+    REQUIRED_FIELDS = {
+        "price_offer_status": "price",
+        "date_offer_status": "date",
+        "closed_status": "success"
+    }
+
     class Meta:
         model = Status
         fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
+
+    def validate(self, data):
+        if self.REQUIRED_FIELDS.get(data.get('type'), False) and not data.get(self.REQUIRED_FIELDS.get(data.get('type'), False)):
+            raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'), False)}")
+        return data
 
     def validate_status_type(self, value):
         """Проверка, что тип статуса - строка"""

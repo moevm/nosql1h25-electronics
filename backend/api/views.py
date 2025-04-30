@@ -553,7 +553,7 @@ class UserViewSet(ModelViewSet):
         summary="Получить данные пользователя",
         description="Позволяет получить данные пользователя по его id.",
         responses={
-            200: ProductRequestSerializer,
+            200: UserResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
             404: ErrorResponseSerializer,

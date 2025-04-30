@@ -39,6 +39,12 @@ class RequestViewSet(ModelViewSet):
         "closed_status": lambda user, last_initiator, last_status, request: not user.is_admin and request.data.get("success"),
     }
 
+    REQUIRED_FIELDS = {
+        "price_offer_status": "price",
+        "date_offer_status": "date",
+        "closed_status": "success"
+    }
+
     @extend_schema(
         summary="Создать новую заявку",
         description="Позволяет пользователю создать новую заявку.",
@@ -284,6 +290,9 @@ class RequestViewSet(ModelViewSet):
         status_type = request.data.get("type")
         if not status_type:
             return Response({"details": "Missing field: type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if self.REQUIRED_FIELDS.get(status_type, False) and request.data.get(self.REQUIRED_FIELDS.get(status_type)) is None:
+            return Response({"details": f"Missing field: {self.REQUIRED_FIELDS.get(status_type)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_status = product_request.statuses[-1]
         if last_status.type != "created_status":

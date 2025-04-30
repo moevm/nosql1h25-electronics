@@ -39,6 +39,15 @@ class RequestViewSet(ModelViewSet):
         "closed_status": lambda user, last_initiator, last_status, request: not user.is_admin and request.data.get("success"),
     }
 
+    STATUS_CREATORS = {
+        "price_offer_status": lambda data, user: PriceOfferStatus.create(price=data["price"], user_id=user.id),
+        "price_accept_status": lambda data, user: PriceAcceptStatus.create(user_id=user.id),
+        "date_offer_status": lambda data, user: DateOfferStatus.create(date=datetime.fromisoformat(data["date"]),
+                                                                       user_id=user.id),
+        "date_accept_status": lambda data, user: DateAcceptStatus.create(user_id=user.id),
+        "closed_status": lambda data, user: ClosedStatus.create(success=data["success"], user_id=user.id),
+    }
+
     @extend_schema(
         summary="Создать новую заявку",
         description="Позволяет пользователю создать новую заявку.",
@@ -305,40 +314,20 @@ class RequestViewSet(ModelViewSet):
         if status_type == last_status.type and user.is_admin == last_initiator.is_admin:
             return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            new_status = None
+        new_status = None
 
-            if status_type == "price_offer_status":
-                new_status = PriceOfferStatus.create(
-                    price=request.data.get("price"),
-                    user_id=user.id
-                )
+        STATUS_CREATORS = {
+            "price_offer_status": lambda data, user: PriceOfferStatus.create(price=data["price"], user_id=user.id),
+            "price_accept_status": lambda data, user: PriceAcceptStatus.create(user_id=user.id),
+            "date_offer_status": lambda data, user: DateOfferStatus.create(date=datetime.fromisoformat(data["date"]),
+                                                                           user_id=user.id),
+            "date_accept_status": lambda data, user: DateAcceptStatus.create(user_id=user.id),
+            "closed_status": lambda data, user: ClosedStatus.create(success=data["success"], user_id=user.id),
+        }
 
-            elif status_type == "price_accept_status":
-                new_status = PriceAcceptStatus.create(user_id=user.id)
-
-            elif status_type == "date_offer_status":
-                new_status = DateOfferStatus.create(
-                    date=datetime.fromisoformat(request.data.get("date")),
-                    user_id=user.id
-                )
-
-            elif status_type == "date_accept_status":
-                new_status = DateAcceptStatus.create(user_id=user.id)
-
-            elif status_type == "closed_status":
-                new_status = ClosedStatus.create(
-                    success=request.data.get("success"),
-                    user_id=user.id
-                )
-
-            else:
-                return Response({"details": "Invalid status type"}, status=status.HTTP_400_BAD_REQUEST)
-
-            product_request.add_status(new_status)
-
-        except Exception as e:
-            return Response({"details": "Missing fields for specific status type"}, status=status.HTTP_400_BAD_REQUEST)
+        creator = self.STATUS_CREATORS.get(status_type)
+        new_status = creator(request.data, user)
+        product_request.add_status(new_status)
 
         response_serializer = StatusSerializer(new_status)
         return Response(response_serializer.data, status=status.HTTP_200_OK)

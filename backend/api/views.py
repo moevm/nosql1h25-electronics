@@ -291,7 +291,7 @@ class RequestViewSet(ModelViewSet):
         if status_type == "closed_status" and request.data.get("success") and last_status.type != "date_accept_status":
             return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
 
-        forbidden_check = FORBIDDEN_INITIATIONS.get(status_type)
+        forbidden_check = self.FORBIDDEN_INITIATIONS.get(status_type)
         if forbidden_check and forbidden_check(user, last_initiator):
             return Response({"details": "Forbidden action"}, status=status.HTTP_403_FORBIDDEN)
 

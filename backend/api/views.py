@@ -571,7 +571,7 @@ class UserViewSet(ModelViewSet):
         user = request.user
         if not user.is_admin and str(user.id) != str(pk):
             return Response(
-                {"details": "You do not have permission to do backup"},
+                {"details": "You do not have permission"},
                 status=status.HTTP_403_FORBIDDEN
             )
 

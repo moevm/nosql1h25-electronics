@@ -54,11 +54,9 @@ class User(Document):
         self.token_version += 1
 
     def update(self, **kwargs):
-        for field in ['login', 'fullname', 'phone']:
+        for field in ['fullname', 'phone']:
             if field in kwargs:
                 setattr(self, field, kwargs[field])
-        if 'password' in kwargs:
-            self.set_password(kwargs['password'])
         self.edit_date = datetime.utcnow()
         self.save()
 

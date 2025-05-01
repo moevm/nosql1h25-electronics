@@ -48,6 +48,37 @@ class UserResponseSerializer(DocumentSerializer):
         fields = ('user_id', 'fullname', 'role', 'phone', 'creation_date', 'edit_date')
 
 
+class UserEditRequestSerializer(DocumentSerializer):
+    fullname = serializers.CharField(required=False)
+    phone = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ('fullname', 'phone')
+
+    def validate_fullname(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Fullname cannot be empty or only spaces")
+        return value
+
+    def validate_phone(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Phone cannot be empty or only spaces")
+        if not PHONE_REGEX.match(value):
+            raise serializers.ValidationError("Phone number format is invalid. Expected format: +7XXXXXXXXXX")
+
+        request = self.context.get('request')
+        if request:
+            user_exists = User.objects(phone=value).first()
+            if user_exists and user_exists.id != request.user.id:
+                raise serializers.ValidationError("Phone number already exists")
+        return value
+
+    def update(self, instance, validated_data):
+        instance.update(**validated_data)
+        return instance
+
+
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     login = serializers.CharField()
     password = serializers.CharField(write_only=True)

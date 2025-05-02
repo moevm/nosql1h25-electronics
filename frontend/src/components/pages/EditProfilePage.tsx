@@ -94,8 +94,10 @@ export const EditProfilePage = () => {
     
     const result = await dispatch(editUser(data));
     if (result.type.endsWith('rejected')) {
-      // TODO: после генерации api сделать нормальную обработку ошибок
-      setError('fullname', { message: result.payload as string });
+      if (result.payload === 'Номер телефона уже занят')
+        setError('phone', { message: result.payload as string });
+      else
+        setError('fullname', { message: result.payload as string });
     } else {
       navigate(-1);
     }

@@ -31,10 +31,18 @@ class Photo(Document):
                 setattr(self, field, kwargs[field])
         self.save()
 
+STATUS_TYPES = [
+    'created_status',
+    'price_offer_status',
+    'price_accept_status',
+    'date_offer_status',
+    'date_accept_status',
+    'closed_status'
+]
 
 class Status(EmbeddedDocument):
     timestamp = DateTimeField(default=datetime.utcnow)
-    type = StringField()
+    type = StringField(choices=STATUS_TYPES, required=True)
 
     meta = {'allow_inheritance': True}
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 BACKEND_SWAGGER_PATH='./schema/schema.json'
 FRONTEND_API_DIR='./src/api'

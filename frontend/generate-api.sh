@@ -36,4 +36,4 @@ rm -rf "$TMP_DIR"
 
 echo 'API client generated'
 
-npm run patch-request
+node ./scripts/postgenerate.cjs

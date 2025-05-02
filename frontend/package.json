@@ -8,9 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-api": "bash ./generate-api.sh",
-    "generate-api-win": "powershell -ExecutionPolicy Bypass -File ./generate-api.ps1",
-    "patch-request": "node ./scripts/postgenerate.cjs"
+    "generate-api": "docker compose -f compose.generator.yml up --build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -52,6 +50,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "mongodb": "^6.16.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"

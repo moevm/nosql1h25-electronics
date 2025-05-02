@@ -1,5 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { AuthService, UserResponse, ApiError } from '@src/api';
+import { sleep } from '@src/lib/Sleep';
+import { RootState } from './Store';
+import dayjs from 'dayjs';
 
 export const initLogin = createAsyncThunk(
   'user/initLogin',
@@ -45,6 +48,30 @@ export const logout = createAsyncThunk(
       await AuthService.authLogoutCreate();
     } finally {
       localStorage.clear();
+    }
+  },
+);
+
+export const editUser = createAsyncThunk(
+  'user/editUser',
+  async ({ fullname, phone }: { fullname: string, phone: string }, { getState, rejectWithValue }) => {
+    // TODO: после генерации использовать нормальный api
+    await sleep(1000);
+    
+    const oldUser = (getState() as RootState).user.user!;
+
+    // return rejectWithValue('Неизвестная ошибка');
+
+    try {
+      return {
+        ...oldUser,
+        fullname,
+        phone,
+        edit_date: dayjs().toISOString(),
+      } satisfies UserResponse;
+    } catch (e) {
+      if (!(e instanceof ApiError)) return rejectWithValue('Неизвестная ошибка');
+      return rejectWithValue('Неизвестная ошибка');
     }
   },
 );
@@ -104,6 +131,10 @@ export const userSlice = createSlice({
     }).addCase(initLogin.rejected, state => {
       state.isInit = false;
       state.isAuthorizing = false;
+    })
+    
+    .addCase(editUser.fulfilled, (state, action) => {
+      state.user = action.payload;
     });
   },
   selectors: {

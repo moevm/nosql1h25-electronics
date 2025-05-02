@@ -4,9 +4,8 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/FormFields';
 import PhoneField from '@src/components/ui/PhoneField';
-import { useAppSelector } from '@src/hooks/ReduxHooks';
-import { selectIsAdmin, selectUser } from '@src/store/UserSlice';
-import { store } from '@src/store/Store';
+import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
+import { editUser, selectIsAdmin, selectUser } from '@src/store/UserSlice';
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, timelineItemClasses, TimelineSeparator } from '@mui/lab';
 import { Add, Edit } from '@mui/icons-material';
 import dayjs from 'dayjs';
@@ -71,24 +70,37 @@ export const EditProfilePage = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
+  const user = useAppSelector(selectUser)!;
 
   // https://github.com/orgs/react-hook-form/discussions/8888#discussioncomment-3446572
   const initUserData = () => {
-    const { fullname, phone } = store.getState().user.user!;
+    const { fullname, phone } = user;
     reset({ fullname, phone });
   };
-
   useLayoutEffect(initUserData, []);
   useEffect(initUserData, []);
 
   const onSubmit = async (data: EditProfileFormInputs) => {
     data.phone = data.phone.replace(/\s/g, '');
 
+    if (user.fullname === data.fullname && user.phone === data.phone) {
+      navigate(-1);
+      return;
+    }
+
     setIsSubmitting(true);
-    alert(JSON.stringify(data));
+    
+    const result = await dispatch(editUser(data));
+    if (result.type.endsWith('rejected')) {
+      // TODO: после генерации api сделать нормальную обработку ошибок
+      setError('fullname', { message: result.payload as string });
+    } else {
+      navigate(-1);
+    }
+    
     setIsSubmitting(false);
-    navigate(-1);
   };
 
   return (

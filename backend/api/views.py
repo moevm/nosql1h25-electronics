@@ -8,8 +8,8 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from .models import ProductRequest, Photo, CreatedStatus
-from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer
+from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
@@ -20,6 +20,33 @@ class RequestViewSet(ModelViewSet):
     queryset = ProductRequest.objects.all()
     serializer_class = ProductRequestSerializer
     filter_backends = [OrderingFilter]
+
+    ALLOWED_PREVIOUS_STATUSES = {
+        "price_offer_status": ["created_status", "price_offer_status"],
+        "price_accept_status": ["price_offer_status"],
+        "date_offer_status": ["created_status", "date_offer_status", "price_accept_status"],
+        "date_accept_status": ["date_offer_status"],
+        "closed_status": ["created_status", "price_offer_status", "price_accept_status", "date_offer_status", "date_accept_status"]
+    }
+
+    FORBIDDEN_INITIATIONS = {
+        "price_offer_status": lambda user,
+                                     last_initiator, last_status, request: not user.is_admin and last_status.type != "price_offer_status",
+        "date_offer_status": lambda user,
+                                    last_initiator, last_status, request: not user.is_admin and last_status.type != "date_offer_status",
+        "price_accept_status": lambda user, last_initiator, last_status, request: user.is_admin == last_initiator.is_admin,
+        "date_accept_status": lambda user, last_initiator, last_status, request: user.is_admin == last_initiator.is_admin,
+        "closed_status": lambda user, last_initiator, last_status, request: not user.is_admin and request.data.get("success"),
+    }
+
+    STATUS_CREATORS = {
+        "price_offer_status": lambda data, user: PriceOfferStatus.create(price=data["price"], user_id=user.id),
+        "price_accept_status": lambda data, user: PriceAcceptStatus.create(user_id=user.id),
+        "date_offer_status": lambda data, user: DateOfferStatus.create(date=datetime.fromisoformat(data["date"]),
+                                                                       user_id=user.id),
+        "date_accept_status": lambda data, user: DateAcceptStatus.create(user_id=user.id),
+        "closed_status": lambda data, user: ClosedStatus.create(success=data["success"], user_id=user.id),
+    }
 
     @extend_schema(
         summary="Создать новую заявку",
@@ -231,6 +258,70 @@ class RequestViewSet(ModelViewSet):
 
         serializer = ProductRequestSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Обновить актуальный статус заявки",
+        description="Позволяет добавить новый статус заявке. Обязательным является указание поля type. Остальные поля необходимо указывать в зависимости от типа заявки.",
+        request=StatusSerializer,
+        responses={
+            201: StatusSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer
+        }
+    )
+    def postRequestsStatuses(self, request, pk=None, *args, **kwargs):
+        user = request.user
+
+        try:
+            product_request = ProductRequest.objects.get(id=pk)
+        except ProductRequest.DoesNotExist:
+            return Response({"details": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = StatusSerializer(data=request.data, context={'request': request})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(
+                {"details": "Invalid request data"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if product_request.user_id.id != user.id and not user.is_admin:
+            return Response({"details": "Not your request"}, status=status.HTTP_403_FORBIDDEN)
+
+        status_type = request.data.get("type")
+
+        last_status = product_request.statuses[-1]
+        if last_status.type != "created_status":
+            last_initiator = last_status.user_id
+        else:
+            last_initiator = product_request.user_id
+
+        if last_status.type == "closed_status":
+            return Response({"details": "Request already closed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if last_status.type not in self.ALLOWED_PREVIOUS_STATUSES.get(status_type, []):
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if status_type == "closed_status" and request.data.get("success") and last_status.type != "date_accept_status":
+            return Response({"details": "You can't close request"}, status=status.HTTP_403_FORBIDDEN)
+
+        forbidden_check = self.FORBIDDEN_INITIATIONS.get(status_type)
+        if forbidden_check and forbidden_check(user, last_initiator, last_status, request):
+            return Response({"details": "Forbidden action"}, status=status.HTTP_403_FORBIDDEN)
+
+        if status_type == last_status.type and user.is_admin == last_initiator.is_admin:
+            return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
+
+        new_status = None
+
+        creator = self.STATUS_CREATORS.get(status_type)
+        new_status = creator(request.data, user)
+        product_request.add_status(new_status)
+
+        response_serializer = StatusSerializer(new_status)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class PhotoViewSet(ModelViewSet):

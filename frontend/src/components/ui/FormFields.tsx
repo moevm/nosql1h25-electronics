@@ -55,8 +55,8 @@ export const CheckboxFormField = <T extends FieldValues>({ control, name, label,
       <FormControlLabel 
         control={<Checkbox
           {...checkboxProps}
-          value={field.value}
-          onChange={field.onChange}
+          checked={field.value ?? false}
+          onChange={e => field.onChange(e.target.checked)}
         />} 
         label={label}
       />

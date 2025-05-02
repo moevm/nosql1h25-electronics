@@ -32,7 +32,7 @@ export const PhoneField = <T extends FieldValues>({ name, control, required }: P
         required={required}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}
-        value={field.value}
+        value={field.value ?? ''}
         onChange={field.onChange}
       />
     )}

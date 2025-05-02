@@ -1,26 +1,90 @@
 import { Button, CircularProgress, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/FormFields';
 import PhoneField from '@src/components/ui/PhoneField';
 import { useAppSelector } from '@src/hooks/ReduxHooks';
-import { selectIsAdmin } from '@src/store/UserSlice';
+import { selectIsAdmin, selectUser } from '@src/store/UserSlice';
+import { store } from '@src/store/Store';
+import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, timelineItemClasses, TimelineSeparator } from '@mui/lab';
+import { Add, Edit } from '@mui/icons-material';
+import dayjs from 'dayjs';
 
 interface EditProfileFormInputs {
-  fullname?: string;
-  phone?: string;
+  fullname: string;
+  phone: string;
 }
+
+const ProfileTimeline = () => {
+  const { creation_date, edit_date } = useAppSelector(selectUser)!;
+  const accountWasEdited = edit_date && edit_date !== creation_date;
+
+  return (
+    <Timeline sx={{
+      [`& .${timelineItemClasses.root}:before`]: {
+        flex: 0,
+        padding: 0,
+      },
+      display: 'flex',
+      alignContent: 'center',
+      flexWrap: 'wrap',
+    }}>
+      <TimelineItem>
+        <TimelineSeparator>
+          <TimelineDot>
+            <Add />
+          </TimelineDot>
+          {accountWasEdited && <TimelineConnector/>}
+        </TimelineSeparator>
+        <TimelineContent>
+          <Typography variant='body2' color='textSecondary'>
+            {dayjs(creation_date).format('HH:mm DD.MM.YYYY')}
+          </Typography>
+          <Typography>Аккаунт <strong>создан</strong></Typography>
+        </TimelineContent>
+      </TimelineItem>
+
+      {accountWasEdited &&
+        <TimelineItem>
+          <TimelineSeparator>
+            <TimelineConnector />
+            <TimelineDot>
+              <Edit />
+            </TimelineDot>
+          </TimelineSeparator>
+          <TimelineContent>
+            <Typography variant='body2' color='textSecondary'>
+              {dayjs(edit_date).format('HH:mm  DD.MM.YYYY')}
+            </Typography>
+            <Typography>Данные аккаунта <strong>изменены</strong></Typography>
+          </TimelineContent>
+        </TimelineItem>
+      }
+    </Timeline>
+  );
+};
 
 export const EditProfilePage = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit, setError } = useForm<EditProfileFormInputs>();
+  const { control, handleSubmit, reset, setError } = useForm<EditProfileFormInputs>();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAdmin = useAppSelector(selectIsAdmin);
 
+  // https://github.com/orgs/react-hook-form/discussions/8888#discussioncomment-3446572
+  const initUserData = () => {
+    const { fullname, phone } = store.getState().user.user!;
+    reset({ fullname, phone });
+  };
+
+  useLayoutEffect(initUserData, []);
+  useEffect(initUserData, []);
+
   const onSubmit = async (data: EditProfileFormInputs) => {
+    data.phone = data.phone.replace(/\s/g, '');
+
     setIsSubmitting(true);
     alert(JSON.stringify(data));
     setIsSubmitting(false);
@@ -35,12 +99,12 @@ export const EditProfilePage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>ФИО:</Typography>
-            <TextFormField placeholder="ФИО" maxLength={200} name='fullname' control={control} />
+            <TextFormField required placeholder="ФИО" maxLength={200} name='fullname' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Номер телефона:</Typography>
-            <PhoneField name='phone' control={control} />
+            <PhoneField required name='phone' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>
@@ -59,6 +123,8 @@ export const EditProfilePage = () => {
           </Stack>
         </Stack>
       </Paper>
+
+      <ProfileTimeline />
     </Container>
   );
 };

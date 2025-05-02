@@ -24,7 +24,7 @@ export const TextFormField = <T extends FieldValues>({ control, name, required, 
         )}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}
-        value={field.value}
+        value={field.value ?? ''}
         onChange={field.onChange}
       />
     )}

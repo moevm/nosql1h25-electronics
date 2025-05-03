@@ -1,35 +1,18 @@
-import { Button, Paper, Stack, Typography, Select, MenuItem, Box, Container, CircularProgress } from '@mui/material';
+import { Button, Paper, Stack, Typography, Box, Container, CircularProgress } from '@mui/material';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
-import { CheckboxFormField } from '@src/components/ui/form/CheckboxFormField';
-import { TextFormField } from '@src/components/ui/form/TextFormField';
 import dayjs from 'dayjs';
-import { Control, Controller, useForm } from 'react-hook-form';
 import { saveAs } from 'file-saver';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect, useRef } from 'react';
-import { ApiService, CategoryEnum, TypeEnum } from '@src/api';
+import { ApiService } from '@src/api';
 import { useNavigate } from 'react-router-dom';
-import { DateFormField, DateType } from '@src/components/ui/form/DateFormField';
-import { categoryMap, statusMap } from '@src/lib/RussianConverters';
-import { SelectFormField } from '@src/components/ui/form/SelectFormField';
-
-export interface RequestsAdminFormInputs {
-  from?: DateType;
-  to?: DateType;
-  status: TypeEnum | 'any';
-  author?: string;
-  me: boolean;
-  category: CategoryEnum | 'any';
-  title?: string;
-  description?: string;
-}
+import { AdminFilters, AdminFiltersFormInputs } from '@src/components/ui/AdminFilters';
 
 export const RequestsClientPage = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit, setValue } = useForm<RequestsAdminFormInputs>();
-  
+
   const dispatch = useAppDispatch();
   const isLoggingOut = useAppSelector(selectIsLoggingOut);
 
@@ -40,19 +23,10 @@ export const RequestsClientPage = () => {
   const backupImportRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (fieldsValues.from) setValue('from', fieldsValues.from);
-    if (fieldsValues.to) setValue('to', fieldsValues.to);
-    if (fieldsValues.status) setValue('status', fieldsValues.status);
-    if (fieldsValues.author) setValue('author', fieldsValues.author);
-    if (fieldsValues.me) setValue('me', fieldsValues.me);
-    if (fieldsValues.category) setValue('category', fieldsValues.category);
-    if (fieldsValues.title) setValue('title', fieldsValues.title);
-    if (fieldsValues.description) setValue('description', fieldsValues.description);
-
     dispatch(updateRequests(null));
   }, []);
 
-  const onSubmit = (data: RequestsAdminFormInputs) => {
+  const onSubmit = (data: AdminFiltersFormInputs) => {
     dispatch(updateAdminFields(data));
     dispatch(updateRequests(null));
   };
@@ -120,72 +94,7 @@ export const RequestsClientPage = () => {
             </Button>
           </Stack>
 
-          <Stack direction='row' gap={1} alignItems='center'>
-            <Typography variant='body1'>Дата изменения статуса (от):</Typography>
-            <DateFormField prohibitFuture name='from' control={control} />
-          </Stack>
-
-          <Stack direction='row' gap={1} alignItems='center'>
-            <Typography variant='body1'>Дата изменения статуса (до):</Typography>
-            <DateFormField 
-              prohibitFuture 
-              validate={(value, formFields) => {
-                if (formFields.from && value! < formFields.from) 
-                  return 'Дата конца раньше даты начала'; 
-              }} 
-              name='to' 
-              control={control}
-            />
-          </Stack>
-
-          <Stack direction='row' gap={1} alignItems='center'>
-            <Typography variant='body1'>Статус заявки:</Typography>
-            <SelectFormField
-              options={{
-                any: 'Всё',
-                ...statusMap,
-              }}
-              defaultValue='any'
-              name='status'
-              control={control}
-            />
-          </Stack>
-
-          <Stack direction='row' gap={1} alignItems='center'>
-            <Typography variant='body1'>Клиент:</Typography>
-            <TextFormField placeholder='ФИО' name='author' control={control} />
-          </Stack>
-
-          <CheckboxFormField label='Участвовал в разрешении' name='me' control={control} />
-
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, auto)',
-            gridTemplateRows: 'repeat(2, auto)',
-            justifyContent: 'start',
-            alignItems: 'center',
-            gap: '5px 20px',
-          }}>
-            <Stack direction='row' gap={1} alignItems='center'>
-              <Typography variant='body1'>Категория товара:</Typography>
-              <SelectFormField
-                options={{
-                  any: 'Всё',
-                  ...categoryMap,
-                }}
-                defaultValue='any'
-                name='category'
-                control={control}
-              />
-            </Stack>
-
-            <TextFormField placeholder='Название...' name='title' control={control} />
-            
-            <Button variant='contained' onClick={handleSubmit(onSubmit)}>Применить фильтры</Button>
-
-            <TextFormField placeholder='Описание...' name='description' control={control}
-            />
-          </Box>
+          <AdminFilters defaultValues={fieldsValues} onSubmit={onSubmit} />
 
           { isRequestsLoading 
             ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 

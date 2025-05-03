@@ -1,8 +1,7 @@
 import { Button, Paper, Stack, Typography, Select, MenuItem, Box, Container, CircularProgress } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
-import { CheckboxFormField, TextFormField } from '@src/components/ui/FormFields';
-import { DateType } from '@src/model/misc';
+import { CheckboxFormField } from '@src/components/ui/form/CheckboxFormField';
+import { TextFormField } from '@src/components/ui/form/TextFormField';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { saveAs } from 'file-saver';
@@ -12,6 +11,7 @@ import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFie
 import { useEffect, useRef } from 'react';
 import { ApiService, CategoryEnum } from '@src/api';
 import { useNavigate } from 'react-router-dom';
+import { DateFormField, DateType } from '@src/components/ui/form/DateFormField';
 
 export interface RequestsAdminFormInputs {
   from?: DateType;
@@ -27,63 +27,6 @@ export interface RequestsAdminFormInputs {
 interface FormFieldProps {
   control: Control<RequestsAdminFormInputs>;
 }
-
-const FromDateFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='from'
-    render={({ field, fieldState }) => (
-      <DatePicker 
-        maxDate={dayjs()}
-        slotProps={{
-          textField: {
-            helperText: fieldState.error?.message,
-            error: !!fieldState.error,
-          },
-        }}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: { 
-        required: (value: DateType | undefined) => {
-          if (!value) return;
-          if (value > dayjs()) return 'Выбрана дата из будущего';
-        },
-      },
-    }}
-  />
-);
-
-const ToDateFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='to'
-    render={({ field, fieldState }) => (
-      <DatePicker 
-        maxDate={dayjs()}
-        slotProps={{
-          textField: {
-            helperText: fieldState.error?.message,
-            error: !!fieldState.error,
-          },
-        }}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: { 
-        required: (value, { from }) => {
-          if (!value) return;
-          if (value > dayjs()) return 'Выбрана дата из будущего';
-          if (from && value < from) return 'Дата конца раньше даты начала';
-        },
-      },
-    }}
-  />
-);
 
 const StatusFormField = (props: FormFieldProps) => (
   <Controller 
@@ -228,12 +171,20 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Дата изменения статуса (от):</Typography>
-            <FromDateFormField control={control} />
+            <DateFormField prohibitFuture name='from' control={control} />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Дата изменения статуса (до):</Typography>
-            <ToDateFormField control={control} />
+            <DateFormField 
+              prohibitFuture 
+              validate={(value, formFields) => {
+                if (formFields.from && value! < formFields.from) 
+                  return 'Дата конца раньше даты начала'; 
+              }} 
+              name='to' 
+              control={control}
+            />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>

@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import NotFoundPage from '@src/components/pages/NotFoundPage';
-import RegisterPage from '@src/components/pages/RegisterPage/RegisterPage';
+import RegisterPage from '@src/components/pages/RegisterPage';
 import RequestsAdminPage from '@src/components/pages/RequestsAdminPage';
 import RequestsClientPage from '@src/components/pages/RequestsClientPage';
-import LoginPage from '@src/components/pages/LoginPage/LoginPage';
+import LoginPage from '@src/components/pages/LoginPage';
 import ProductCardPage from '../components/pages/ProductCardPage';
 import AuthorizedOnly from './AuthorizedOnly';
 import ClientOnly from './ClientOnly';

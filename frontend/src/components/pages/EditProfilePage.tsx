@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/FormFields';
-import PhoneField from '@src/components/ui/PhoneField';
+import PhoneField from '@src/components/ui/form/PhoneFormField';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { editUser, selectIsAdmin, selectUser } from '@src/store/UserSlice';
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, timelineItemClasses, TimelineSeparator } from '@mui/lab';

@@ -4,7 +4,8 @@ import { RequestsTable } from '@src/components/ui/RequestsTable';
 import type { DateType } from '@src/model/misc';
 import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
-import { TextFormField } from '@src/components/ui/FormFields';
+import { TextFormField } from '@src/components/ui/form/TextFormField';
+import { DateFormField } from '@src/components/ui/form/DateFormField';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
@@ -209,12 +210,20 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography component='p' variant='body1'>Дата изменения статуса (от):</Typography>
-            <FromDateFormField control={control} />
+            <DateFormField prohibitFuture name='from' control={control} />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography component='p' variant='body1'>Дата изменения статуса (до):</Typography>
-            <ToDateFormField control={control} />
+            <DateFormField 
+              prohibitFuture 
+              validate={(value, formFields) => {
+                if (formFields.from && value! < formFields.from) 
+                  return 'Дата конца раньше даты начала'; 
+              }} 
+              name='to' 
+              control={control}
+            />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>

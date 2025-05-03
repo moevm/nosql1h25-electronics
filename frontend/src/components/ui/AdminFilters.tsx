@@ -1,12 +1,12 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
-import { CategoryEnum, TypeEnum } from "@src/api";
-import DateFormField, { DateType } from "@src/components/ui/form/DateFormField";
-import TextFormField from "./form/TextFormField";
-import { categoryMap, statusMap } from "@src/lib/RussianConverters";
-import { SelectFormField } from "./form/SelectFormField";
-import CheckboxFormField from "./form/CheckboxFormField";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { Box, Button, Stack, Typography } from '@mui/material';
+import { CategoryEnum, TypeEnum } from '@src/api';
+import { DateFormField, DateType } from '@src/components/ui/form/DateFormField';
+import { TextFormField } from '@src/components/ui/form/TextFormField';
+import { categoryMap, statusMap } from '@src/lib/RussianConverters';
+import { SelectFormField } from '@src/components/ui/form/SelectFormField';
+import { CheckboxFormField } from '@src/components/ui/form/CheckboxFormField';
+import { useForm } from 'react-hook-form';
+import { useEffect } from 'react';
 
 export interface AdminFiltersFormInputs {
   from?: DateType;

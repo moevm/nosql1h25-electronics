@@ -1,4 +1,4 @@
-import { Control, FieldValues, Path, Validate } from "react-hook-form";
+import { Control, FieldValues, Path, Validate } from 'react-hook-form';
 
 export interface FormFieldPropsBase<
   FormFieldsType extends FieldValues,

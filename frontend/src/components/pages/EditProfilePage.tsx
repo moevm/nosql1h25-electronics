@@ -113,7 +113,7 @@ export const EditProfilePage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>ФИО:</Typography>
-            <TextFormField required placeholder="ФИО" maxLength={200} name='fullname' control={control} />
+            <TextFormField required placeholder='ФИО' maxLength={200} name='fullname' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>

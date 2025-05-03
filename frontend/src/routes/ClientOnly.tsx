@@ -1,8 +1,8 @@
-import { Navigate } from "react-router-dom";
-import { useAppSelector } from "@src/hooks/ReduxHooks";
-import { selectIsInitialAuthorizing, selectIsClient } from "@src/store/UserSlice";
-import AuthorizedOnly from "./AuthorizedOnly";
-import Loader from "@src/components/ui/Loader";
+import { Navigate } from 'react-router-dom';
+import { useAppSelector } from '@src/hooks/ReduxHooks';
+import { selectIsInitialAuthorizing, selectIsClient } from '@src/store/UserSlice';
+import { AuthorizedOnly } from './AuthorizedOnly';
+import Loader from '@src/components/ui/Loader';
 
 export interface ClientOnlyProps {
   children: React.ReactElement;

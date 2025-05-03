@@ -1,7 +1,7 @@
-import { Navigate } from "react-router-dom";
-import { useAppSelector } from "@src/hooks/ReduxHooks";
-import { selectIsAuthorized, selectIsInitialAuthorizing } from "@src/store/UserSlice";
-import Loader from "@src/components/ui/Loader";
+import { Navigate } from 'react-router-dom';
+import { useAppSelector } from '@src/hooks/ReduxHooks';
+import { selectIsAuthorized, selectIsInitialAuthorizing } from '@src/store/UserSlice';
+import Loader from '@src/components/ui/Loader';
 
 export interface AuthorizedOnlyProps {
   children: React.ReactElement;

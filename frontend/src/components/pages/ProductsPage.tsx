@@ -1,7 +1,7 @@
 import { Button, Paper, Stack, Typography, Container, CircularProgress, Box } from '@mui/material';
 import { ProductsTable } from '@src/components/ui/ProductsTable';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
-import { selectAdminForm, selectClientForm, selectIsLoading, selectProducts, updateClientFields, updateProducts } from '@src/store/ProductsSlice';
+import { selectAdminForm, selectClientForm, selectIsLoading, selectProducts, updateAdminFields, updateClientFields, updateProducts } from '@src/store/ProductsSlice';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientFilters, ClientFiltersFormInputs } from '@src/components/ui/ClientFilters';
@@ -27,7 +27,7 @@ export const ProductsPage = () => {
   }, []);
 
   const onAdminSubmit = (data: AdminFiltersFormInputs) => {
-    dispatch(updateClientFields(data));
+    dispatch(updateAdminFields(data));
     dispatch(updateProducts(null));
   };
 

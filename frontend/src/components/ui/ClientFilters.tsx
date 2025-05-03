@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { CategoryEnum, TypeEnum } from '@src/api';
 import DateFormField, { DateType } from '@src/components/ui/form/DateFormField';
 import { useEffect } from 'react';
@@ -88,7 +88,14 @@ export const ClientFilters = ({ defaultValues, onSubmit }: ClientFiltersProps) =
         />
       </Stack>
 
-      <Stack direction='row' alignItems='end' gap={2}>
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, auto)',
+        gridTemplateRows: 'repeat(2, auto)',
+        justifyContent: 'start',
+        alignItems: 'center',
+        gap: '5px 20px',
+      }}>
         <Stack direction='row' alignItems='center' gap={1}>
           <Typography variant='body1'>Соритровать по:</Typography>
           <SelectFormField
@@ -102,14 +109,14 @@ export const ClientFilters = ({ defaultValues, onSubmit }: ClientFiltersProps) =
             name='sort'
             control={control}
           />
-          <Button variant='contained' onClick={handleSubmit(onSubmit ?? (() => {}))}>Обновить список</Button>
         </Stack>
 
-        <Stack gap={1}>
-          <TextFormField placeholder='Название...' name='title' control={control} />
-          <TextFormField placeholder='Описание...' name='description' control={control} />
-        </Stack>
-      </Stack>
+        <TextFormField placeholder='Название...' name='title' control={control} />
+
+        <Button variant='contained' onClick={handleSubmit(onSubmit ?? (() => {}))}>Обновить список</Button>
+        
+        <TextFormField placeholder='Описание...' name='description' control={control} />
+      </Box>
     </Stack>
   );
 };

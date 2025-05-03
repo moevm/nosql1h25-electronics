@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AdminFiltersFormInputs } from '@src/components/ui/AdminFilters';
-import { RequestsClientFormInputs } from '@src/components/pages/RequestsClientPage';
+import { ClientFiltersFormInputs } from '@src/components/ui/ClientFilters';
 import { RootState } from './Store';
 import { ApiError, ApiService, ProductRequest } from '@src/api';
 
@@ -36,7 +36,7 @@ export const updateRequests = createAsyncThunk(
 export type RequestsState = {
   isLoading: boolean;
   requests?: ProductRequest[];
-  clientForm: Partial<RequestsClientFormInputs>;
+  clientForm: Partial<ClientFiltersFormInputs>;
   adminForm: Partial<AdminFiltersFormInputs>;
 };
 
@@ -50,7 +50,7 @@ export const requestsSlice = createSlice({
   name: 'requests',
   initialState,
   reducers: {
-    updateClientFields: (state, action: PayloadAction<Partial<RequestsClientFormInputs>>) => {
+    updateClientFields: (state, action: PayloadAction<Partial<ClientFiltersFormInputs>>) => {
       Object.assign(state.clientForm, action.payload);
     },
     updateAdminFields: (state, action: PayloadAction<Partial<AdminFiltersFormInputs>>) => {

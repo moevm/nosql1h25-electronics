@@ -1,5 +1,6 @@
 import { AccessTime, AttachMoney, CheckCircle, DoneAll, Event, Help } from "@mui/icons-material";
-import { Status, TypeEnum } from "@src/api";
+import { ProductRequest, Status, TypeEnum } from "@src/api";
+import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
 
 type StatusView = {
   description: string,
@@ -48,4 +49,14 @@ export function getStatusView(status: Status) {
   }
 
   return view;
+}
+
+export function getFictitiousStatus(request: ProductRequest){
+  const lastStatus = request.statuses[request.statuses.length - 1];
+  if(lastStatus.type === 'closed_status'){
+    return null;
+  } 
+  else if (lastStatus.type === 'created_status'){
+    return <AfterCreatedItem requestId={request.id} index={request.statuses.length}/>;
+  }
 }

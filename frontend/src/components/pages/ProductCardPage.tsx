@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
 import ImageGallery from "../ui/ImageGallery";
 import ProductTimeline, { TimelineItemType } from "../ui/ProductTimeline";
-import { ApiService, ProductRequest } from "@src/api";
+import { ApiError, ApiService, ProductRequest } from "@src/api";
 import NotFoundPage from "./NotFoundPage";
 import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
@@ -31,9 +31,9 @@ const ProductCardPage = () => {
         setProduct(response);
       } catch (error) {
         setIsError(true);
-        if (error instanceof AxiosError && error.response) {
+        if (error instanceof ApiError) {
           setErrorProps({
-            title: `${error.response.status}: ${error.response.statusText}`,
+            title: `${error.status}: ${error.statusText}`,
             message: error.message
           });
         }

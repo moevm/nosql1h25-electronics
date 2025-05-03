@@ -11,7 +11,18 @@ export type TextFormFieldProps<T extends FieldValues> =
     prohibitBlank?: boolean;
   };
 
-export const TextFormField = <T extends FieldValues>({ control, name, required, minLength, maxLength, prohibitBlank, validate, slotProps, ...textFieldProps }: TextFormFieldProps<T>) => (
+export const TextFormField = <T extends FieldValues>
+({ 
+  control, 
+  name, 
+  required, 
+  minLength, 
+  maxLength, 
+  prohibitBlank, 
+  validate, 
+  slotProps, 
+  ...textFieldProps
+}: TextFormFieldProps<T>) => (
   <Controller 
     control={control}
     name={name}

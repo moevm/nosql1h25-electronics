@@ -8,7 +8,14 @@ export type CheckboxFormFieldProps<T extends FieldValues> =
     label?: string;
   };
 
-export const CheckboxFormField = <T extends FieldValues>({ control, name, label, validate, ...checkboxProps }: CheckboxFormFieldProps<T>) => (
+export const CheckboxFormField = <T extends FieldValues>
+({ 
+  control, 
+  name, 
+  label, 
+  validate, 
+  ...checkboxProps 
+}: CheckboxFormFieldProps<T>) => (
   <Controller 
     control={control}
     name={name}

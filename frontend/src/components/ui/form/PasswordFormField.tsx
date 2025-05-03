@@ -5,7 +5,18 @@ import { merge } from 'ts-deepmerge';
 
 export type PasswordFormFieldProps<T extends FieldValues> = TextFormFieldProps<T>;
 
-export const PasswordFormField = <T extends FieldValues>({ control, name, required, minLength, maxLength, prohibitBlank, validate, slotProps, ...passwordFieldProps}: PasswordFormFieldProps<T>) => (
+export const PasswordFormField = <T extends FieldValues>
+({ 
+  control, 
+  name, 
+  required, 
+  minLength, 
+  maxLength, 
+  prohibitBlank, 
+  validate, 
+  slotProps, 
+  ...passwordFieldProps
+}: PasswordFormFieldProps<T>) => (
   <Controller 
     control={control}
     name={name}

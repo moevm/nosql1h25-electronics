@@ -15,7 +15,18 @@ export type DateFormFieldProps<T extends FieldValues> =
     required?: boolean;
   };
 
-export const DateFormField = <T extends FieldValues>({ control, name, minDate, maxDate, required, prohibitFuture, validate, slotProps, ...datePickerProps }: DateFormFieldProps<T>) => (
+export const DateFormField = <T extends FieldValues>
+({ 
+  control, 
+  name, 
+  minDate, 
+  maxDate, 
+  required, 
+  prohibitFuture, 
+  validate, 
+  slotProps, 
+  ...datePickerProps 
+}: DateFormFieldProps<T>) => (
   <Controller 
     control={control}
     name={name}

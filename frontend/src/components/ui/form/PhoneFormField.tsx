@@ -1,30 +1,25 @@
-import styled from '@emotion/styled';
-import { MuiTelInput, MuiTelInputProps, classes } from "mui-tel-input";
+import { PhoneField, PhoneFieldProps } from '@src/components/ui/PhoneField';
 import { Controller, FieldValues } from 'react-hook-form';
 import { FormFieldPropsBase } from './FormFieldPropsBase';
 
-const MuiTelInputNoFlag = styled(MuiTelInput)`
-  .${classes.flagButton} {
-    display: none;
-  }
-`;
-
 export type PhoneFormFieldProps<T extends FieldValues> =
   FormFieldPropsBase<T, string | undefined> &
-  Omit<MuiTelInputProps, 'name' | 'forceCallingCode'>;
-   
+  Omit<PhoneFieldProps, 'name'>; 
 
-export const PhoneFormField = <T extends FieldValues>({ control, name, required, validate, ...muiTelInputProps }: PhoneFormFieldProps<T>) => (
+export const PhoneFormField = <T extends FieldValues>
+({ 
+  control, 
+  name, 
+  required, 
+  validate, 
+  ...phoneFieldProps
+}: PhoneFormFieldProps<T>) => (
   <Controller 
     control={control}
     name={name}
     render={({ field, fieldState }) => (
-      <MuiTelInputNoFlag
-        defaultCountry='RU'
-        placeholder='987 654 32 10'
-        disableDropdown
-        forceCallingCode
-        {...muiTelInputProps}
+      <PhoneField
+        {...phoneFieldProps}
         required={required}
         helperText={fieldState.error?.message}
         error={!!fieldState.error}

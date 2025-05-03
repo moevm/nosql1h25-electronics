@@ -5,6 +5,7 @@
 import type { CustomTokenObtainPair } from '../models/CustomTokenObtainPair';
 import type { Register } from '../models/Register';
 import type { TokenResponse } from '../models/TokenResponse';
+import type { UserEditRequest } from '../models/UserEditRequest';
 import type { UserResponse } from '../models/UserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -55,6 +56,27 @@ export class AuthService {
             url: '/auth/me/',
             errors: {
                 401: `Authentication required`,
+                403: `You do not have permission to perform this action`,
+            },
+        });
+    }
+    /**
+     * @returns UserResponse Current user info
+     * @throws ApiError
+     */
+    public static authMeUpdate({
+        requestBody,
+    }: {
+        requestBody?: UserEditRequest,
+    }): CancelablePromise<UserResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/auth/me/',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Incorrect field`,
+                401: `Authorization required`,
                 403: `You do not have permission to perform this action`,
             },
         });

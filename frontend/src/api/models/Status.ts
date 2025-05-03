@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CategoryEnum } from './CategoryEnum';
-import type { Status } from './Status';
+import type { TypeEnum } from './TypeEnum';
 /**
  * Serializer for Documents.
  *
@@ -42,15 +41,12 @@ import type { Status } from './Status';
  *
  * All other fields are mapped to ``DocumentField`` and probably will work wrong.
  */
-export type ProductRequest = {
-    readonly id: string;
-    readonly statuses: Array<Status>;
+export type Status = {
+    type: TypeEnum;
+    readonly timestamp: string;
     readonly user_id: string;
-    photos: Array<string>;
-    title: string;
-    description: string;
-    address: string;
-    category: CategoryEnum;
-    price: number;
+    price?: number;
+    date?: string;
+    success?: boolean;
 };
 

@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { PhotoResponse } from '../models/PhotoResponse';
 import type { ProductRequest } from '../models/ProductRequest';
+import type { Status } from '../models/Status';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -196,6 +197,29 @@ export class ApiService {
             path: {
                 'id': id,
             },
+        });
+    }
+    /**
+     * Обновить актуальный статус заявки
+     * Позволяет добавить новый статус заявке. Обязательным является указание поля type. Остальные поля необходимо указывать в зависимости от типа заявки.
+     * @returns Status
+     * @throws ApiError
+     */
+    public static apiRequestsStatusesCreate({
+        id,
+        requestBody,
+    }: {
+        id: string,
+        requestBody: Status,
+    }): CancelablePromise<Status> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/requests/{id}/statuses',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
         });
     }
     /**

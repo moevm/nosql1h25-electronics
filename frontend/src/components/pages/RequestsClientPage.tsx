@@ -1,8 +1,6 @@
 import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress, Box } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
 import type { DateType } from '@src/model/misc';
-import dayjs from 'dayjs';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/form/TextFormField';
 import { DateFormField } from '@src/components/ui/form/DateFormField';
@@ -13,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { CategoryEnum } from '@src/api';
 import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
 import { useNavigate } from 'react-router-dom';
+import { SelectFormField } from '@src/components/ui/form/SelectFormField';
 
 export interface RequestsClientFormInputs {
   from?: DateType;
@@ -27,63 +26,6 @@ export interface RequestsClientFormInputs {
 interface FormFieldProps {
   control: Control<RequestsClientFormInputs>;
 }
-
-const FromDateFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='from'
-    render={({ field, fieldState }) => (
-      <DatePicker 
-        maxDate={dayjs()}
-        slotProps={{
-          textField: {
-            helperText: fieldState.error?.message,
-            error: !!fieldState.error,
-          },
-        }}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: { 
-        required: (value: DateType | undefined) => {
-          if (!value) return;
-          if (value > dayjs()) return 'Выбрана дата из будущего';
-        },
-      },
-    }}
-  />
-);
-
-const ToDateFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='to'
-    render={({ field, fieldState }) => (
-      <DatePicker 
-        maxDate={dayjs()}
-        slotProps={{
-          textField: {
-            helperText: fieldState.error?.message,
-            error: !!fieldState.error,
-          },
-        }}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: { 
-        required: (value, { from }) => {
-          if (!value) return;
-          if (value > dayjs()) return 'Выбрана дата из будущего';
-          if (from && value < from) return 'Дата конца раньше даты начала';
-        },
-      },
-    }}
-  />
-);
 
 const StatusFormField = (props: FormFieldProps) => (
   <Controller 
@@ -228,12 +170,41 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Статус заявки:</Typography>
-            <StatusFormField control={control} />
+            <SelectFormField
+              options={{
+                any: 'Все',
+                created_status: 'Создана',
+                price_offer_status: 'Предложена цена',
+                price_accept_status: 'Цена подтверждена',
+                date_offer_status: 'Предложена дата',
+                date_accept_status: 'Дата подтверждена',
+                closed_status: 'Закрыта',
+              }}
+              defaultValue='any'
+              name='status'
+              control={control}
+            />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Категория товара:</Typography>
-            <CategoryFormField control={control} />
+            <SelectFormField
+              options={{
+                any: 'Все',
+                laptop: 'Ноутбук',
+                smartphone: 'Сматрфон',
+                tablet: 'Планшет',
+                pc: 'Персональный компьютер',
+                tv: 'Телевизор',
+                audio: 'Наушники и колонки',
+                console: 'Игровые приставки',
+                periphery: 'Компьютерная перефирия',
+                other: 'Прочее', 
+              }}
+              defaultValue='any'
+              name='category'
+              control={control}
+            />
           </Stack>
 
           <Stack direction='row'>
@@ -243,7 +214,17 @@ export const RequestsClientPage = () => {
           <Stack direction='row' alignItems='end' gap={2}>
             <Stack direction='row' alignItems='center' gap={1}>
               <Typography variant='body1'>Соритровать по:</Typography>
-              <SortFieldFormField control={control} />
+              <SelectFormField
+                options={{
+                  any: '-',
+                  title: 'Названию',
+                  last_update: 'Последнему обновлению',
+                  category: 'Категории',
+                }}
+                defaultValue='any' 
+                name='sort'
+                control={control}
+              />
               <Button variant='contained' onClick={handleSubmit(onSubmit)}>Сортировать</Button>
             </Stack>
 

@@ -1,6 +1,6 @@
 import { Button, CircularProgress } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
-import { reset } from '@src/store/RequestsSlice';
+import { reset } from '@src/store/ProductsSlice';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 
 export const LogoutButton = () => {

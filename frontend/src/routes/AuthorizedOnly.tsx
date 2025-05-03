@@ -14,7 +14,7 @@ export const AuthorizedOnly = ({ children, inverted }: AuthorizedOnlyProps) => {
 
   if (isInitialAuthorizing) return <Loader />
 
-  if (!!inverted === isAuthorized) return <Navigate to={inverted ? '/requests' : '/login'} replace />;
+  if (!!inverted === isAuthorized) return <Navigate to={inverted ? '/products' : '/login'} replace />;
 
   return children
 };

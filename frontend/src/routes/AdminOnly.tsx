@@ -16,7 +16,7 @@ export const AdminOnly = ({ children }: AdminOnlyProps) => {
 
   if (isAdmin) return children;
   
-  return <AuthorizedOnly><Navigate to='/requests' replace /></AuthorizedOnly>;
+  return <AuthorizedOnly><Navigate to='/products' replace /></AuthorizedOnly>;
 };
 
 export default AdminOnly;

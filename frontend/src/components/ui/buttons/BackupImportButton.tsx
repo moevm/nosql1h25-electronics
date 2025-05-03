@@ -1,7 +1,7 @@
 import { Button } from '@mui/material';
 import { ApiService } from '@src/api';
 import { useAppDispatch } from '@src/hooks/ReduxHooks';
-import { reset } from '@src/store/RequestsSlice';
+import { reset } from '@src/store/ProductsSlice';
 import { logout } from '@src/store/UserSlice';
 import React, { useRef } from 'react';
 

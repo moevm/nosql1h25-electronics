@@ -1,10 +1,10 @@
 import { Button } from '@mui/material';
 import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
 import { useAppDispatch } from '@src/hooks/ReduxHooks';
-import { updateRequests } from '@src/store/RequestsSlice';
+import { updateProducts } from '@src/store/ProductsSlice';
 import { useState } from 'react';
 
-export const CreateRequestButton = () => {
+export const CreateProductButton = () => {
   const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +14,7 @@ export const CreateRequestButton = () => {
       <CreateRequestDialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        onSubmit={() => dispatch(updateRequests(null))}
+        onSubmit={() => dispatch(updateProducts(null))}
       />
 
       <Button
@@ -27,4 +27,4 @@ export const CreateRequestButton = () => {
   );
 };
 
-export default CreateRequestButton;
+export default CreateProductButton;

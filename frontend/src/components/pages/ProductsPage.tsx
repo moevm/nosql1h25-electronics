@@ -1,39 +1,39 @@
 import { Button, Paper, Stack, Typography, Container, CircularProgress, Box } from '@mui/material';
 import { ProductsTable } from '@src/components/ui/ProductsTable';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
-import { selectAdminForm, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
+import { selectAdminForm, selectClientForm, selectIsLoading, selectProducts, updateClientFields, updateProducts } from '@src/store/ProductsSlice';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientFilters, ClientFiltersFormInputs } from '@src/components/ui/ClientFilters';
 import { LogoutButton } from '@src/components/ui/buttons/LogoutButton';
-import { CreateRequestButton } from '@src/components/ui/buttons/CreateRequestButton';
+import { CreateProductButton } from '@src/components/ui/buttons/CreateProductButton';
 import { selectIsAdmin } from '@src/store/UserSlice';
 import { AdminFilters, AdminFiltersFormInputs } from '@src/components/ui/AdminFilters';
 import { BackupExportButton } from '@src/components/ui/buttons/BackupExportButton';
 import { BackupImportButton } from '@src/components/ui/buttons/BackupImportButton';
 
-export const RequestsPage = () => {
+export const ProductsPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const isRequestsLoading = useAppSelector(selectIsLoading);
-  const requestsData = useAppSelector(selectRequests);
+  const isProductsLoading = useAppSelector(selectIsLoading);
+  const productsData = useAppSelector(selectProducts);
   const isAdmin = useAppSelector(selectIsAdmin);
   const adminFilterValues = useAppSelector(selectAdminForm);
   const clientFilterValues = useAppSelector(selectClientForm);
 
   useEffect(() => {
-    dispatch(updateRequests(null));
+    dispatch(updateProducts(null));
   }, []);
 
   const onAdminSubmit = (data: AdminFiltersFormInputs) => {
     dispatch(updateClientFields(data));
-    dispatch(updateRequests(null));
+    dispatch(updateProducts(null));
   };
 
   const onClientSubmit = (data: ClientFiltersFormInputs) => {
     dispatch(updateClientFields(data));
-    dispatch(updateRequests(null));
+    dispatch(updateProducts(null));
   };
 
   return (
@@ -50,7 +50,7 @@ export const RequestsPage = () => {
                 <BackupImportButton />
                 <Button variant='contained' onClick={() => {}}>Статистика</Button>
               </>
-              : <CreateRequestButton />
+              : <CreateProductButton />
             }
             <LogoutButton />
           </Stack>
@@ -60,10 +60,10 @@ export const RequestsPage = () => {
             : <ClientFilters defaultValues={clientFilterValues} onSubmit={onClientSubmit} />
           }
 
-          { isRequestsLoading 
+          { isProductsLoading 
             ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 
-            : !!requestsData && requestsData.length > 0
-            ? <ProductsTable products={requestsData}/> 
+            : !!productsData && productsData.length > 0
+            ? <ProductsTable products={productsData}/> 
             : <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><Typography variant='h4'>Пусто</Typography></Box> 
           }
         </Stack>
@@ -72,4 +72,4 @@ export const RequestsPage = () => {
   );
 };
 
-export default RequestsPage;
+export default ProductsPage;

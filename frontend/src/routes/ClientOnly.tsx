@@ -16,7 +16,7 @@ export const ClientOnly = ({ children }: ClientOnlyProps) => {
 
   if (isClient) return children;
   
-  return <AuthorizedOnly><Navigate to='/requests' replace /></AuthorizedOnly>;
+  return <AuthorizedOnly><Navigate to='/products' replace /></AuthorizedOnly>;
 };
 
 export default ClientOnly;

@@ -5,10 +5,10 @@ import { LoginPage } from '@src/components/pages/LoginPage';
 import ProductCardPage from '@src/components/pages/ProductCardPage';
 import { AuthorizedOnly } from './AuthorizedOnly';
 import { EditProfilePage } from '@src/components/pages/EditProfilePage';
-import { RequestsPage } from '@src/components/pages/RequestsPage';
+import { ProductsPage } from '@src/components/pages/ProductsPage';
 
 const routes = [
-  { path: '/requests', element: <AuthorizedOnly><RequestsPage /></AuthorizedOnly> },
+  { path: '/products', element: <AuthorizedOnly><ProductsPage /></AuthorizedOnly> },
   { path: '/product/:id', element: <AuthorizedOnly><ProductCardPage /></AuthorizedOnly> },
   { path: '/profile', element: <AuthorizedOnly><EditProfilePage /></AuthorizedOnly> },
   { path: '/login', element: <AuthorizedOnly inverted><LoginPage /></AuthorizedOnly>},
@@ -21,7 +21,7 @@ const AppRouter = () => (
     {routes.map(({ path, element }) => (
       <Route key={path} path={path} element={element} />
     ))}
-    <Route index element={<Navigate to='/requests' replace />} />
+    <Route index element={<Navigate to='/products' replace />} />
   </Routes>
 );
 

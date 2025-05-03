@@ -3,9 +3,9 @@ import { CategoryEnum, TypeEnum } from '@src/api';
 import DateFormField, { DateType } from '@src/components/ui/form/DateFormField';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { SelectFormField } from './form/SelectFormField';
+import { SelectFormField } from '@src/components/ui/form/SelectFormField';
 import { categoryMap, statusMap } from '@src/lib/RussianConverters';
-import TextFormField from './form/TextFormField';
+import TextFormField from '@src/components/ui/form/TextFormField';
 
 export interface ClientFiltersFormInputs {
   from?: DateType;

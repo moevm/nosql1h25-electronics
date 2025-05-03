@@ -1,5 +1,5 @@
 import { Button, Paper, Stack, Typography, Container, CircularProgress, Box } from '@mui/material';
-import { RequestsTable } from '@src/components/ui/RequestsTable';
+import { ProductsTable } from '@src/components/ui/ProductsTable';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { selectAdminForm, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect } from 'react';
@@ -63,7 +63,7 @@ export const RequestsPage = () => {
           { isRequestsLoading 
             ? <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box> 
             : !!requestsData && requestsData.length > 0
-            ? <RequestsTable requests={requestsData}/> 
+            ? <ProductsTable products={requestsData}/> 
             : <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><Typography variant='h4'>Пусто</Typography></Box> 
           }
         </Stack>

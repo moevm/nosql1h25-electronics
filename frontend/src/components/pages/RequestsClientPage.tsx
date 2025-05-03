@@ -1,9 +1,8 @@
 import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress, Box } from '@mui/material';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
-import type { DateType } from '@src/model/misc';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/form/TextFormField';
-import { DateFormField } from '@src/components/ui/form/DateFormField';
+import { DateFormField, DateType } from '@src/components/ui/form/DateFormField';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';

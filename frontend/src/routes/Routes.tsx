@@ -1,11 +1,11 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import NotFoundPage from '@src/components/pages/NotFoundPage';
-import RegisterPage from '@src/components/pages/RegisterPage';
-import LoginPage from '@src/components/pages/LoginPage';
+import { RegisterPage } from '@src/components/pages/RegisterPage';
+import { LoginPage } from '@src/components/pages/LoginPage';
 import ProductCardPage from '@src/components/pages/ProductCardPage';
-import AuthorizedOnly from './AuthorizedOnly';
+import { AuthorizedOnly } from './AuthorizedOnly';
 import { EditProfilePage } from '@src/components/pages/EditProfilePage';
-import RequestsPage from '@src/components/pages/RequestsPage';
+import { RequestsPage } from '@src/components/pages/RequestsPage';
 
 const routes = [
   { path: '/requests', element: <AuthorizedOnly><RequestsPage /></AuthorizedOnly> },
@@ -21,6 +21,7 @@ const AppRouter = () => (
     {routes.map(({ path, element }) => (
       <Route key={path} path={path} element={element} />
     ))}
+    <Route index element={<Navigate to='/requests' replace />} />
   </Routes>
 );
 

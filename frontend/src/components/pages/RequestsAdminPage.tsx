@@ -9,71 +9,22 @@ import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectAdminForm, selectIsLoading, selectRequests, updateAdminFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect, useRef } from 'react';
-import { ApiService, CategoryEnum } from '@src/api';
+import { ApiService, CategoryEnum, TypeEnum } from '@src/api';
 import { useNavigate } from 'react-router-dom';
 import { DateFormField, DateType } from '@src/components/ui/form/DateFormField';
+import { categoryMap, statusMap } from '@src/lib/RussianConverters';
+import { SelectFormField } from '@src/components/ui/form/SelectFormField';
 
 export interface RequestsAdminFormInputs {
   from?: DateType;
   to?: DateType;
-  status: string;
+  status: TypeEnum | 'any';
   author?: string;
   me: boolean;
   category: CategoryEnum | 'any';
   title?: string;
   description?: string;
 }
-
-interface FormFieldProps {
-  control: Control<RequestsAdminFormInputs>;
-}
-
-const StatusFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='status'
-    render={({ field }) => (
-      <Select 
-        value={field.value} 
-        onChange={field.onChange}
-      >
-        <MenuItem value='any'>Все</MenuItem>
-        <MenuItem value='created_status'>Создана</MenuItem>
-        <MenuItem value='price_offer_status'>Предложена цена</MenuItem>
-        <MenuItem value='price_accept_status'>Цена подтверждена</MenuItem>
-        <MenuItem value='date_offer_status'>Предложена дата</MenuItem>
-        <MenuItem value='date_accept_status'>Дата подтверждена</MenuItem>
-        <MenuItem value='closed_status'>Закрыта</MenuItem>
-      </Select>
-    )}
-    defaultValue='any'
-  />
-);
-
-const CategoryFormField = (props: FormFieldProps) => (
-  <Controller 
-  {...props}
-  name='category'
-  render={({ field }) => (
-    <Select 
-      value={field.value} 
-      onChange={field.onChange}
-    >
-      <MenuItem value='any'>Всё</MenuItem>
-      <MenuItem value='laptop'>Ноутбук</MenuItem>
-      <MenuItem value='smartphone'>Смартфон</MenuItem>
-      <MenuItem value='tablet'>Планшет</MenuItem>
-      <MenuItem value='pc'>Персональный компьютер</MenuItem>
-      <MenuItem value='tv'>Телевизор</MenuItem>
-      <MenuItem value='audio'>Наушники и колонки</MenuItem>
-      <MenuItem value='console'>Игровые приставки</MenuItem>
-      <MenuItem value='periphery'>Комьютерная периферия</MenuItem>
-      <MenuItem value='other'>Прочее</MenuItem>
-    </Select>
-  )}
-  defaultValue='any'
-/>
-);
 
 export const RequestsClientPage = () => {
   const navigate = useNavigate();
@@ -189,7 +140,15 @@ export const RequestsClientPage = () => {
 
           <Stack direction='row' gap={1} alignItems='center'>
             <Typography variant='body1'>Статус заявки:</Typography>
-            <StatusFormField control={control} /> 
+            <SelectFormField
+              options={{
+                any: 'Всё',
+                ...statusMap,
+              }}
+              defaultValue='any'
+              name='status'
+              control={control}
+            />
           </Stack>
 
           <Stack direction='row' gap={1} alignItems='center'>
@@ -209,7 +168,15 @@ export const RequestsClientPage = () => {
           }}>
             <Stack direction='row' gap={1} alignItems='center'>
               <Typography variant='body1'>Категория товара:</Typography>
-              <CategoryFormField control={control} />
+              <SelectFormField
+                options={{
+                  any: 'Всё',
+                  ...categoryMap,
+                }}
+                defaultValue='any'
+                name='category'
+                control={control}
+              />
             </Stack>
 
             <TextFormField placeholder='Название...' name='title' control={control} />

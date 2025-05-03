@@ -1,96 +1,27 @@
 import { Button, Paper, Stack, Typography, Select, MenuItem, Container, CircularProgress, Box } from '@mui/material';
 import { RequestsTable } from '@src/components/ui/RequestsTable';
-import { Control, Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/form/TextFormField';
 import { DateFormField, DateType } from '@src/components/ui/form/DateFormField';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { logout, selectIsLoggingOut } from '@src/store/UserSlice';
 import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientFields, updateRequests } from '@src/store/RequestsSlice';
 import { useEffect, useState } from 'react';
-import { CategoryEnum } from '@src/api';
+import { CategoryEnum, TypeEnum } from '@src/api';
 import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
 import { useNavigate } from 'react-router-dom';
 import { SelectFormField } from '@src/components/ui/form/SelectFormField';
+import { categoryMap, statusMap } from '@src/lib/RussianConverters';
 
 export interface RequestsClientFormInputs {
   from?: DateType;
   to?: DateType;
-  status: string;
+  status: TypeEnum | 'any';
   category: CategoryEnum | 'any';
   title?: string;
   description?: string;
-  sort: 'title' | 'category' | 'description' | 'address' | 'fullname' | 'last_update' | 'any';
+  sort: 'title' | 'category' | 'last_update' | 'any';
 }
-
-interface FormFieldProps {
-  control: Control<RequestsClientFormInputs>;
-}
-
-const StatusFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='status'
-    render={({ field }) => (
-      <Select 
-        value={field.value} 
-        onChange={field.onChange}
-      >
-        <MenuItem value='any'>Все</MenuItem>
-        <MenuItem value='created_status'>Создана</MenuItem>
-        <MenuItem value='price_offer_status'>Предложена цена</MenuItem>
-        <MenuItem value='price_accept_status'>Цена подтверждена</MenuItem>
-        <MenuItem value='date_offer_status'>Предложена дата</MenuItem>
-        <MenuItem value='date_accept_status'>Дата подтверждена</MenuItem>
-        <MenuItem value='closed_status'>Закрыта</MenuItem>
-      </Select>
-    )}
-    defaultValue='any'
-  />
-);
-
-const CategoryFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='category'
-    render={({ field }) => (
-      <Select 
-        value={field.value} 
-        onChange={field.onChange}
-      >
-        <MenuItem value='any'>Всё</MenuItem>
-        <MenuItem value='laptop'>Ноутбук</MenuItem>
-        <MenuItem value='smartphone'>Смартфон</MenuItem>
-        <MenuItem value='tablet'>Планшет</MenuItem>
-        <MenuItem value='pc'>Персональный компьютер</MenuItem>
-        <MenuItem value='tv'>Телевизор</MenuItem>
-        <MenuItem value='audio'>Наушники и колонки</MenuItem>
-        <MenuItem value='console'>Игровые приставки</MenuItem>
-        <MenuItem value='periphery'>Комьютерная периферия</MenuItem>
-        <MenuItem value='other'>Прочее</MenuItem>
-      </Select>
-    )}
-    defaultValue='any'
-  />
-);
-
-const SortFieldFormField = (props: FormFieldProps) => (
-  <Controller 
-    {...props}
-    name='sort'
-    render={({ field }) => (
-      <Select 
-        value={field.value} 
-        onChange={field.onChange}
-      >
-        <MenuItem value='any'>-</MenuItem>
-        <MenuItem value='title'>Названию</MenuItem>
-        <MenuItem value='last_update'>Последнему обновлению</MenuItem>
-        <MenuItem value='category'>Категории</MenuItem>
-      </Select>
-    )}
-    defaultValue='any'
-  />
-);
 
 export const RequestsClientPage = () => {
   const navigate = useNavigate();
@@ -171,13 +102,8 @@ export const RequestsClientPage = () => {
             <Typography variant='body1'>Статус заявки:</Typography>
             <SelectFormField
               options={{
-                any: 'Все',
-                created_status: 'Создана',
-                price_offer_status: 'Предложена цена',
-                price_accept_status: 'Цена подтверждена',
-                date_offer_status: 'Предложена дата',
-                date_accept_status: 'Дата подтверждена',
-                closed_status: 'Закрыта',
+                any: 'Всё',
+                ...statusMap,
               }}
               defaultValue='any'
               name='status'
@@ -189,16 +115,8 @@ export const RequestsClientPage = () => {
             <Typography variant='body1'>Категория товара:</Typography>
             <SelectFormField
               options={{
-                any: 'Все',
-                laptop: 'Ноутбук',
-                smartphone: 'Сматрфон',
-                tablet: 'Планшет',
-                pc: 'Персональный компьютер',
-                tv: 'Телевизор',
-                audio: 'Наушники и колонки',
-                console: 'Игровые приставки',
-                periphery: 'Компьютерная перефирия',
-                other: 'Прочее', 
+                any: 'Всё',
+                ...categoryMap,
               }}
               defaultValue='any'
               name='category'

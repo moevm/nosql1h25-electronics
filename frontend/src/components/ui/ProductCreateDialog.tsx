@@ -1,7 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, Box, Typography, TextField, MenuItem, DialogActions, Button, Grid, Avatar } from "@mui/material";
 import { ApiService, ProductRequest } from "@src/api";
 import { CategoryEnum } from "@src/api/models/CategoryEnum";
-import { categoryToRussian } from "@src/lib/russianConverters";
+import { categoryToRussian } from "@src/lib/RussianConverters";
 import { useEffect, useMemo, useState } from "react";
 
 interface CreateRequestDialogProps {

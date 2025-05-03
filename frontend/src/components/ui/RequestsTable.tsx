@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { categoryToRussian, statusTypeToRussian } from "@src/lib/russianConverters";
+import { categoryToRussian, statusTypeToRussian } from "@src/lib/RussianConverters";
 import { ProductRequest } from "@src/api";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";

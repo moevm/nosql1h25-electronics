@@ -1,16 +1,16 @@
-import type { CategoryEnum } from '@src/api';
+import type { CategoryEnum, TypeEnum } from '@src/api';
 
-export const statusTypeToRussian = (type: string): string => {
-  const typeMap: Record<string, string> = {
+export const statusTypeToRussian = (type: TypeEnum): string => {
+  const typeMap: Record<TypeEnum, string> = {
     created_status: 'Создан',
-    price_offer: 'Предложена цена',
-    price_accept: 'Цена подтверждена',
-    date_offer: 'Предложена дата встречи',
-    date_accept: 'Дата встречи подтверждена',
+    price_offer_status: 'Предложена цена',
+    price_accept_status: 'Цена подтверждена',
+    date_offer_status: 'Предложена дата встречи',
+    date_accept_status: 'Дата встречи подтверждена',
     closed_status: 'Закрыта',
   };
 
-  return typeMap[type] ?? 'Неизвестный статус';
+  return typeMap[type];
 };
 
 export const categoryToRussian = (category: CategoryEnum): string => {

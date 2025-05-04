@@ -565,8 +565,8 @@ class UserViewSet(ModelViewSet):
 
         try:
             instance = User.objects.get(id=pk)
-        except User.DoesNotExist:
-            return Response({"details": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response({"details": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
         if not user.is_admin and str(user.id) != str(pk):

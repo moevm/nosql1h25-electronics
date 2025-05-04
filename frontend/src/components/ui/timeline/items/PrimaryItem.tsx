@@ -5,6 +5,7 @@ import { getStatusView } from "@src/lib/timelineItemUtility";
 
 const PrimaryItem = ({ index, item }: { index: number, item: Status}) => {
   const view = getStatusView(item);
+
   return (
     <TimelineItem key={index}>
       <TimelineSeparator>

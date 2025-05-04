@@ -13,6 +13,7 @@ const PriceInput = ({ requestId }: { requestId: string }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  
   const handlePrice = async () => {
     try {
       await ApiService.apiRequestsStatusesCreate({
@@ -29,7 +30,7 @@ const PriceInput = ({ requestId }: { requestId: string }) => {
     }
     navigate(location.pathname);
   }
-  
+
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
       <FiberManualRecord fontSize="small" />

@@ -51,6 +51,22 @@ export function getStatusView(status: Status) {
     color: 'error',
   }
 
+  if(status.type === 'date_offer_status'){
+    view.description = `Была предложена дата ${status.date}`;
+  } 
+  else if (status.type === 'closed_status'){
+    view.description = '';
+  }
+  else if (status.type === 'price_offer_status'){
+    view.description = `Была предложена дата ${status.price}`;
+  }
+  else if (status.type === 'price_accept_status'){
+    view.description = `Принята цена ${status.price}`;
+  } 
+  else if(status.type === 'date_accept_status'){
+    view.description = `Принята дата ${status.date}`;
+  }
+
   return view;
 }
 

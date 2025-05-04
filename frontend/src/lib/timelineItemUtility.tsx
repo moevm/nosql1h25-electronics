@@ -1,6 +1,7 @@
 import { AccessTime, AttachMoney, CheckCircle, DoneAll, Event, Help } from "@mui/icons-material";
 import { ProductRequest, Status, TypeEnum } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
+import PriceOfferLoopItem from "@src/components/ui/timeline/items/PriceOfferLoopItem";
 
 type StatusView = {
   description: string,
@@ -52,11 +53,15 @@ export function getStatusView(status: Status) {
 }
 
 export function getFictitiousStatus(request: ProductRequest){
-  const lastStatus = request.statuses[request.statuses.length - 1];
+  const count = request.statuses.length;
+  const lastStatus = request.statuses[count - 1];
   if(lastStatus.type === 'closed_status'){
     return null;
   } 
   else if (lastStatus.type === 'created_status'){
-    return <AfterCreatedItem requestId={request.id} index={request.statuses.length}/>;
+    return <AfterCreatedItem requestId={request.id} index={count}/>;
+  }
+  else if (lastStatus.type === 'price_offer_status'){
+    return <PriceOfferLoopItem index={count} requestId={request.id}/>
   }
 }

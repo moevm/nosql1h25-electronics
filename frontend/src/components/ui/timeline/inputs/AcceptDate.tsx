@@ -16,7 +16,7 @@ const AcceptDate = ({ requestId }: { requestId: string }) => {
       await ApiService.apiRequestsStatusesCreate({
         id: requestId,
         requestBody: {
-          type: "price_accept_status",
+          type: "date_accept_status",
           timestamp: "",
           user_id: user!.user_id
         }

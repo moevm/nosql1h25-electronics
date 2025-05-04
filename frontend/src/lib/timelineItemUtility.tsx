@@ -47,7 +47,7 @@ export function getStatusView(status: Status) {
   const view = STATUS_VIEW[status.type] ?? {
     description: 'Неизвестный статус',
     icon: <Help />,
-    color: 'success',
+    color: 'error',
   }
 
   return view;

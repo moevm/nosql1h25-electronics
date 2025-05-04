@@ -1,6 +1,6 @@
 import { CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { categoryToRussian, statusTypeToRussian } from '@src/lib/RussianConverters';
-import { ProductRequest, UserResponse } from '@src/api';
+import { ApiService, ProductRequest, UserResponse } from '@src/api';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -12,20 +12,14 @@ interface ProductsTableRowProps {
 const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
   const navigate = useNavigate();
 
-  const [author, setAuthor] = useState<UserResponse | undefined>();
+  const [authorFullname, setAuthorFullname] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    setAuthor(undefined);
+    setAuthorFullname(undefined);
     
-    // TODO: получить имя автора заявки через API
-    new Promise(resolve => setTimeout(resolve, 1500))
-    .then(() => setAuthor({ 
-      fullname: 'Иванов Иван Иванович', 
-      phone: '+79000000000',
-      user_id: 'bruh',
-      creation_date: dayjs().toISOString(),
-      role: 'user',
-    }));
+    ApiService.apiUsersRetrieve({ id: product.user_id })
+    .then(({ fullname }) => setAuthorFullname(fullname))
+    .catch(() => setAuthorFullname('Ошибка'));
   }, [product.user_id]);
 
   return (
@@ -35,9 +29,9 @@ const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
       onClick={() => navigate(`/product/${product.id}`)} 
     >
       <TableCell>
-        { !author
+        { !authorFullname
           ? <CircularProgress size={25} />
-          : author.fullname
+          : authorFullname
         }
       </TableCell>
       <TableCell>{product.title}</TableCell>

@@ -15,7 +15,7 @@ const STATUS_VIEW: Record<TypeEnum, StatusView> = {
   'created_status': {
     description: 'Заявка создана',
     icon: <AccessTime />,
-    color: 'info',
+    color: 'success',
   },
   'price_offer_status': {
     description: 'Цена предложена',
@@ -58,7 +58,7 @@ export function getStatusView(status: Status) {
     view.description = '';
   }
   else if (status.type === 'price_offer_status'){
-    view.description = `Была предложена дата ${status.price}`;
+    view.description = `Была предложена цена ${status.price} `;
   }
   else if (status.type === 'price_accept_status'){
     view.description = `Принята цена ${status.price}`;
@@ -70,10 +70,9 @@ export function getStatusView(status: Status) {
   return view;
 }
 
-export async function getFictitiousStatus(request: ProductRequest){
+export function getFictitiousStatus(request: ProductRequest){
   const count = request.statuses.length;
   const lastStatus = request.statuses[count - 1];
-  const lastUser = await ApiService.apiUsersRetrieve({id: lastStatus.user_id});
   
   if(lastStatus.type === 'closed_status'){
     return null;
@@ -82,7 +81,7 @@ export async function getFictitiousStatus(request: ProductRequest){
     return <AfterCreatedItem requestId={request.id} index={count}/>;
   }
   else if (lastStatus.type === 'price_offer_status'){
-    return <PriceOfferLoopItem index={count} requestId={request.id} lastUser={lastUser} offeredPrice={lastStatus.price!}/>
+    return <PriceOfferLoopItem index={count} requestId={request.id} lastUserId={lastStatus.user_id} offeredPrice={lastStatus.price!}/>
   }
   else if (lastStatus.type === 'price_accept_status' || lastStatus.type === 'date_offer_status'){
     return <DateOfferLoopItem index={count} requestId={request.id}/>

@@ -26,7 +26,7 @@ const DateInput = ({ requestId }: { requestId: string }) => {
         requestBody: {
           type: "date_offer_status",
           timestamp: "",
-          date: date!.locale(),
+          date: date!.toISOString(),
           user_id: user!.user_id
         }
       });

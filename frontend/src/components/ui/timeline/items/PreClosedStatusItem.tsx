@@ -1,11 +1,9 @@
 import { AccessTimeFilled} from "@mui/icons-material";
 import { TimelineContent, TimelineDot, TimelineItem, TimelineSeparator } from "@mui/lab";
 import { Typography } from "@mui/material";
-import { yellow } from "@mui/material/colors";
+import { grey, yellow } from "@mui/material/colors";
 import { useAppSelector } from "@src/hooks/ReduxHooks";
 import { selectIsAdmin } from "@src/store/UserSlice";
-import PriceInput from "../inputs/PriceInput";
-import DateInput from "../inputs/DateInput";
 import CloseRequest from "../inputs/CloseRequest";
 
 const PreClosedStatusItem = ({ index, requestId }: { index: number, requestId: string }) => {
@@ -14,7 +12,7 @@ const PreClosedStatusItem = ({ index, requestId }: { index: number, requestId: s
   return (
     <TimelineItem key={index}>
         <TimelineSeparator>
-          <TimelineDot color={isAdmin ? undefined : "grey"} sx={ isAdmin ? { color: yellow } : {}}>
+          <TimelineDot sx={{ my: 0, bgcolor: !isAdmin ? grey[500] : yellow[600] }}>
             <AccessTimeFilled />
           </TimelineDot>
         </TimelineSeparator>

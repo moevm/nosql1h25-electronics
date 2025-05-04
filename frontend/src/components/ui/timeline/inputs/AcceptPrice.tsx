@@ -9,7 +9,6 @@ const AcceptPrice = ({ requestId }: { requestId: string }) => {
   const user = useAppSelector(selectUser);
   
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handlePrice = async () => {
     try {
@@ -24,12 +23,12 @@ const AcceptPrice = ({ requestId }: { requestId: string }) => {
     } catch (error) {
       alert(error);
     }
-    navigate(location.pathname);
+    navigate(0);
   }
   
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
-      <FiberManualRecord fontSize="small" />
+    <Box sx={{ display: 'flex', alignItems: 'center', mt:1}}>
+      <FiberManualRecord sx={{ fontSize: 8, mr: 1 }} />
       <Typography>Подтвердить цену:</Typography>
       <IconButton color="success" onClick={() => handlePrice()} edge="end">
         <CheckCircle />

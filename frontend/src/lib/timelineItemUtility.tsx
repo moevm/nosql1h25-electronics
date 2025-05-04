@@ -1,73 +1,49 @@
 import { AccessTime, AttachMoney, CheckCircle, DoneAll, Event, Help } from "@mui/icons-material";
-import { ApiService, ProductRequest, Status, TypeEnum } from "@src/api";
+import { ApiService, ProductRequest, Status, TypeEnum, UserResponse } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
 import DateOfferLoopItem from "@src/components/ui/timeline/items/DateOfferLoopItem";
 import PreClosedStatusItem from "@src/components/ui/timeline/items/PreClosedStatusItem";
 import PriceOfferLoopItem from "@src/components/ui/timeline/items/PriceOfferLoopItem";
+import dayjs from "dayjs";
+import { ReactNode } from "react";
 
-type StatusView = {
-  description: string,
-  icon: React.ReactNode,
-  color: "primary" | "success" | "warning" | "error" | "info" | "secondary",
-}
-
-const STATUS_VIEW: Record<TypeEnum, StatusView> = {
-  'created_status': {
-    description: 'Заявка создана',
-    icon: <AccessTime />,
-    color: 'success',
-  },
-  'price_offer_status': {
-    description: 'Цена предложена',
-    icon: <AttachMoney />,
-    color: 'primary',
-  },
-  'price_accept_status': {
-    description: 'Цена одобрена',
-    icon: <CheckCircle />,
-    color: 'success',
-  },
-  'date_offer_status': {
-    description: 'Дата предложена',
-    icon: <Event />,
-    color: 'warning',
-  },
-  'date_accept_status': {
-    description: 'Дата подтверждена',
-    icon: <DoneAll />,
-    color: 'success',
-  },
-  'closed_status': {
-    description: 'Заявка закрыта',
-    icon: <DoneAll />,
-    color: 'success',
-  },
+const STATUS_ICON: Record<TypeEnum, ReactNode> = {
+  'created_status': <AccessTime />,
+  'price_offer_status': <AttachMoney />,
+  'price_accept_status': <CheckCircle />,
+  'date_offer_status': <Event />,
+  'date_accept_status': <CheckCircle />,
+  'closed_status': <DoneAll />
 };
 
-export function getStatusView(status: Status) {
-  const view = STATUS_VIEW[status.type] ?? {
-    description: 'Неизвестный статус',
-    icon: <Help />,
-    color: 'error',
-  }
+export function getStatusIcon(status: Status) {
+  const icon = STATUS_ICON[status.type] ?? <Help />
 
-  if(status.type === 'date_offer_status'){
-    view.description = `Была предложена дата ${status.date}`;
-  } 
-  else if (status.type === 'closed_status'){
-    view.description = '';
+  return icon;
+}
+
+export function getStatusDescription(product: ProductRequest, status: Status, currentUser: UserResponse, isAdmin: boolean) {
+  const isParcitipated = currentUser.user_id === status.user_id
+  const isBuyer = isParcitipated ? isAdmin : !isAdmin;
+
+  if(status.type === 'created_status'){
+    return <>Заяка создана</>
   }
   else if (status.type === 'price_offer_status'){
-    view.description = `Была предложена цена ${status.price} `;
+    return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>цена {status.price}</strong></>
   }
-  else if (status.type === 'price_accept_status'){
-    view.description = `Принята цена ${status.price}`;
-  } 
+  else if(status.type === 'price_accept_status'){
+    return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился <strong>с ценой {status.price}</strong></>
+  }
+  else if(status.type === 'date_offer_status'){
+    return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>дата встречи {dayjs(status.date).format('DD.MM.YYYY HH:mm')}</strong></>
+  }
   else if(status.type === 'date_accept_status'){
-    view.description = `Принята дата ${status.date}`;
+    return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился с <strong>датой встречи {dayjs(status.date).format('DD.MM.YYYY HH:mm')}</strong></>
   }
-
-  return view;
+  else if(status.type === 'closed_status'){
+    return <>Заявка завершена с итоговой ценой <strong>{product.price}₽</strong></>
+  }
 }
 
 export function getFictitiousStatus(request: ProductRequest){
@@ -84,7 +60,7 @@ export function getFictitiousStatus(request: ProductRequest){
     return <PriceOfferLoopItem index={count} requestId={request.id} lastUserId={lastStatus.user_id} offeredPrice={lastStatus.price!}/>
   }
   else if (lastStatus.type === 'price_accept_status' || lastStatus.type === 'date_offer_status'){
-    return <DateOfferLoopItem index={count} requestId={request.id}/>
+    return <DateOfferLoopItem index={count} requestId={request.id}  lastUserId={lastStatus.user_id} offeredDate={lastStatus.date!}/>
   } 
   else if(lastStatus.type === 'date_accept_status'){
     return <PreClosedStatusItem index={count} requestId={request.id}/>

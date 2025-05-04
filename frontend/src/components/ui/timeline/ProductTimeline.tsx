@@ -26,7 +26,7 @@ const ProductTimeline = ({ product }: { product: ProductRequest }) => {
         position="right"
       >
         {product.statuses.map((item, index) => (
-          <PrimaryItem index={index} item={item}></PrimaryItem>
+          <PrimaryItem product={product} index={index} item={item}></PrimaryItem>
         ))}
 
         {fictitiousStatus !== null ? fictitiousStatus : <></>}

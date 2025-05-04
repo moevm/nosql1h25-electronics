@@ -31,7 +31,7 @@ const PriceInput = ({ requestId }: { requestId: string }) => {
   }
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', mt:1 }}>
       <FiberManualRecord sx={{ fontSize: 8, mr: 1 }} />
       <Typography sx={{mr: 1}}>Предложить <strong>цену</strong>:</Typography>
       <OutlinedInput size="small" type="number" value={price} onChange={e => setPrice(Number(e.target.value))}

@@ -4,7 +4,7 @@ from bson import ObjectId
 from bson.dbref import DBRef
 from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -40,7 +40,7 @@ class StatusSerializer(DocumentSerializer):
     def validate(self, data):
         if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:
             raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'))}")
-        data['timestamp'] = datetime.utcnow()
+        data['timestamp'] = datetime.now(timezone.utc)
         return data
 
     def validate_status_type(self, value):

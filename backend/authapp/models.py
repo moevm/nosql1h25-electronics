@@ -1,5 +1,5 @@
 from mongoengine import Document, StringField, DateTimeField, IntField
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import secrets
 
@@ -8,8 +8,8 @@ class User(Document):
     login = StringField(required=True, unique=True)
     fullname = StringField(required=True)
     role = StringField(default='client')
-    creation_date = DateTimeField(default=datetime.utcnow)
-    edit_date = DateTimeField(default=datetime.utcnow)
+    creation_date = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    edit_date = DateTimeField(default=lambda: datetime.now(timezone.utc))
     phone = StringField(required=True, unique=True)
     password_hash = StringField(required=True)
     salt = StringField(required=True)

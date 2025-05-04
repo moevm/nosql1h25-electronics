@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone
 from mongoengine import connect, Document, StringField, DateTimeField, FloatField, BinaryField, ListField, \
     ReferenceField, EmbeddedDocument, EmbeddedDocumentField, BooleanField
 from authapp.models import User
@@ -41,7 +41,7 @@ STATUS_TYPES = [
 ]
 
 class Status(EmbeddedDocument):
-    timestamp = DateTimeField(default=datetime.utcnow)
+    timestamp = DateTimeField(default=lambda: datetime.now(timezone.utc))
     type = StringField(choices=STATUS_TYPES, required=True)
 
     meta = {'allow_inheritance': True}
@@ -49,7 +49,7 @@ class Status(EmbeddedDocument):
     @classmethod
     def create(cls, **kwargs):
         if 'timestamp' not in kwargs:
-            kwargs['timestamp'] = datetime.utcnow()
+            kwargs['timestamp'] = datetime.now(timezone.utc)
         return cls(**kwargs)
 
 

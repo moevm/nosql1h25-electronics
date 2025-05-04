@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CategoryEnum } from './CategoryEnum';
-import type { Status } from './Status';
 /**
  * Serializer for Documents.
  *
@@ -44,7 +43,7 @@ import type { Status } from './Status';
  */
 export type ProductRequest = {
     readonly id: string;
-    readonly statuses: Array<Status>;
+    readonly statuses: Array<any>;
     readonly user_id: string;
     photos: Array<string>;
     title: string;

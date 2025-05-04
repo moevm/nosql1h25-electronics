@@ -3,12 +3,12 @@ import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
 import ImageGallery from "../ui/ImageGallery";
-import { ApiError, ApiService, ProductRequest } from "@src/api";
+import ProductTimeline, { TimelineItemType } from "../ui/ProductTimeline";
+import { ApiService, ProductRequest } from "@src/api";
 import NotFoundPage from "./NotFoundPage";
 import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
 import { categoryToRussian } from "@src/lib/russianConverters";
-import ProductTimeline from "../ui/timeline/ProductTimeline";
 
 
 const ProductCardPage = () => {
@@ -31,9 +31,9 @@ const ProductCardPage = () => {
         setProduct(response);
       } catch (error) {
         setIsError(true);
-        if (error instanceof ApiError) {
+        if (error instanceof AxiosError && error.response) {
           setErrorProps({
-            title: `${error.status}: ${error.statusText}`,
+            title: `${error.response.status}: ${error.response.statusText}`,
             message: error.message
           });
         }
@@ -88,7 +88,7 @@ const ProductCardPage = () => {
         <Typography variant="h5" gutterBottom>
           История операций
         </Typography>
-        <ProductTimeline product={product} />
+        <ProductTimeline timeline={product.statuses} />
       </Paper>
     </Container>
   );

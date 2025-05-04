@@ -1,12 +1,14 @@
-import { Timeline, TimelineItem, TimelineOppositeContent, TimelineSeparator, TimelineDot, TimelineConnector, TimelineContent, timelineOppositeContentClasses, timelineItemClasses } from "@mui/lab";
-import { Typography, Paper } from "@mui/material";
+import { Timeline, timelineItemClasses } from "@mui/lab";
 import { useInView } from "react-intersection-observer";
 import { motion } from 'framer-motion';
-import { Status } from "@src/api";
-import PrimaryItem from "./timeline.items/PrimaryItem";
+import { ProductRequest } from "@src/api";
+import PrimaryItem from "./items/PrimaryItem";
+import { getFictitiousStatus } from "@src/lib/timelineItemUtility";
 
-const ProductTimeline = ({ statuses }: { statuses: Status[] }) => {
+const ProductTimeline = ({ product }: { product: ProductRequest }) => {
   const { ref, inView } = useInView({ threshold: 0.2 });
+
+  const fictitiousStatus = getFictitiousStatus(product);
 
   return (
     <motion.div
@@ -23,9 +25,11 @@ const ProductTimeline = ({ statuses }: { statuses: Status[] }) => {
         }}
         position="right"
       >
-        {statuses.map((item, index) => (
+        {product.statuses.map((item, index) => (
           <PrimaryItem index={index} item={item}></PrimaryItem>
         ))}
+
+        {fictitiousStatus ? fictitiousStatus : <></>}
       </Timeline>
     </motion.div>
   );

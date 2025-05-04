@@ -11,6 +11,7 @@ import { reset, selectClientForm, selectIsLoading, selectRequests, updateClientF
 import { useEffect, useState } from 'react';
 import { CategoryEnum } from '@src/api';
 import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
+import { useNavigate } from 'react-router-dom';
 
 export interface RequestsClientFormInputs {
   from?: DateType;
@@ -150,6 +151,7 @@ const SortFieldFormField = (props: FormFieldProps) => (
 );
 
 export const RequestsClientPage = () => {
+  const navigate = useNavigate();
   const { control, handleSubmit, setValue } = useForm<RequestsClientFormInputs>();
 
   const dispatch = useAppDispatch();
@@ -159,7 +161,7 @@ export const RequestsClientPage = () => {
   const requestsData = useAppSelector(selectRequests);
   const fieldsValues = useAppSelector(selectClientForm);
 
-  const [ isCreateDialogOpened, setIsCreateDialogOpened ] = useState(false);
+  const [isCreateDialogOpened, setIsCreateDialogOpened] = useState(false);
 
   useEffect(() => {
     if (fieldsValues.from) setValue('from', fieldsValues.from);
@@ -178,8 +180,9 @@ export const RequestsClientPage = () => {
     dispatch(updateRequests(null));
   };
 
-  const onLogout = () => {
-    dispatch(logout()).then(() => dispatch(reset()));
+  const onLogout = async () => {
+    await dispatch(logout())
+    dispatch(reset());
   };
 
   return (
@@ -189,7 +192,12 @@ export const RequestsClientPage = () => {
           <Typography variant='h4'>Список заявок</Typography>
 
           <Stack direction='row' gap={1}>
-            <Button variant='contained'>Перейти в профиль</Button>
+            <Button 
+              variant='contained'
+              onClick={() => navigate('/profile')}
+            >
+              Перейти в профиль
+            </Button>
             <Button
               variant='contained'
               disabled={isLoggingOut}

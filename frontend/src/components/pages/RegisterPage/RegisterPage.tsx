@@ -1,12 +1,11 @@
 import { Paper, Typography, Button, Stack, Container, CircularProgress } from '@mui/material';
-import { MuiTelInput, classes } from 'mui-tel-input';
-import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
-import { Control, Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
 import style from './RegisterPage.module.css';
 import { useState } from 'react';
 import { ApiError, AuthService } from '@src/api';
+import PhoneField from '@src/components/ui/PhoneField';
 
 interface FormInputs {
   login: string;
@@ -14,42 +13,6 @@ interface FormInputs {
   fullname: string;
   phone: string;
 }
-
-interface FormFieldProps {
-  control: Control<FormInputs>;
-}
-
-const MuiTelInputNoFlag = styled(MuiTelInput)`
-  .${classes.flagButton} {
-    display: none;
-  }
-`;
-
-const PhoneFormField = ({ control }: FormFieldProps) => (
-  <Controller 
-    name='phone'
-    control={control}
-    render={({ field, fieldState }) => (
-      <MuiTelInputNoFlag 
-        defaultCountry='RU'
-        disableDropdown
-        forceCallingCode
-        helperText={fieldState.error?.message}
-        error={!!fieldState.error}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: {
-        required: (value: string) => {
-          if (!value) return 'Обязательное поле';
-          if (value.replace(/\s/g, '').length !== 12) return 'Некорректный номер';          
-        },
-      },
-    }}
-  />
-);
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -108,7 +71,7 @@ export const RegisterPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Номер телефона:</Typography>
-            <PhoneFormField control={control} />
+            <PhoneField required name='phone' control={control} />
           </Stack>
 
           <Stack direction='column' gap={1}>

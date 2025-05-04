@@ -88,7 +88,8 @@ const ProductCardPage = () => {
         <Typography variant="h5" gutterBottom>
           История операций
         </Typography>
-        <ProductTimeline timeline={product.statuses} />
+        {/* <ProductTimeline timeline={product.statuses} /> */}
+        <Typography>Скоро добавим...</Typography>
       </Paper>
     </Container>
   );

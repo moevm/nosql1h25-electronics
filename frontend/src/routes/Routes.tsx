@@ -10,9 +10,11 @@ import ClientOnly from './ClientOnly';
 import AdminOnly from './AdminOnly';
 import { useAppSelector } from '@src/hooks/ReduxHooks';
 import { selectIsAdmin } from '@src/store/UserSlice';
+import { EditProfilePage } from '@src/components/pages/EditProfilePage';
 
 const routes = [
   { path: '/product/:id', element: <AuthorizedOnly><ProductCardPage /></AuthorizedOnly> },
+  { path: '/profile', element: <AuthorizedOnly><EditProfilePage /></AuthorizedOnly> },
   { path: '/login', element: <AuthorizedOnly inverted><LoginPage/></AuthorizedOnly>},
   { path: '/register', element: <AuthorizedOnly inverted><RegisterPage/></AuthorizedOnly>},
   { path: '*', element: <NotFoundPage/>,},

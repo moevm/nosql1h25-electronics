@@ -49,6 +49,20 @@ export const logout = createAsyncThunk(
   },
 );
 
+export const editUser = createAsyncThunk(
+  'user/editUser',
+  async (data: { fullname: string, phone: string }, { rejectWithValue }) => {
+    try {
+      return await AuthService.authMeUpdate({ requestBody: data });
+    } catch (e) {
+      console.log(e);
+      if (!(e instanceof ApiError)) return rejectWithValue('Неизвестная ошибка');
+      if (e.body?.details && typeof e.body.details === 'string' && e.body.details.startsWith('phone')) return rejectWithValue('Номер телефона уже занят');
+      return rejectWithValue('Неизвестная ошибка');
+    }
+  },
+);
+
 export interface UserState {
   user?: UserResponse;
   token?: string;
@@ -104,6 +118,10 @@ export const userSlice = createSlice({
     }).addCase(initLogin.rejected, state => {
       state.isInit = false;
       state.isAuthorizing = false;
+    })
+    
+    .addCase(editUser.fulfilled, (state, action) => {
+      state.user = action.payload;
     });
   },
   selectors: {

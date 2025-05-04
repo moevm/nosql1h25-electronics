@@ -5,7 +5,7 @@ import { TextFormField } from '@src/components/ui/form/TextFormField';
 import { PasswordFormField } from '@src/components/ui/form/PasswordFormField';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { login, selectIsAuthorizing } from '@src/store/UserSlice';
-import { useEffect } from 'react';
+import { KeyboardEvent, useEffect } from 'react';
 
 export interface LoginFormInputs {
   login: string;
@@ -26,6 +26,11 @@ export const LoginPage = () => {
   }, [authError]);
 
   const onSubmit = (data: LoginFormInputs) => dispatch(login(data));
+
+  const onEnterDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    handleSubmit(onSubmit)();
+  };
 
   return (
     <Container
@@ -49,7 +54,7 @@ export const LoginPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Пароль:</Typography>
-            <PasswordFormField placeholder='Пароль' maxLength={50} required name='password' control={control} /> 
+            <PasswordFormField placeholder='Пароль' maxLength={50} required onKeyDown={onEnterDown} name='password' control={control} /> 
           </Stack>
 
           <Stack direction='column' gap={1}>

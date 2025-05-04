@@ -6,7 +6,7 @@ import { categoryMap, statusMap } from '@src/lib/RussianConverters';
 import { SelectFormField } from '@src/components/ui/form/SelectFormField';
 import { CheckboxFormField } from '@src/components/ui/form/CheckboxFormField';
 import { useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, KeyboardEvent } from 'react';
 
 export interface AdminFiltersFormInputs {
   from?: DateType;
@@ -35,7 +35,7 @@ export interface AdminFiltersProps {
   onSubmit?: (data: AdminFiltersFormInputs) => void | Promise<void>;
 }
 
-export const AdminFilters = ({ defaultValues, onSubmit }: AdminFiltersProps) => {
+export const AdminFilters = ({ defaultValues, onSubmit=(() => {}) }: AdminFiltersProps) => {
   const { control, handleSubmit, setValue } = useForm<AdminFiltersFormInputs>();
   
   useEffect(() => {
@@ -44,6 +44,11 @@ export const AdminFilters = ({ defaultValues, onSubmit }: AdminFiltersProps) => 
     for (const key of fieldNames)
       if (defaultValues[key]) setValue(key, defaultValues[key]);
   }, []);
+
+  const onEnterDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    handleSubmit(onSubmit)();
+  };
 
   return (
     <Stack gap={1}>
@@ -59,7 +64,7 @@ export const AdminFilters = ({ defaultValues, onSubmit }: AdminFiltersProps) => 
           validate={(value, formFields) => {
             if (formFields.from && value! < formFields.from) 
               return 'Дата конца раньше даты начала'; 
-          }} 
+          }}
           name='to' 
           control={control}
         />
@@ -80,7 +85,7 @@ export const AdminFilters = ({ defaultValues, onSubmit }: AdminFiltersProps) => 
 
       <Stack direction='row' gap={1} alignItems='center'>
         <Typography variant='body1'>Клиент:</Typography>
-        <TextFormField placeholder='ФИО' name='author' control={control} />
+        <TextFormField placeholder='ФИО' onKeyDown={onEnterDown} name='author' control={control} />
       </Stack>
 
       <CheckboxFormField label='Участвовал в разрешении' name='me' control={control} />
@@ -106,11 +111,11 @@ export const AdminFilters = ({ defaultValues, onSubmit }: AdminFiltersProps) => 
           />
         </Stack>
 
-        <TextFormField placeholder='Название...' name='title' control={control} />
+        <TextFormField placeholder='Название...' onKeyDown={onEnterDown} name='title' control={control} />
         
-        <Button variant='contained' onClick={handleSubmit(onSubmit ?? (() => {}))}>Применить фильтры</Button>
+        <Button variant='contained' onClick={handleSubmit(onSubmit)}>Применить фильтры</Button>
 
-        <TextFormField placeholder='Описание...' name='description' control={control} />
+        <TextFormField placeholder='Описание...' onKeyDown={onEnterDown} name='description' control={control} />
       </Box>
     </Stack>
   );

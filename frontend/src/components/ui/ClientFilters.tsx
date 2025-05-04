@@ -1,7 +1,7 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { CategoryEnum, TypeEnum } from '@src/api';
 import DateFormField, { DateType } from '@src/components/ui/form/DateFormField';
-import { useEffect } from 'react';
+import { useEffect, KeyboardEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { SelectFormField } from '@src/components/ui/form/SelectFormField';
 import { categoryMap, statusMap } from '@src/lib/RussianConverters';
@@ -32,7 +32,7 @@ export interface ClientFiltersProps {
   onSubmit?: (data: ClientFiltersFormInputs) => void | Promise<void>;
 }
 
-export const ClientFilters = ({ defaultValues, onSubmit }: ClientFiltersProps) => {
+export const ClientFilters = ({ defaultValues, onSubmit=(() => {}) }: ClientFiltersProps) => {
   const { control, handleSubmit, setValue } = useForm<ClientFiltersFormInputs>();
   
   useEffect(() => {
@@ -41,6 +41,11 @@ export const ClientFilters = ({ defaultValues, onSubmit }: ClientFiltersProps) =
     for (const key of fieldNames)
       if (defaultValues[key]) setValue(key, defaultValues[key]);
   }, []);
+
+  const onEnterDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    handleSubmit(onSubmit)();
+  };
 
   return (
     <Stack gap={1}>
@@ -56,7 +61,7 @@ export const ClientFilters = ({ defaultValues, onSubmit }: ClientFiltersProps) =
           validate={(value, formFields) => {
             if (formFields.from && value! < formFields.from) 
               return 'Дата конца раньше даты начала'; 
-          }} 
+          }}
           name='to' 
           control={control}
         />
@@ -111,11 +116,11 @@ export const ClientFilters = ({ defaultValues, onSubmit }: ClientFiltersProps) =
           />
         </Stack>
 
-        <TextFormField placeholder='Название...' name='title' control={control} />
+        <TextFormField placeholder='Название...' onKeyDown={onEnterDown} name='title' control={control} />
 
-        <Button variant='contained' onClick={handleSubmit(onSubmit ?? (() => {}))}>Обновить список</Button>
+        <Button variant='contained' onClick={handleSubmit(onSubmit)}>Обновить список</Button>
         
-        <TextFormField placeholder='Описание...' name='description' control={control} />
+        <TextFormField placeholder='Описание...' onKeyDown={onEnterDown} name='description' control={control} />
       </Box>
     </Stack>
   );

@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { PasswordFormField } from '@src/components/ui/form/PasswordFormField';
 import { TextFormField } from '@src/components/ui/form/TextFormField';
 import { PhoneFormField } from '@src/components/ui/form/PhoneFormField';
-import { useState } from 'react';
+import { KeyboardEvent, useState } from 'react';
 import { ApiError, AuthService } from '@src/api';
 
 export interface RegisterFormInputs {
@@ -43,6 +43,11 @@ export const RegisterPage = () => {
     setIsRegistering(false);
   };
 
+  const onEnterDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    handleSubmit(onSubmit)();
+  };
+
   return (
     <Container
       maxWidth='sm'
@@ -75,7 +80,7 @@ export const RegisterPage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Номер телефона:</Typography>
-            <PhoneFormField required name='phone' control={control} />
+            <PhoneFormField required onKeyDown={onEnterDown} name='phone' control={control} />
           </Stack>
 
           <Stack direction='column' gap={1}>

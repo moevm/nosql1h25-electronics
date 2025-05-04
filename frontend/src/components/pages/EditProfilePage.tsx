@@ -1,6 +1,6 @@
 import { Button, CircularProgress, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { KeyboardEvent, useEffect, useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { TextFormField } from '@src/components/ui/form/TextFormField';
 import { PhoneFormField } from '@src/components/ui/form/PhoneFormField';
@@ -105,6 +105,11 @@ export const EditProfilePage = () => {
     setIsSubmitting(false);
   };
 
+  const onEnterDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    handleSubmit(onSubmit)();
+  };
+
   return (
     <Container maxWidth='sm'>
       <Paper elevation={5} sx={{ mt: 3, p: 3 }}>
@@ -113,12 +118,12 @@ export const EditProfilePage = () => {
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>ФИО:</Typography>
-            <TextFormField required placeholder='ФИО' maxLength={200} name='fullname' control={control} />
+            <TextFormField required placeholder='ФИО' maxLength={200} onKeyDown={onEnterDown} name='fullname' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Номер телефона:</Typography>
-            <PhoneFormField required name='phone' control={control} />
+            <PhoneFormField required onKeyDown={onEnterDown} name='phone' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>

@@ -1,7 +1,7 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
 from drf_spectacular.types import OpenApiTypes
-from authapp.serializers import ErrorResponseSerializer
+from authapp.serializers import ErrorResponseSerializer, UserResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
@@ -635,3 +635,36 @@ class DatabaseBackupViewSet(ModelViewSet):
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return JsonResponse({"details": "Backup successfully imported"}, status=status.HTTP_200_OK)
+
+
+class UserViewSet(ModelViewSet):
+
+    @extend_schema(
+        summary="Получить данные пользователя",
+        description="Позволяет получить данные пользователя по его id.",
+        responses={
+            200: UserResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        }
+    )
+    def getUserById(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if not pk:
+            return Response({"details": "Missing pk"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            instance = User.objects.get(id=pk)
+        except:
+            return Response({"details": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        if not user.is_admin and str(user.id) != str(pk):
+            return Response(
+                {"details": "You do not have permission"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = UserResponseSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)

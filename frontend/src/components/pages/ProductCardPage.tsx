@@ -3,12 +3,12 @@ import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
 import ImageGallery from "../ui/ImageGallery";
-import ProductTimeline, { TimelineItemType } from "../ui/ProductTimeline";
 import { ApiService, ProductRequest } from "@src/api";
 import NotFoundPage from "./NotFoundPage";
 import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
 import { categoryToRussian } from "@src/lib/russianConverters";
+import ProductTimeline from "../ui/timeline/ProductTimeline";
 
 
 const ProductCardPage = () => {
@@ -88,7 +88,7 @@ const ProductCardPage = () => {
         <Typography variant="h5" gutterBottom>
           История операций
         </Typography>
-        <ProductTimeline timeline={product.statuses} />
+        <ProductTimeline product={product} />
       </Paper>
     </Container>
   );

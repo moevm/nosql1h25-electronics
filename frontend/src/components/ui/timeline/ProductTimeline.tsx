@@ -29,7 +29,7 @@ const ProductTimeline = ({ product }: { product: ProductRequest }) => {
           <PrimaryItem index={index} item={item}></PrimaryItem>
         ))}
 
-        {fictitiousStatus ? fictitiousStatus : <></>}
+        {fictitiousStatus !== null ? fictitiousStatus : <></>}
       </Timeline>
     </motion.div>
   );

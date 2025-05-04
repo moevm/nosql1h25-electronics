@@ -1,5 +1,5 @@
 import { Box, Button, Container, Grid, Paper, Typography } from "@mui/material";
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import Loader from "../ui/Loader";
 import ImageGallery from "../ui/ImageGallery";
@@ -9,6 +9,8 @@ import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
 import { categoryToRussian } from "@src/lib/russianConverters";
 import ProductTimeline from "../ui/timeline/ProductTimeline";
+import { selectUser } from "@src/store/UserSlice";
+import { useAppSelector } from "@src/hooks/ReduxHooks";
 
 
 const ProductCardPage = () => {
@@ -18,9 +20,29 @@ const ProductCardPage = () => {
     return <NotFoundPage />;
   }
 
+  const user = useAppSelector(selectUser);
+
+  const navigate = useNavigate();
+
   const [product, setProduct] = useState<null | ProductRequest>(null);
   const [isError, setIsError] = useState<boolean>(false);
   const [errorProps, setErrorProps] = useState<ErrorProps | null>(null);
+  const handleClick = async () => {
+    try {
+      await ApiService.apiRequestsStatusesCreate({
+        id: product!.id!,
+        requestBody: {
+          type: 'closed_status',
+          timestamp: "",
+          user_id: user!.user_id,
+          success: false
+        }
+      });
+    } catch (error) {
+      alert(error);
+    }
+    navigate(0);
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -77,7 +99,7 @@ const ProductCardPage = () => {
             <Typography variant="body2" gutterBottom><strong>Цена:</strong> {product.price} ₽</Typography>
             <Typography variant="body2" gutterBottom><strong>Адрес:</strong> {product.address}</Typography>
 
-            <Button variant="contained" color="error" sx={{ mt: 3 }}>
+            <Button disabled={product.statuses.some(status => status.type === 'closed_status')} variant="contained" color="error" sx={{ mt: 3 }} onClick={handleClick}>
               Закрыть заявку
             </Button>
           </Grid>

@@ -14,7 +14,7 @@ const AfterCreatedItem = ({ index, requestId }: { index: number, requestId: stri
     <TimelineItem key={index}>
 
       <TimelineSeparator>
-        <TimelineDot sx={{ bgcolor: isAdmin ? yellow.A400 : grey[500] }}>
+        <TimelineDot sx={{  my: 0, bgcolor: isAdmin ? yellow.A400 : grey[500] }}>
           <AccessTimeFilled />
         </TimelineDot>
       </TimelineSeparator>

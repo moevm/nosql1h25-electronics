@@ -1,5 +1,5 @@
 import { AccessTime, AttachMoney, CheckCircle, DoneAll, Event, Help } from "@mui/icons-material";
-import { ProductRequest, Status, TypeEnum } from "@src/api";
+import { ApiService, ProductRequest, Status, TypeEnum } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
 import DateOfferLoopItem from "@src/components/ui/timeline/items/DateOfferLoopItem";
 import PreClosedStatusItem from "@src/components/ui/timeline/items/PreClosedStatusItem";
@@ -70,9 +70,11 @@ export function getStatusView(status: Status) {
   return view;
 }
 
-export function getFictitiousStatus(request: ProductRequest){
+export async function getFictitiousStatus(request: ProductRequest){
   const count = request.statuses.length;
   const lastStatus = request.statuses[count - 1];
+  const lastUser = await ApiService.apiUsersRetrieve({id: lastStatus.user_id});
+  
   if(lastStatus.type === 'closed_status'){
     return null;
   } 
@@ -80,7 +82,7 @@ export function getFictitiousStatus(request: ProductRequest){
     return <AfterCreatedItem requestId={request.id} index={count}/>;
   }
   else if (lastStatus.type === 'price_offer_status'){
-    return <PriceOfferLoopItem index={count} requestId={request.id}/>
+    return <PriceOfferLoopItem index={count} requestId={request.id} lastUser={lastUser} offeredPrice={lastStatus.price!}/>
   }
   else if (lastStatus.type === 'price_accept_status' || lastStatus.type === 'date_offer_status'){
     return <DateOfferLoopItem index={count} requestId={request.id}/>

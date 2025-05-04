@@ -1,19 +1,17 @@
 import { FiberManualRecord, CheckCircle } from "@mui/icons-material";
-import { Box, Typography, TextField, IconButton } from "@mui/material";
+import { Box, Typography, TextField, IconButton, Input, InputAdornment, OutlinedInput } from "@mui/material";
 import { ApiService } from "@src/api";
 import { useAppSelector } from "@src/hooks/ReduxHooks";
 import { selectUser } from "@src/store/UserSlice";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { NavigateOptions, replace, useLocation, useNavigate } from "react-router-dom";
 
 const PriceInput = ({ requestId }: { requestId: string }) => {
   const user = useAppSelector(selectUser);
   const [price, setPrice] = useState<number | null>(null);
-  
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  
+  const navigate = useNavigate();
+
   const handlePrice = async () => {
     try {
       await ApiService.apiRequestsStatusesCreate({
@@ -28,15 +26,18 @@ const PriceInput = ({ requestId }: { requestId: string }) => {
     } catch (error) {
       alert(error);
     }
-    navigate(location.pathname);
+
+    navigate(0);
   }
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
-      <FiberManualRecord fontSize="small" />
-      <Typography>Предложить <strong>цену</strong>:</Typography>
-      <TextField size="small" variant="outlined" type="number" value={price} onChange={e => setPrice(Number(e.target.value))} />
-      <IconButton color="success" onClick={() => handlePrice()} edge="end">
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <FiberManualRecord sx={{ fontSize: 8, mr: 1 }} />
+      <Typography sx={{mr: 1}}>Предложить <strong>цену</strong>:</Typography>
+      <OutlinedInput size="small" type="number" value={price} onChange={e => setPrice(Number(e.target.value))}
+        endAdornment={<InputAdornment position="end">₽</InputAdornment>} 
+        inputProps={{ style: { textAlign: 'right' }, min:0 }}/>
+      <IconButton disabled={price == null || price <= 0} color="success" onClick={() => handlePrice()} edge="end">
         <CheckCircle />
       </IconButton>
     </Box>

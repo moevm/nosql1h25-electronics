@@ -5,6 +5,7 @@
 import type { PhotoResponse } from '../models/PhotoResponse';
 import type { ProductRequest } from '../models/ProductRequest';
 import type { Status } from '../models/Status';
+import type { UserResponse } from '../models/UserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -243,6 +244,25 @@ export class ApiService {
             query: {
                 'format': format,
                 'lang': lang,
+            },
+        });
+    }
+    /**
+     * Получить данные пользователя
+     * Позволяет получить данные пользователя по его id.
+     * @returns UserResponse
+     * @throws ApiError
+     */
+    public static apiUsersRetrieve({
+        id,
+    }: {
+        id: string,
+    }): CancelablePromise<UserResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/{id}/',
+            path: {
+                'id': id,
             },
         });
     }

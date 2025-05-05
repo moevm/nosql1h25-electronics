@@ -4,7 +4,6 @@ from bson import ObjectId
 from bson.dbref import DBRef
 from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
-from datetime import datetime, timezone
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -40,10 +39,9 @@ class StatusSerializer(DocumentSerializer):
     def validate(self, data):
         if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:
             raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'))}")
-        data['timestamp'] = datetime.now(timezone.utc)
         return data
 
-    def validate_status_type(self, value):
+    def validate_type(self, value):
         """Проверка, что тип статуса - строка"""
         if not isinstance(value, str):
             raise serializers.ValidationError("Status type must be a string.")
@@ -108,18 +106,6 @@ class ProductRequestSerializer(DocumentSerializer):
         if "photos" in representation:
             updated_photos = [f"{os.getenv('BASE_URL')}/api/photos/{str(photo.id)}/" for photo in instance.photos]
             representation["photos"] = updated_photos
-
-        if "statuses" in representation:
-            updated_statuses = []
-            for custom_status in instance.statuses:
-                status_data = custom_status.to_mongo().to_dict()
-                for key, value in status_data.items():
-                    if isinstance(value, ObjectId):
-                        status_data[key] = str(value)
-                if "_cls" in status_data:
-                    del status_data["_cls"]
-                updated_statuses.append(status_data)
-            representation["statuses"] = updated_statuses
 
         return representation
 

@@ -4,6 +4,7 @@ from bson import ObjectId
 from bson.dbref import DBRef
 from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
+from django.utils import timezone
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -35,6 +36,26 @@ class StatusSerializer(DocumentSerializer):
     class Meta:
         model = Status
         fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        timestamp = instance.timestamp
+        if timezone.is_naive(instance.timestamp):
+            timestamp = timezone.make_aware(timestamp, timezone.utc)
+
+        local_ts = timezone.localtime(timestamp)
+        representation['timestamp'] = local_ts.isoformat()
+
+        if isinstance(instance, DateOfferStatus):
+            date = instance.date
+            if timezone.is_naive(instance.date):
+                date = timezone.make_aware(date, timezone.utc)
+
+            local_date = timezone.localtime(date)
+            representation['date'] = local_date.isoformat()
+
+        return representation
 
     def validate(self, data):
         if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:

@@ -8,12 +8,14 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
+from django.conf import settings
 from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
 import base64
+import zoneinfo
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
@@ -432,6 +434,10 @@ class DatabaseBackupViewSet(ModelViewSet):
         def handle_objectid(value):
             if isinstance(value, ObjectId):
                 return str(value)
+            elif isinstance(value, datetime):
+                tz = zoneinfo.ZoneInfo(settings.TIME_ZONE)
+                if value.tzinfo is None:
+                    value = value.replace(tzinfo=tz)
             elif isinstance(value, list):
                 return [handle_objectid(item) for item in value]
             elif isinstance(value, dict):
@@ -483,9 +489,9 @@ class DatabaseBackupViewSet(ModelViewSet):
                 if not fields.issubset(required_request_fields):
                     raise ValueError(f"Unexpected fields in ProductRequest: {fields - required_request_fields}")
 
-                for status in obj_data.get("statuses", []):
+                for custom_status in obj_data.get("statuses", []):
                     required_status_fields = {"type", "timestamp", "_cls"}
-                    if status["type"] not in [
+                    if custom_status["type"] not in [
                         "created_status",
                         "price_offer_status",
                         "price_accept_status",
@@ -493,17 +499,17 @@ class DatabaseBackupViewSet(ModelViewSet):
                         "date_accept_status",
                         "closed_status"
                     ]:
-                        raise ValueError(f"Invalid status type: {status['type']}")
-                    if status["type"] != "created_status":
+                        raise ValueError(f"Invalid status type: {custom_status['type']}")
+                    if custom_status["type"] != "created_status":
                         required_status_fields.add("user_id")
-                    if status["type"] == "date_offer_status":
+                    if custom_status["type"] == "date_offer_status":
                         required_status_fields.add("date")
-                    if status["type"] == "closed_status":
+                    if custom_status["type"] == "closed_status":
                         required_status_fields.add("success")
-                    if status["type"] == "price_offer_status":
+                    if custom_status["type"] == "price_offer_status":
                         required_status_fields.add("price")
 
-                    status_fields = set(status.keys())
+                    status_fields = set(custom_status.keys())
 
                     if not required_status_fields.issubset(status_fields):
                         raise ValueError(f"Missing required fields in Status: {required_status_fields - status_fields}")
@@ -511,10 +517,7 @@ class DatabaseBackupViewSet(ModelViewSet):
                         raise ValueError(
                             f"Unexpected fields in Status: {status_fields - (required_status_fields)}")
 
-                    try:
-                        datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
-                    except ValueError:
-                        datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+                    datetime.fromisoformat(custom_status["timestamp"])
 
             for obj_data in data.get("photos", []):
                 fields = set(obj_data.keys())
@@ -534,10 +537,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
                 for date_field in ["creation_date", "edit_date"]:
                     if date_field in obj_data:
-                        try:
-                            datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
-                        except ValueError:
-                            datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+                        datetime.fromisoformat(obj_data[date_field])
             return True
         except Exception as e:
             raise ValueError(f"Validation failed: {str(e)}")
@@ -597,10 +597,7 @@ class DatabaseBackupViewSet(ModelViewSet):
                 if "statuses" in obj_data:
                     for custom_status in obj_data["statuses"]:
                         if "timestamp" in custom_status:
-                            try:
-                                custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
-                            except ValueError:
-                                custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+                            custom_status["timestamp"] = datetime.fromisoformat(custom_status["timestamp"])
                 ProductRequest(**obj_data).save()
 
             for obj_data in data.get("photos", []):
@@ -615,10 +612,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
                 for date_field in ["creation_date", "edit_date"]:
                     if date_field in obj_data:
-                        try:
-                            obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
-                        except ValueError:
-                            obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+                        obj_data[date_field] = datetime.fromisoformat(obj_data[date_field])
 
                 user_id_str = str(obj_data["id"])
                 old_version = current_versions.get(user_id_str, -1)

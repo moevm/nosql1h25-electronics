@@ -1,4 +1,4 @@
-import Slider from 'react-slick';
+import Slider, { Settings } from 'react-slick';
 import styles from './ImageGallery.module.css';
 import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
@@ -24,7 +24,7 @@ const ImageGallery = ({ images }: ProductGalleryProps) => {
     beforeChange: (_: number, next: number) => setCurrentSlide(next),
     autoplay: images.length > 1,
     autoplaySpeed: 2000,
-  }
+  } as Settings
 
   const handlePrev = () => {
     sliderRef.current?.slickPrev();
@@ -46,7 +46,9 @@ const ImageGallery = ({ images }: ProductGalleryProps) => {
     <div className={styles.sliderContainer} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <Slider ref={sliderRef} {...sliderSettings}>
         {images.map((src, idx) => (
-          <img src={src} alt={`Фото ${idx}`} className={styles.slideImage} />
+          <div key={idx} className={styles.slideContainer}>
+            <img src={src} alt={`Фото ${idx}`} className={styles.slideImage} />
+          </div>
         ))}
       </Slider>
 

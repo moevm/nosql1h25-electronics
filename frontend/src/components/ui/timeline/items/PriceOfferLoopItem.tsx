@@ -26,11 +26,11 @@ const PriceOfferLoopItem = ({ index, requestId, lastUserId, offeredPrice }: { in
       <TimelineContent>
         {isLastParcitipated ?
           <>
-            <Typography>Ожидается подтверждение <strong>цены</strong> {!isAdmin ? <>скупщиком</> : <>пользователем</>} </Typography>
+            <Typography>Ожидается подтверждение <strong>цены</strong> {!isAdmin ? 'скупщиком' : 'пользователем'} </Typography>
           </>
           :
           <>
-            <Typography> {!isAdmin ? <>Скупщик</> : <>Пользователь</>} предложил <strong>цену {offeredPrice}₽</strong></Typography>
+            <Typography> {!isAdmin ? 'Скупщик' : 'Пользователь'} предложил <strong>цену {offeredPrice}₽</strong></Typography>
 
             <AcceptPrice requestId={requestId} />
             <PriceInput requestId={requestId} />

@@ -28,11 +28,11 @@ const DateOfferLoopItem = ({index, requestId, lastUserId, offeredDate}: {index: 
       <TimelineContent>
         {isLastParcitipated ?
           <>
-            <Typography>Ожидается подтверждение <strong>даты встречи</strong> {!isAdmin ? <>скупщиком</> : <>пользователем</>} </Typography>
+            <Typography>Ожидается подтверждение <strong>даты встречи</strong> {!isAdmin ? 'скупщиком' : 'пользователем'} </Typography>
           </>
           :
           <>
-            <Typography> {!isAdmin ? <>Скупщик</> : <>Пользователь</>} предложил <strong>дату встречи { dayjs(offeredDate).format('DD.MM.YYYY HH:mm')}</strong></Typography>
+            <Typography> {!isAdmin ? 'Скупщик' : 'Пользователь'} предложил <strong>дату встречи { dayjs(offeredDate).format('DD.MM.YYYY HH:mm')}</strong></Typography>
 
             <AcceptDate requestId={requestId}/>
             <DateInput requestId={requestId}/>

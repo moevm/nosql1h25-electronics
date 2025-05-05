@@ -19,7 +19,7 @@ const PreClosedStatusItem = ({ index, requestId }: { index: number, requestId: s
 
         <TimelineContent>
           <Typography>Ожидается подтверждение <strong>рассмотрения</strong> заявки</Typography>
-          {isAdmin ? <CloseRequest requestId={requestId}/> : <></>}
+          {isAdmin && <CloseRequest requestId={requestId}/>}
         </TimelineContent>
       </TimelineItem>
   );

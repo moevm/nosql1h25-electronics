@@ -30,7 +30,7 @@ const PriceOfferLoopItem = ({ index, requestId, lastUserId, offeredPrice }: { in
           </>
           :
           <>
-            <Typography> {!isAdmin ? <>Скупщик</> : <>Пользователь</>} предложил <strong>цену {offeredPrice}</strong></Typography>
+            <Typography> {!isAdmin ? <>Скупщик</> : <>Пользователь</>} предложил <strong>цену {offeredPrice}₽</strong></Typography>
 
             <AcceptPrice requestId={requestId} />
             <PriceInput requestId={requestId} />

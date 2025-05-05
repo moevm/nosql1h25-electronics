@@ -4,7 +4,7 @@ import { ApiService } from "@src/api";
 import { useAppSelector } from "@src/hooks/ReduxHooks";
 import { selectUser } from "@src/store/UserSlice";
 import { useState } from "react";
-import { NavigateOptions, replace, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const PriceInput = ({ requestId }: { requestId: string }) => {
   const user = useAppSelector(selectUser);

@@ -14,7 +14,7 @@ const PriceOfferLoopItem = ({ index, requestId, lastUserId, offeredPrice }: { in
   return (
     <TimelineItem key={index}>
       <TimelineSeparator>
-        <TimelineDot sx={{ my: 0, bgcolor: isLastParcitipated ? grey[500] : yellow[600] }}>
+        <TimelineDot sx={{ my: 0, bgcolor: isLastParcitipated ? grey[500] : yellow[700] }}>
           {isLastParcitipated ?
             <AccessTimeFilled />
             :

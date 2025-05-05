@@ -13,7 +13,7 @@ const AfterPricaAccpetItem = ({ index, requestId }: { index: number, requestId: 
     <TimelineItem key={index}>
 
       <TimelineSeparator>
-        <TimelineDot sx={{ my: 0, bgcolor: isAdmin ? yellow.A400 : grey[500] }}>
+        <TimelineDot sx={{ my: 0, bgcolor: isAdmin ? yellow[700] : grey[500] }}>
           {!isAdmin ?
             <AccessTimeFilled />
             :

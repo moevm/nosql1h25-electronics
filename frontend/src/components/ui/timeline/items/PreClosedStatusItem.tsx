@@ -12,7 +12,7 @@ const PreClosedStatusItem = ({ index, requestId }: { index: number, requestId: s
   return (
     <TimelineItem key={index}>
         <TimelineSeparator>
-          <TimelineDot sx={{ my: 0, bgcolor: !isAdmin ? grey[500] : yellow[600] }}>
+          <TimelineDot sx={{ my: 0, bgcolor: !isAdmin ? grey[500] : yellow[700] }}>
             <AccessTimeFilled />
           </TimelineDot>
         </TimelineSeparator>

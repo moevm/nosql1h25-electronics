@@ -6,7 +6,7 @@ import { useAppSelector } from "@src/hooks/ReduxHooks";
 import { selectIsAdmin } from "@src/store/UserSlice";
 import DateInput from "../inputs/DateInput";
 
-const AfterPricaAccpetItem = ({ index, requestId }: { index: number, requestId: string }) => {
+const AfterPriceAccpetItem = ({ index, requestId }: { index: number, requestId: string }) => {
   const isAdmin = useAppSelector(selectIsAdmin);
 
   return (
@@ -39,4 +39,4 @@ const AfterPricaAccpetItem = ({ index, requestId }: { index: number, requestId: 
   );
 };
 
-export default AfterPricaAccpetItem;
+export default AfterPriceAccpetItem;

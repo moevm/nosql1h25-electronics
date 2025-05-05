@@ -1,7 +1,7 @@
 import { AccessTime, Check, Clear, CurrencyRuble, DoneAll, Event, Help } from "@mui/icons-material";
 import { ProductRequest, Status, UserResponse } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
-import AfterPricaAccpetItem from "@src/components/ui/timeline/items/AfterPricaAccpetItem";
+import AfterPriceAccpetItem from "@src/components/ui/timeline/items/AfterPriceAccpetItem";
 import DateOfferLoopItem from "@src/components/ui/timeline/items/DateOfferLoopItem";
 import PreClosedStatusItem from "@src/components/ui/timeline/items/PreClosedStatusItem";
 import PriceOfferLoopItem from "@src/components/ui/timeline/items/PriceOfferLoopItem";
@@ -79,7 +79,7 @@ export function getFictitiousStatus(request: ProductRequest) {
     return <PriceOfferLoopItem index={count} requestId={request.id} lastUserId={lastStatus.user_id} offeredPrice={lastStatus.price!} />
   }
   else if (lastStatus.type === 'price_accept_status') {
-    return <AfterPricaAccpetItem index={count} requestId={request.id}/>
+    return <AfterPriceAccpetItem index={count} requestId={request.id}/>
   }
   else if (lastStatus.type === 'date_offer_status') {
     return <DateOfferLoopItem index={count} requestId={request.id} lastUserId={lastStatus.user_id} offeredDate={lastStatus.date!} />

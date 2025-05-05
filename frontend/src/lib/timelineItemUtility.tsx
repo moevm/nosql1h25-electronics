@@ -1,36 +1,26 @@
-import { AccessTime, AttachMoney, CheckCircle, Clear, DoneAll, Event, Help } from "@mui/icons-material";
-import { ApiService, ProductRequest, Status, TypeEnum, UserResponse } from "@src/api";
+import { AccessTime, Check, Clear, CurrencyRuble, DoneAll, Event, Help } from "@mui/icons-material";
+import { ProductRequest, Status, UserResponse } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
 import DateOfferLoopItem from "@src/components/ui/timeline/items/DateOfferLoopItem";
 import PreClosedStatusItem from "@src/components/ui/timeline/items/PreClosedStatusItem";
 import PriceOfferLoopItem from "@src/components/ui/timeline/items/PriceOfferLoopItem";
 import dayjs from "dayjs";
-import { ReactNode } from "react";
-
-const STATUS_ICON: Record<TypeEnum, ReactNode> = {
-  'created_status': <AccessTime />,
-  'price_offer_status': <AttachMoney />,
-  'price_accept_status': <CheckCircle />,
-  'date_offer_status': <Event />,
-  'date_accept_status': <CheckCircle />,
-  'closed_status': <DoneAll />
-};
 
 export function getStatusIcon(status: Status) {
   if (status.type === 'created_status') {
     return <AccessTime />
   }
   else if (status.type === 'price_offer_status') {
-    return <AttachMoney />
+    return <CurrencyRuble />
   }
   else if (status.type === 'price_accept_status') {
-    return <CheckCircle />
+    return <Check />
   }
   else if (status.type === 'date_offer_status') {
     return <Event />
   }
   else if (status.type === 'date_accept_status') {
-    return <CheckCircle />
+    return <Check />
   }
   else if (status.type === 'closed_status') {
     if (status.success) {

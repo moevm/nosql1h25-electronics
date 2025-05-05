@@ -1,6 +1,7 @@
 import { AccessTime, Check, Clear, CurrencyRuble, DoneAll, Event, Help } from "@mui/icons-material";
 import { ProductRequest, Status, UserResponse } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
+import AfterPricaAccpetItem from "@src/components/ui/timeline/items/AfterPricaAccpetItem";
 import DateOfferLoopItem from "@src/components/ui/timeline/items/DateOfferLoopItem";
 import PreClosedStatusItem from "@src/components/ui/timeline/items/PreClosedStatusItem";
 import PriceOfferLoopItem from "@src/components/ui/timeline/items/PriceOfferLoopItem";
@@ -42,10 +43,11 @@ export function getStatusDescription(product: ProductRequest, status: Status, cu
     return <>Заяка создана</>
   }
   else if (status.type === 'price_offer_status') {
-    return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>цена {status.price}</strong></>
+    return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>цена {status.price}₽</strong></>
   }
   else if (status.type === 'price_accept_status') {
-    return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился <strong>с ценой {status.price}</strong></>
+    console.log(status);
+    return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился <strong>с ценой</strong></>
   }
   else if (status.type === 'date_offer_status') {
     return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>дата встречи {dayjs(status.date).format('DD.MM.YYYY HH:mm')}</strong></>
@@ -76,7 +78,10 @@ export function getFictitiousStatus(request: ProductRequest) {
   else if (lastStatus.type === 'price_offer_status') {
     return <PriceOfferLoopItem index={count} requestId={request.id} lastUserId={lastStatus.user_id} offeredPrice={lastStatus.price!} />
   }
-  else if (lastStatus.type === 'price_accept_status' || lastStatus.type === 'date_offer_status') {
+  else if (lastStatus.type === 'price_accept_status') {
+    return <AfterPricaAccpetItem index={count} requestId={request.id}/>
+  }
+  else if (lastStatus.type === 'date_offer_status') {
     return <DateOfferLoopItem index={count} requestId={request.id} lastUserId={lastStatus.user_id} offeredDate={lastStatus.date!} />
   }
   else if (lastStatus.type === 'date_accept_status') {

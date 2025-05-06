@@ -48,8 +48,6 @@ class Status(EmbeddedDocument):
 
     @classmethod
     def create(cls, **kwargs):
-        if 'timestamp' not in kwargs:
-            kwargs['timestamp'] = datetime.now(timezone.utc)
         return cls(**kwargs)
 
 

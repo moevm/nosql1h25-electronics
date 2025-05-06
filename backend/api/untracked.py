@@ -515,9 +515,6 @@ class DatabaseBackupViewSet(ModelViewSet):
 
                     datetime.fromisoformat(custom_status["timestamp"])
 
-                    if custom_status["type"] == "date_offer_status":
-                        datetime.fromisoformat(custom_status["date"])
-
             for obj_data in data.get("photos", []):
                 fields = set(obj_data.keys())
                 if not required_photo_fields.issubset(fields):

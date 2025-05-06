@@ -1,13 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RequestsAdminFormInputs } from '@src/components/pages/RequestsAdminPage';
-import { RequestsClientFormInputs } from '@src/components/pages/RequestsClientPage';
+import { AdminFiltersFormInputs } from '@src/components/ui/AdminFilters';
+import { ClientFiltersFormInputs } from '@src/components/ui/ClientFilters';
 import { RootState } from './Store';
 import { ApiError, ApiService, ProductRequest } from '@src/api';
 
-export const updateRequests = createAsyncThunk(
-  'requests/updateRequests',
+export const updateProducts = createAsyncThunk(
+  'products/updateProducts',
   async (_: unknown, { getState, rejectWithValue }) => {
-    const { clientForm, adminForm } = (getState() as RootState).requests;
+    const { clientForm, adminForm } = (getState() as RootState).products;
     const modifiedAdminForm = { ...adminForm };
     if (adminForm.me === false) modifiedAdminForm.me = undefined; 
 
@@ -33,49 +33,49 @@ export const updateRequests = createAsyncThunk(
   },
 );
 
-export type RequestsState = {
+export type ProductsState = {
   isLoading: boolean;
-  requests?: ProductRequest[];
-  clientForm: Partial<RequestsClientFormInputs>;
-  adminForm: Partial<RequestsAdminFormInputs>;
+  products?: ProductRequest[];
+  clientForm: Partial<ClientFiltersFormInputs>;
+  adminForm: Partial<AdminFiltersFormInputs>;
 };
 
-const initialState: RequestsState = {
+const initialState: ProductsState = {
   isLoading: false,
   clientForm: {},
   adminForm: {},
 };
 
-export const requestsSlice = createSlice({
-  name: 'requests',
+export const productsSlice = createSlice({
+  name: 'products',
   initialState,
   reducers: {
-    updateClientFields: (state, action: PayloadAction<Partial<RequestsClientFormInputs>>) => {
+    updateClientFields: (state, action: PayloadAction<Partial<ClientFiltersFormInputs>>) => {
       Object.assign(state.clientForm, action.payload);
     },
-    updateAdminFields: (state, action: PayloadAction<Partial<RequestsAdminFormInputs>>) => {
+    updateAdminFields: (state, action: PayloadAction<Partial<AdminFiltersFormInputs>>) => {
       Object.assign(state.adminForm, action.payload);
     },
     reset: () => initialState,
   },
   extraReducers: builder => {
-    builder.addCase(updateRequests.pending, state => {
+    builder.addCase(updateProducts.pending, state => {
       state.isLoading = true;
-    }).addCase(updateRequests.fulfilled, (state, action) => {
+    }).addCase(updateProducts.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.requests = action.payload;
-    }).addCase(updateRequests.rejected, (state) => {
+      state.products = action.payload;
+    }).addCase(updateProducts.rejected, (state) => {
       state.isLoading = false;
     })
   },
   selectors: {
     selectAdminForm: state => state.adminForm,
     selectClientForm: state => state.clientForm,
-    selectRequests: state => state.requests,
+    selectProducts: state => state.products,
     selectIsLoading: state => state.isLoading,
   },
 });
 
-export const { updateClientFields, updateAdminFields, reset } = requestsSlice.actions;
-export const { selectAdminForm, selectClientForm, selectRequests, selectIsLoading } = requestsSlice.selectors;
-export default requestsSlice.reducer;
+export const { updateClientFields, updateAdminFields, reset } = productsSlice.actions;
+export const { selectAdminForm, selectClientForm, selectProducts, selectIsLoading } = productsSlice.selectors;
+export default productsSlice.reducer;

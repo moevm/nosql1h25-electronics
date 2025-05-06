@@ -55,9 +55,10 @@ export const editUser = createAsyncThunk(
     try {
       return await AuthService.authMeUpdate({ requestBody: data });
     } catch (e) {
-      console.log(e);
       if (!(e instanceof ApiError)) return rejectWithValue('Неизвестная ошибка');
+
       if (e.body?.details && typeof e.body.details === 'string' && e.body.details.startsWith('phone')) return rejectWithValue('Номер телефона уже занят');
+      
       return rejectWithValue('Неизвестная ошибка');
     }
   },

@@ -7,7 +7,7 @@ import { ApiService, ProductRequest } from "@src/api";
 import NotFoundPage from "./NotFoundPage";
 import ErrorMessage, { ErrorProps } from "../ui/ErrorMessage";
 import { AxiosError } from "axios";
-import { categoryToRussian } from "@src/lib/russianConverters";
+import { categoryToRussian } from "@src/lib/RussianConverters";
 import ProductTimeline from "../ui/timeline/ProductTimeline";
 import { selectUser } from "@src/store/UserSlice";
 import { useAppSelector } from "@src/hooks/ReduxHooks";

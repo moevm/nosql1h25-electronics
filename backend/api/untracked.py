@@ -322,9 +322,6 @@ class RequestViewSet(ModelViewSet):
         new_status = creator(request.data, user)
         product_request.add_status(new_status)
 
-        if status_type == 'price_accept_status':
-            product_request.update(price=last_status.price)
-
         response_serializer = StatusSerializer(new_status)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
@@ -517,9 +514,6 @@ class DatabaseBackupViewSet(ModelViewSet):
                             f"Unexpected fields in Status: {status_fields - (required_status_fields)}")
 
                     datetime.fromisoformat(custom_status["timestamp"])
-
-                    if custom_status["type"] == "date_offer_status":
-                        datetime.fromisoformat(custom_status["date"])
 
             for obj_data in data.get("photos", []):
                 fields = set(obj_data.keys())

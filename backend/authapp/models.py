@@ -57,7 +57,7 @@ class User(Document):
         for field in ['fullname', 'phone']:
             if field in kwargs:
                 setattr(self, field, kwargs[field])
-        self.edit_date = datetime.utcnow()
+        self.edit_date = datetime.now(timezone.utc)
         self.save()
 
     def set_password(self, password):

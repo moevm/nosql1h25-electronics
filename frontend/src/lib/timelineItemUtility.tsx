@@ -1,4 +1,4 @@
-import { AccessTime, Check, Clear, CurrencyRuble, DoneAll, Event, Help } from "@mui/icons-material";
+import { AccessTime, Add, Check, Clear, CurrencyRuble, DoneAll, Event, Help } from "@mui/icons-material";
 import { ProductRequest, Status, UserResponse } from "@src/api";
 import AfterCreatedItem from "@src/components/ui/timeline/items/AfterCreatedItem";
 import AfterPriceAccpetItem from "@src/components/ui/timeline/items/AfterPriceAccpetItem";
@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 
 export function getStatusIcon(status: Status) {
   if (status.type === 'created_status') {
-    return <AccessTime />
+    return <Add />
   }
   else if (status.type === 'price_offer_status') {
     return <CurrencyRuble />
@@ -46,14 +46,13 @@ export function getStatusDescription(product: ProductRequest, status: Status, cu
     return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>цена {status.price}₽</strong></>
   }
   else if (status.type === 'price_accept_status') {
-    console.log(status);
     return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился <strong>с ценой</strong></>
   }
   else if (status.type === 'date_offer_status') {
     return <>{isBuyer ? <>Скупщиком</> : <>Пользователем</>} была предложена <strong>дата встречи {dayjs(status.date).format('DD.MM.YYYY HH:mm')}</strong></>
   }
   else if (status.type === 'date_accept_status') {
-    return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился с <strong>датой встречи {dayjs(status.date).format('DD.MM.YYYY HH:mm')}</strong></>
+    return <>{isBuyer ? <>Скупщик</> : <>Пользователь</>} согласился с <strong>датой встречи</strong></>
   }
   else if (status.type === 'closed_status') {
     if (status.success) {

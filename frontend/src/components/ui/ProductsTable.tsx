@@ -30,7 +30,7 @@ const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
       <TableCell>
         { (isPending)
           ? <CircularProgress size={25} />
-          : (isError)
+          : (!isError)
           ? fullname
           : <Stack direction='row'>
             <ErrorOutline />
@@ -81,7 +81,7 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
       setProducts([]);
       alert(e.toString());
     });
-  }, [getData, pageSize, page, total]);
+  }, [getData, pageSize, page]);
 
   return (
     <TableContainer>

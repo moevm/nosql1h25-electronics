@@ -1,7 +1,6 @@
 import { Button, Paper, Stack, Typography, Container } from '@mui/material';
 import { ProductsTable } from '@src/components/ui/ProductsTable';
-import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
-import { selectAdminForm, selectClientForm, updateAdminFields, updateClientFields } from '@src/store/ProductsSlice';
+import { useAppSelector } from '@src/hooks/ReduxHooks';
 import { useNavigate } from 'react-router-dom';
 import { ClientFilters, ClientFiltersFormInputs } from '@src/components/ui/ClientFilters';
 import { LogoutButton } from '@src/components/ui/buttons/LogoutButton';
@@ -10,16 +9,20 @@ import { selectIsAdmin } from '@src/store/UserSlice';
 import { AdminFilters, AdminFiltersFormInputs } from '@src/components/ui/AdminFilters';
 import { BackupExportButton } from '@src/components/ui/buttons/BackupExportButton';
 import { BackupImportButton } from '@src/components/ui/buttons/BackupImportButton';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { ApiService } from '@src/api';
 
 export const ProductsPage = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const isAdmin = useAppSelector(selectIsAdmin);
-  const adminFilterValues = useAppSelector(selectAdminForm);
-  const clientFilterValues = useAppSelector(selectClientForm);
+
+  const [adminFilters, setAdminFilters] = useState<AdminFiltersFormInputs>(() => {
+    if (localStorage.getItem('adminFilters'))
+      return JSON.parse(localStorage.getItem('adminFilters')!);
+
+    return {};
+  });
 
   const getProductsWithAdminFilters = useCallback(async (page: number, pageSize: number) => {
     const {
@@ -29,7 +32,7 @@ export const ProductsPage = () => {
       category,
       me,
       ...restFilters
-    } = adminFilterValues;
+    } = adminFilters;
 
     let products = await ApiService.apiRequestsList({
       from: from?.format('YYYY-MM-DD'),
@@ -44,7 +47,20 @@ export const ProductsPage = () => {
     products = products.slice(page*pageSize, (page + 1)*pageSize);
     
     return { total, products };
-  }, [adminFilterValues]);
+  }, [adminFilters]);
+
+  const onAdminSubmit = (data: AdminFiltersFormInputs) => {
+    localStorage.setItem('adminFilters', JSON.stringify(data));
+    setAdminFilters(data);
+  };
+
+  
+  const [clientFilters, setClientFilters] = useState<ClientFiltersFormInputs>(() => {
+    if (localStorage.getItem('clientFilters'))
+      return JSON.parse(localStorage.getItem('clientFilters')!);
+
+    return {};
+  });
 
   const getProductsWithClientFilters = useCallback(async (page: number, pageSize: number) => {
     const {
@@ -54,7 +70,7 @@ export const ProductsPage = () => {
       category,
       sort,
       ...restFilters
-    } = clientFilterValues;
+    } = clientFilters;
 
     let products = await ApiService.apiRequestsList({
       from: from?.format('YYYY-MM-DD'),
@@ -69,14 +85,11 @@ export const ProductsPage = () => {
     products = products.slice(page*pageSize, (page + 1)*pageSize);
     
     return { total, products };
-  }, [clientFilterValues]);
-
-  const onAdminSubmit = (data: AdminFiltersFormInputs) => {
-    dispatch(updateAdminFields(data));
-  };
+  }, [clientFilters]);
 
   const onClientSubmit = (data: ClientFiltersFormInputs) => {
-    dispatch(updateClientFields(data));
+    localStorage.setItem('clientFilters', JSON.stringify(data));
+    setClientFilters(data);
   };
 
   return (
@@ -99,8 +112,8 @@ export const ProductsPage = () => {
           </Stack>
 
           { isAdmin 
-            ? <AdminFilters defaultValues={adminFilterValues} onSubmit={onAdminSubmit} />
-            : <ClientFilters defaultValues={clientFilterValues} onSubmit={onClientSubmit} />
+            ? <AdminFilters defaultValues={adminFilters} onSubmit={onAdminSubmit} />
+            : <ClientFilters defaultValues={clientFilters} onSubmit={onClientSubmit} />
           }
 
           <ProductsTable pageSize={10} getData={isAdmin ? getProductsWithAdminFilters : getProductsWithClientFilters}/>

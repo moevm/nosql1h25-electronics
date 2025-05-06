@@ -17,13 +17,19 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './main.css';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='ru'>
       <ThemeProvider theme={SmallInputsTheme}>
-          <Provider store={store}>
+        <Provider store={store}>
+          <QueryClientProvider client={queryClient}>
             <App />
-          </Provider>
+          </QueryClientProvider>
+        </Provider>
       </ThemeProvider>
     </LocalizationProvider>
   </StrictMode>,

@@ -9,6 +9,7 @@ import { editUser, selectIsAdmin, selectUser } from '@src/store/UserSlice';
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, timelineItemClasses, TimelineSeparator } from '@mui/lab';
 import { Add, Edit } from '@mui/icons-material';
 import dayjs from 'dayjs';
+import { useQueryClient } from '@tanstack/react-query';
 
 export interface EditProfileFormInputs {
   fullname: string;
@@ -69,6 +70,7 @@ export const EditProfilePage = () => {
   const { control, handleSubmit, reset, setError } = useForm<EditProfileFormInputs>();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
@@ -99,6 +101,7 @@ export const EditProfilePage = () => {
       else
         setError('fullname', { message: result.payload as string });
     } else {
+      queryClient.invalidateQueries({ queryKey: ['user', user.user_id] });
       navigate(-1);
     }
     

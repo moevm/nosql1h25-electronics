@@ -64,3 +64,5 @@ SECRET_KEY=django-insecure-#vzf3%=9q%34)r68^f&ui(t&%**s=(!#vl(0@j^w7o$-ka^9a@
 MONGO_ROOT_USERNAME=root_username
 MONGO_ROOT_PASSWORD=root_password
 ```
+
+Далее по адресу `http://localhost:8000/` или `http://127.0.0.1:8000/` будет доступен сайт скупки электроники.

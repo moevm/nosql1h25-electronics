@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { green } from "@mui/material/colors";
 import { ProductRequest, Status } from "@src/api";
 import { useAppSelector } from "@src/hooks/ReduxHooks";
-import { getStatusDescription, getStatusIcon } from "@src/lib/timelineItemUtility";
+import { getStatusDescription, getStatusIcon } from "@src/lib/TimelineItemUtility";
 import { selectIsAdmin, selectUser } from "@src/store/UserSlice";
 
 const PrimaryItem = ({ index, item, product }: { index: number, item: Status, product: ProductRequest }) => {

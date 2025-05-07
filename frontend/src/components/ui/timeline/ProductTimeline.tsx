@@ -3,7 +3,7 @@ import { useInView } from "react-intersection-observer";
 import { motion } from 'framer-motion';
 import { ProductRequest } from "@src/api";
 import PrimaryItem from "./items/PrimaryItem";
-import { getFictitiousStatus } from "@src/lib/timelineItemUtility";
+import { getFictitiousStatus } from "@src/lib/TimelineItemUtility";
 
 const ProductTimeline = ({ product }: { product: ProductRequest }) => {
   const { ref, inView } = useInView({ threshold: 0.2 });

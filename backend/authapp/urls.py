@@ -3,7 +3,7 @@ from .views import AuthViewSet
 
 auth_register = AuthViewSet.as_view({'post': 'register'})
 auth_login = AuthViewSet.as_view({'post': 'login'})
-auth_me = AuthViewSet.as_view({'get': 'me'})
+auth_me = AuthViewSet.as_view({'get': 'getMe', 'put': 'putMe'})
 auth_logout = AuthViewSet.as_view({'post': 'logout'})
 
 urlpatterns = [

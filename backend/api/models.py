@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone
 from mongoengine import connect, Document, StringField, DateTimeField, FloatField, BinaryField, ListField, \
     ReferenceField, EmbeddedDocument, EmbeddedDocumentField, BooleanField
 from authapp.models import User
@@ -31,17 +31,23 @@ class Photo(Document):
                 setattr(self, field, kwargs[field])
         self.save()
 
+STATUS_TYPES = [
+    'created_status',
+    'price_offer_status',
+    'price_accept_status',
+    'date_offer_status',
+    'date_accept_status',
+    'closed_status'
+]
 
 class Status(EmbeddedDocument):
-    timestamp = DateTimeField(default=datetime.utcnow)
-    type = StringField()
+    timestamp = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    type = StringField(choices=STATUS_TYPES, required=True)
 
     meta = {'allow_inheritance': True}
 
     @classmethod
     def create(cls, **kwargs):
-        if 'timestamp' not in kwargs:
-            kwargs['timestamp'] = datetime.utcnow()
         return cls(**kwargs)
 
 

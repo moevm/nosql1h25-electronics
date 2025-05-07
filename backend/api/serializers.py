@@ -2,8 +2,9 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
+from django.utils import timezone
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -15,6 +16,71 @@ class PhotoResponseSerializer(DocumentSerializer):
         model = Photo
         fields = ['id']
 
+class StatusSerializer(DocumentSerializer):
+    type = serializers.ChoiceField(
+        choices=STATUS_TYPES,
+        required=True
+    )
+    timestamp = serializers.DateTimeField(read_only=True)
+    user_id = serializers.CharField(source="user_id.id", read_only=True)
+    price = serializers.FloatField(required=False)
+    date = serializers.DateTimeField(required=False)
+    success = serializers.BooleanField(required=False)
+
+    REQUIRED_FIELDS = {
+        "price_offer_status": "price",
+        "date_offer_status": "date",
+        "closed_status": "success"
+    }
+
+    class Meta:
+        model = Status
+        fields = ['type', 'timestamp', 'user_id', 'price', 'date', 'success']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        timestamp = instance.timestamp
+        if timezone.is_naive(instance.timestamp):
+            timestamp = timezone.make_aware(timestamp, timezone.utc)
+
+        local_ts = timezone.localtime(timestamp)
+        representation['timestamp'] = local_ts.isoformat()
+
+        if isinstance(instance, DateOfferStatus):
+            date = instance.date
+            if timezone.is_naive(instance.date):
+                date = timezone.make_aware(date, timezone.utc)
+
+            local_date = timezone.localtime(date)
+            representation['date'] = local_date.isoformat()
+
+        return representation
+
+    def validate(self, data):
+        if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:
+            raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'))}")
+        return data
+
+    def validate_type(self, value):
+        """Проверка, что тип статуса - строка"""
+        if not isinstance(value, str):
+            raise serializers.ValidationError("Status type must be a string.")
+        return value
+
+    def validate_price(self, value):
+        """Проверка, что цена - положительное число"""
+        if value <= 0:
+            raise serializers.ValidationError("Price must be a positive number.")
+        return value
+
+    def validate_success(self, value):
+        """Проверка, что успешность закрытия - логическое значение"""
+        if not isinstance(value, bool):
+            raise serializers.ValidationError("Success must be a bool.")
+        return value
+
+
 class CreatedStatusSerializer(DocumentSerializer):
     class Meta:
         model = CreatedStatus
@@ -23,6 +89,11 @@ class CreatedStatusSerializer(DocumentSerializer):
 class PriceOfferStatusSerializer(DocumentSerializer):
     class Meta:
         model = PriceOfferStatus
+        fields = '__all__'
+
+class PriceAcceptStatusSerializer(DocumentSerializer):
+    class Meta:
+        model = PriceAcceptStatus
         fields = '__all__'
 
 class DateOfferStatusSerializer(DocumentSerializer):
@@ -41,7 +112,7 @@ class ClosedStatusSerializer(DocumentSerializer):
         fields = '__all__'
 
 class ProductRequestSerializer(DocumentSerializer):
-    statuses = serializers.ListField(read_only=True)
+    statuses = StatusSerializer(many=True, read_only=True)
     user_id = serializers.CharField(source="user_id.id", read_only=True)
     photos = serializers.ListField(child=serializers.CharField())
 
@@ -56,18 +127,6 @@ class ProductRequestSerializer(DocumentSerializer):
         if "photos" in representation:
             updated_photos = [f"{os.getenv('BASE_URL')}/api/photos/{str(photo.id)}/" for photo in instance.photos]
             representation["photos"] = updated_photos
-
-        if "statuses" in representation:
-            updated_statuses = []
-            for custom_status in instance.statuses:
-                status_data = custom_status.to_mongo().to_dict()
-                for key, value in status_data.items():
-                    if isinstance(value, ObjectId):
-                        status_data[key] = str(value)
-                if "_cls" in status_data:
-                    del status_data["_cls"]
-                updated_statuses.append(status_data)
-            representation["statuses"] = updated_statuses
 
         return representation
 

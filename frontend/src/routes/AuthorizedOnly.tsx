@@ -1,7 +1,7 @@
-import { Navigate } from "react-router-dom";
-import { useAppSelector } from "@src/hooks/ReduxHooks";
-import { selectIsAuthorized, selectIsInitialAuthorizing } from "@src/store/UserSlice";
-import Loader from "@src/components/ui/Loader";
+import { Navigate } from 'react-router-dom';
+import { useAppSelector } from '@src/hooks/ReduxHooks';
+import { selectIsAuthorized, selectIsInitialAuthorizing } from '@src/store/UserSlice';
+import Loader from '@src/components/ui/Loader';
 
 export interface AuthorizedOnlyProps {
   children: React.ReactElement;
@@ -14,7 +14,7 @@ export const AuthorizedOnly = ({ children, inverted }: AuthorizedOnlyProps) => {
 
   if (isInitialAuthorizing) return <Loader />
 
-  if (!!inverted === isAuthorized) return <Navigate to={inverted ? '/requests' : '/login'} replace />;
+  if (!!inverted === isAuthorized) return <Navigate to={inverted ? '/products' : '/login'} replace />;
 
   return children
 };

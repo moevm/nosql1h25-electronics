@@ -1,74 +1,32 @@
 import { Paper, Typography, Button, Stack, Container, CircularProgress } from '@mui/material';
-import { MuiTelInput, classes } from 'mui-tel-input';
-import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
-import { Control, Controller, useForm } from 'react-hook-form';
-import { PasswordFormField, TextFormField } from '@src/components/ui/FormFields';
-import style from './RegisterPage.module.css';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { PasswordFormField } from '@src/components/ui/form/PasswordFormField';
+import { TextFormField } from '@src/components/ui/form/TextFormField';
+import { PhoneFormField } from '@src/components/ui/form/PhoneFormField';
+import { KeyboardEvent, useState } from 'react';
 import { ApiError, AuthService } from '@src/api';
 
-interface FormInputs {
+export interface RegisterFormInputs {
   login: string;
   password: string;
   fullname: string;
   phone: string;
 }
 
-interface FormFieldProps {
-  control: Control<FormInputs>;
-}
-
-const MuiTelInputNoFlag = styled(MuiTelInput)`
-  .${classes.flagButton} {
-    display: none;
-  }
-`;
-
-const PhoneFormField = ({ control }: FormFieldProps) => (
-  <Controller 
-    name='phone'
-    control={control}
-    render={({ field, fieldState }) => (
-      <MuiTelInputNoFlag 
-        defaultCountry='RU'
-        disableDropdown
-        forceCallingCode
-        helperText={fieldState.error?.message}
-        error={!!fieldState.error}
-        value={field.value}
-        onChange={field.onChange}
-      />
-    )}
-    rules={{
-      validate: {
-        required: (value: string) => {
-          if (!value) return 'Обязательное поле';
-          if (value.replace(/\s/g, '').length !== 12) return 'Некорректный номер';          
-        },
-      },
-    }}
-  />
-);
-
 export const RegisterPage = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit, setError } = useForm<FormInputs>();
+  const { control, handleSubmit, setError } = useForm<RegisterFormInputs>();
 
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const onSubmit = async (data: FormInputs) => {
+  const onSubmit = async (data: RegisterFormInputs) => {
+    data.phone = data.phone.replace(/\s/g, '');
+
     setIsRegistering(true);
 
     try {
-      await AuthService.authRegisterCreate({
-        requestBody: {
-          fullname: data.fullname,
-          login: data.login,
-          password: data.password,
-          phone: data.phone.replace(/[ ()-]/g, ''),
-        },
-      });
+      await AuthService.authRegisterCreate({ requestBody: data });
 
       navigate('/login');
     } catch (e) {
@@ -85,30 +43,44 @@ export const RegisterPage = () => {
     setIsRegistering(false);
   };
 
+  const onEnterDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    handleSubmit(onSubmit)();
+  };
+
   return (
-    <Container maxWidth='sm' className={style.container}>
+    <Container
+      maxWidth='sm'
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        justifyContent: 'center',
+      }}  
+    >
       <Paper elevation={5} sx={{ p: 3 }}>
         <Stack direction='column' gap={2}>
           <Typography variant='h4'>Регистрация</Typography>
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Логин:</Typography>
-            <TextFormField placeholder='Логин' minLength={3} maxLength={50} required name='login' control={control}/>
+            <TextFormField placeholder='Логин' minLength={3} maxLength={50} required prohibitBlank name='login' control={control}/>
           </Stack> 
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Пароль:</Typography>
-            <PasswordFormField placeholder='Пароль' minLength={8} maxLength={50} name='password' control={control} />
+            <PasswordFormField placeholder='Пароль' minLength={8} maxLength={50} required name='password' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>ФИО:</Typography>
-            <TextFormField placeholder='ФИО' maxLength={200} required name='fullname' control={control} />
+            <TextFormField placeholder='ФИО' maxLength={200} required prohibitBlank name='fullname' control={control} />
           </Stack>
 
           <Stack direction='column' gap={0}>
             <Typography variant='body1'>Номер телефона:</Typography>
-            <PhoneFormField control={control} />
+            <PhoneFormField required onKeyDown={onEnterDown} name='phone' control={control} />
           </Stack>
 
           <Stack direction='column' gap={1}>

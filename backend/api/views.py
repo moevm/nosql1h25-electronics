@@ -1,25 +1,54 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
 from drf_spectacular.types import OpenApiTypes
-from authapp.serializers import ErrorResponseSerializer
+from authapp.serializers import ErrorResponseSerializer, UserResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from .models import ProductRequest, Photo, CreatedStatus
-from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer
+from django.conf import settings
+from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
 import base64
+import zoneinfo
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
     queryset = ProductRequest.objects.all()
     serializer_class = ProductRequestSerializer
     filter_backends = [OrderingFilter]
+
+    ALLOWED_PREVIOUS_STATUSES = {
+        "price_offer_status": ["created_status", "price_offer_status"],
+        "price_accept_status": ["price_offer_status"],
+        "date_offer_status": ["created_status", "date_offer_status", "price_accept_status"],
+        "date_accept_status": ["date_offer_status"],
+        "closed_status": ["created_status", "price_offer_status", "price_accept_status", "date_offer_status", "date_accept_status"]
+    }
+
+    FORBIDDEN_INITIATIONS = {
+        "price_offer_status": lambda user,
+                                     last_initiator, last_status, request: not user.is_admin and last_status.type != "price_offer_status",
+        "date_offer_status": lambda user,
+                                    last_initiator, last_status, request: not user.is_admin and last_status.type != "date_offer_status",
+        "price_accept_status": lambda user, last_initiator, last_status, request: user.is_admin == last_initiator.is_admin,
+        "date_accept_status": lambda user, last_initiator, last_status, request: user.is_admin == last_initiator.is_admin,
+        "closed_status": lambda user, last_initiator, last_status, request: not user.is_admin and request.data.get("success"),
+    }
+
+    STATUS_CREATORS = {
+        "price_offer_status": lambda data, user: PriceOfferStatus.create(price=data["price"], user_id=user.id),
+        "price_accept_status": lambda data, user: PriceAcceptStatus.create(user_id=user.id),
+        "date_offer_status": lambda data, user: DateOfferStatus.create(date=datetime.fromisoformat(data["date"]),
+                                                                       user_id=user.id),
+        "date_accept_status": lambda data, user: DateAcceptStatus.create(user_id=user.id),
+        "closed_status": lambda data, user: ClosedStatus.create(success=data["success"], user_id=user.id),
+    }
 
     @extend_schema(
         summary="Создать новую заявку",
@@ -232,6 +261,73 @@ class RequestViewSet(ModelViewSet):
         serializer = ProductRequestSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Обновить актуальный статус заявки",
+        description="Позволяет добавить новый статус заявке. Обязательным является указание поля type. Остальные поля необходимо указывать в зависимости от типа заявки.",
+        request=StatusSerializer,
+        responses={
+            201: StatusSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer
+        }
+    )
+    def postRequestsStatuses(self, request, pk=None, *args, **kwargs):
+        user = request.user
+
+        try:
+            product_request = ProductRequest.objects.get(id=pk)
+        except ProductRequest.DoesNotExist:
+            return Response({"details": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = StatusSerializer(data=request.data, context={'request': request})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(
+                {"details": "Invalid request data"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if product_request.user_id.id != user.id and not user.is_admin:
+            return Response({"details": "Not your request"}, status=status.HTTP_403_FORBIDDEN)
+
+        status_type = request.data.get("type")
+
+        last_status = product_request.statuses[-1]
+        if last_status.type != "created_status":
+            last_initiator = last_status.user_id
+        else:
+            last_initiator = product_request.user_id
+
+        if last_status.type == "closed_status":
+            return Response({"details": "Request already closed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if last_status.type not in self.ALLOWED_PREVIOUS_STATUSES.get(status_type, []):
+            return Response({"details": "Wrong status order"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if status_type == "closed_status" and request.data.get("success") and last_status.type != "date_accept_status":
+            return Response({"details": "You can't close request"}, status=status.HTTP_403_FORBIDDEN)
+
+        forbidden_check = self.FORBIDDEN_INITIATIONS.get(status_type)
+        if forbidden_check and forbidden_check(user, last_initiator, last_status, request):
+            return Response({"details": "Forbidden action"}, status=status.HTTP_403_FORBIDDEN)
+
+        if status_type == last_status.type and user.is_admin == last_initiator.is_admin:
+            return Response({"details": "You can't do two offers in a row"}, status=status.HTTP_403_FORBIDDEN)
+
+        new_status = None
+
+        creator = self.STATUS_CREATORS.get(status_type)
+        new_status = creator(request.data, user)
+        product_request.add_status(new_status)
+
+        if status_type == 'price_accept_status':
+            product_request.update(price=last_status.price)
+
+        response_serializer = StatusSerializer(new_status)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
 
 class PhotoViewSet(ModelViewSet):
     """ViewSet для работы с фотографиями"""
@@ -392,9 +488,9 @@ class DatabaseBackupViewSet(ModelViewSet):
                 if not fields.issubset(required_request_fields):
                     raise ValueError(f"Unexpected fields in ProductRequest: {fields - required_request_fields}")
 
-                for status in obj_data.get("statuses", []):
+                for custom_status in obj_data.get("statuses", []):
                     required_status_fields = {"type", "timestamp", "_cls"}
-                    if status["type"] not in [
+                    if custom_status["type"] not in [
                         "created_status",
                         "price_offer_status",
                         "price_accept_status",
@@ -402,17 +498,17 @@ class DatabaseBackupViewSet(ModelViewSet):
                         "date_accept_status",
                         "closed_status"
                     ]:
-                        raise ValueError(f"Invalid status type: {status['type']}")
-                    if status["type"] != "created_status":
+                        raise ValueError(f"Invalid status type: {custom_status['type']}")
+                    if custom_status["type"] != "created_status":
                         required_status_fields.add("user_id")
-                    if status["type"] == "date_offer_status":
+                    if custom_status["type"] == "date_offer_status":
                         required_status_fields.add("date")
-                    if status["type"] == "closed_status":
+                    if custom_status["type"] == "closed_status":
                         required_status_fields.add("success")
-                    if status["type"] == "price_offer_status":
+                    if custom_status["type"] == "price_offer_status":
                         required_status_fields.add("price")
 
-                    status_fields = set(status.keys())
+                    status_fields = set(custom_status.keys())
 
                     if not required_status_fields.issubset(status_fields):
                         raise ValueError(f"Missing required fields in Status: {required_status_fields - status_fields}")
@@ -420,10 +516,10 @@ class DatabaseBackupViewSet(ModelViewSet):
                         raise ValueError(
                             f"Unexpected fields in Status: {status_fields - (required_status_fields)}")
 
-                    try:
-                        datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
-                    except ValueError:
-                        datetime.strptime(status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+                    datetime.fromisoformat(custom_status["timestamp"])
+
+                    if custom_status["type"] == "date_offer_status":
+                        datetime.fromisoformat(custom_status["date"])
 
             for obj_data in data.get("photos", []):
                 fields = set(obj_data.keys())
@@ -443,10 +539,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
                 for date_field in ["creation_date", "edit_date"]:
                     if date_field in obj_data:
-                        try:
-                            datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
-                        except ValueError:
-                            datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+                        datetime.fromisoformat(obj_data[date_field])
             return True
         except Exception as e:
             raise ValueError(f"Validation failed: {str(e)}")
@@ -506,10 +599,9 @@ class DatabaseBackupViewSet(ModelViewSet):
                 if "statuses" in obj_data:
                     for custom_status in obj_data["statuses"]:
                         if "timestamp" in custom_status:
-                            try:
-                                custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
-                            except ValueError:
-                                custom_status["timestamp"] = datetime.strptime(custom_status["timestamp"], "%Y-%m-%dT%H:%M:%S")
+                            custom_status["timestamp"] = datetime.fromisoformat(custom_status["timestamp"])
+                        if "date" in custom_status:
+                            custom_status["date"] = datetime.fromisoformat(custom_status["date"])
                 ProductRequest(**obj_data).save()
 
             for obj_data in data.get("photos", []):
@@ -524,10 +616,7 @@ class DatabaseBackupViewSet(ModelViewSet):
 
                 for date_field in ["creation_date", "edit_date"]:
                     if date_field in obj_data:
-                        try:
-                            obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S.%f")
-                        except ValueError:
-                            obj_data[date_field] = datetime.strptime(obj_data[date_field], "%Y-%m-%dT%H:%M:%S")
+                        obj_data[date_field] = datetime.fromisoformat(obj_data[date_field])
 
                 user_id_str = str(obj_data["id"])
                 old_version = current_versions.get(user_id_str, -1)
@@ -544,3 +633,36 @@ class DatabaseBackupViewSet(ModelViewSet):
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return JsonResponse({"details": "Backup successfully imported"}, status=status.HTTP_200_OK)
+
+
+class UserViewSet(ModelViewSet):
+
+    @extend_schema(
+        summary="Получить данные пользователя",
+        description="Позволяет получить данные пользователя по его id.",
+        responses={
+            200: UserResponseSerializer,
+            401: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        }
+    )
+    def getUserById(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if not pk:
+            return Response({"details": "Missing pk"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            instance = User.objects.get(id=pk)
+        except:
+            return Response({"details": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        if not user.is_admin and str(user.id) != str(pk):
+            return Response(
+                {"details": "You do not have permission"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = UserResponseSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)

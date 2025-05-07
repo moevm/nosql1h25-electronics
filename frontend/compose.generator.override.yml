@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  frontend:
+    profiles:
+      - donotstart
+
+  backend:
+    command: ['sh', '-c', 'python migrate.py && python manage.py spectacular --format openapi-json --file /app/schema/schema.json']
+    volumes:
+      - schema_data:/app/schema
+
+volumes:
+  schema_data:

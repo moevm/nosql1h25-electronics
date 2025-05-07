@@ -16,7 +16,10 @@ MONGO_HOST=...
 MONGO_PORT=...
 MONGO_USER=...
 MONGO_PASSWORD=...
+SECRET_KEY=...
 ```
+
+В поле `SECRET_KEY` должна храниться строка, которая используется для обеспечения безопасности различных механизмов фреймворка (подписание сессий, хэшировнаие паролей и тд)
 
 Пользователь, указанный в .env должен быть добавлен вручную в базу данных и обладать правами на чтение и запись:
 
@@ -56,7 +59,10 @@ MONGO_HOST=db
 MONGO_PORT=27017
 MONGO_PASSWORD=user_password
 MONGO_USER=username
+SECRET_KEY=django-insecure-#vzf3%=9q%34)r68^f&ui(t&%**s=(!#vl(0@j^w7o$-ka^9a@
 
 MONGO_ROOT_USERNAME=root_username
 MONGO_ROOT_PASSWORD=root_password
 ```
+
+Далее по адресу `http://localhost:8000/` или `http://127.0.0.1:8000/` будет доступен сайт скупки электроники.

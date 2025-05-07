@@ -16,10 +16,11 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './main.css';
+import { ruRU } from '@mui/x-date-pickers/locales';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='ru'>
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru" localeText={ruRU.components.MuiLocalizationProvider.defaultProps.localeText}>
       <ThemeProvider theme={SmallInputsTheme}>
           <Provider store={store}>
             <App />

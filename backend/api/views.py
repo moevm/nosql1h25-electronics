@@ -234,6 +234,13 @@ class RequestViewSet(ModelViewSet):
         paginator = Paginator(queryset, 10)  # 10 объектов на страницу
         page = request.GET.get('page')
 
+        try:
+            products = paginator.page(page)
+        except PageNotAnInteger:
+            products = paginator.page(1)
+        except EmptyPage:
+            products = paginator.page(paginator.num_pages)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

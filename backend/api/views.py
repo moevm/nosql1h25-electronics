@@ -241,7 +241,7 @@ class RequestViewSet(ModelViewSet):
         except EmptyPage:
             products = paginator.page(paginator.num_pages)
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(products.object_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(

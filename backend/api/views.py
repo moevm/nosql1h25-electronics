@@ -17,6 +17,8 @@ import json
 import base64
 import zoneinfo
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
     queryset = ProductRequest.objects.all()
@@ -228,6 +230,9 @@ class RequestViewSet(ModelViewSet):
                 queryset = sorted(queryset, key=lambda x: x.user_id.fullname.lower())
             elif sort == "last_update":
                 queryset = sorted(queryset, key=lambda x: x.statuses[-1]["timestamp"], reverse=True)
+
+        paginator = Paginator(queryset, 10)  # 10 объектов на страницу
+        page = request.GET.get('page')
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

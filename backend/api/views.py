@@ -243,10 +243,8 @@ class RequestViewSet(ModelViewSet):
 
         serializer = self.get_serializer(products.object_list, many=True)
         response_data = {
-            "amount": paginator.count,
-            "page": products.number,
-            "pages": paginator.num_pages,
-            "list": serializer.data
+             "amount": paginator.count,
+             "requests": serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
 

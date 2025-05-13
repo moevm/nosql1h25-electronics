@@ -242,7 +242,13 @@ class RequestViewSet(ModelViewSet):
             products = paginator.page(paginator.num_pages)
 
         serializer = self.get_serializer(products.object_list, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            "amount": paginator.count,
+            "page": products.number,
+            "pages": paginator.num_pages,
+            "list": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Получить заявку",

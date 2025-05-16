@@ -122,7 +122,8 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
             OpenApiParameter(name="sort",
                              description="Сортировка записей (title, description, address, category, fullname, last_update)",
-                             required=False, type=str)
+                             required=False, type=str),
+            OpenApiParameter(name="page", description="Номер страницы для пагинации", required=False, type=int)
         ],
         responses={
             200: ProductRequestListResponseSerializer(many=True),

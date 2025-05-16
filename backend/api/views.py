@@ -18,6 +18,12 @@ import base64
 import zoneinfo
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from rest_framework import serializers
+
+class ProductRequestListResponseSerializer(serializers.Serializer):
+    amount = serializers.IntegerField()
+    requests = ProductRequestSerializer(many=True)
+
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
@@ -119,7 +125,7 @@ class RequestViewSet(ModelViewSet):
                              required=False, type=str)
         ],
         responses={
-            200: ProductRequestSerializer(many=True),
+            200: ProductRequestListResponseSerializer(many=True),
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
@@ -241,12 +247,13 @@ class RequestViewSet(ModelViewSet):
         except EmptyPage:
             products = paginator.page(paginator.num_pages)
 
-        serializer = self.get_serializer(products.object_list, many=True)
+        serializer = ProductRequestSerializer(products.object_list, many=True)
         response_data = {
-             "amount": paginator.count,
-             "requests": serializer.data
+            "amount": paginator.count,
+            "requests": serializer.data
         }
-        return Response(response_data, status=status.HTTP_200_OK)
+        response_serializer = ProductRequestListResponseSerializer(response_data)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Получить заявку",

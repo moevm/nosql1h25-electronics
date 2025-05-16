@@ -5,6 +5,7 @@ from bson.dbref import DBRef
 from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
 from django.utils import timezone
+from datetime import datetime
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
@@ -40,26 +41,31 @@ class StatusSerializer(DocumentSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        # Универсальное получение timestamp
+        # timestamp
         if isinstance(instance, dict):
             timestamp = instance.get('timestamp')
         else:
             timestamp = getattr(instance, 'timestamp', None)
 
-        if timestamp and timezone.is_naive(timestamp):
-            timestamp = timezone.make_aware(timestamp, timezone.utc)
+        if isinstance(timestamp, str):
+            try:
+                timestamp = datetime.fromisoformat(timestamp)
+            except Exception:
+                timestamp = None
 
-        if timestamp:
+        if timestamp and isinstance(timestamp, datetime):
+            if timezone.is_naive(timestamp):
+                timestamp = timezone.make_aware(timestamp, timezone.utc)
             local_ts = timezone.localtime(timestamp)
             representation['timestamp'] = local_ts.isoformat()
+        elif timestamp:
+            representation['timestamp'] = str(timestamp)
 
-        # Универсальное получение date для DateOfferStatus
-        # Проверяем тип instance или поле type в dict
+        # date для DateOfferStatus
         is_date_offer_status = False
         if isinstance(instance, DateOfferStatus):
             is_date_offer_status = True
         elif isinstance(instance, dict):
-            # В вашем коде type - строка, проверяем её
             is_date_offer_status = instance.get('type') == 'date_offer_status'
 
         if is_date_offer_status:
@@ -68,12 +74,19 @@ class StatusSerializer(DocumentSerializer):
             else:
                 date = getattr(instance, 'date', None)
 
-            if date and timezone.is_naive(date):
-                date = timezone.make_aware(date, timezone.utc)
+            if isinstance(date, str):
+                try:
+                    date = datetime.fromisoformat(date)
+                except Exception:
+                    date = None
 
-            if date:
+            if date and isinstance(date, datetime):
+                if timezone.is_naive(date):
+                    date = timezone.make_aware(date, timezone.utc)
                 local_date = timezone.localtime(date)
                 representation['date'] = local_date.isoformat()
+            elif date:
+                representation['date'] = str(date)
 
         return representation
 

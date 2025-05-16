@@ -21,17 +21,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework import serializers
 
 
-class ProductRequestListBodySerializer(serializers.Serializer):
-    page = serializers.IntegerField(required=False, default=1, min_value=1, help_text="Номер страницы для пагинации")
-    title = serializers.CharField(required=False, help_text="Фильтрация по названию заявки")
-    description = serializers.CharField(required=False, help_text="Фильтрация по описанию заявки")
-    from_date = serializers.CharField(required=False, help_text="Фильтрация по дате начала (YYYY-MM-DD)")
-    to_date = serializers.CharField(required=False, help_text="Фильтрация по дате окончания (YYYY-MM-DD)")
-    status = serializers.CharField(required=False, help_text="Фильтрация по статусу заявки")
-    category = serializers.CharField(required=False, help_text="Фильтрация по категории заявки")
-    author = serializers.CharField(required=False, help_text="Фильтрация по автору заявки")
-    me = serializers.BooleanField(required=False, help_text="Фильтрация по своим заявкам")
-    sort = serializers.CharField(required=False, help_text="Сортировка записей")
 
 
 class ProductRequestListResponseSerializer(serializers.Serializer):
@@ -123,7 +112,22 @@ class RequestViewSet(ModelViewSet):
     @extend_schema(
         summary="Получить список заявок",
         description="Возвращает список заявок с возможностью фильтрации по разным критериям.",
-        request=ProductRequestListBodySerializer,
+        parameters=[
+            OpenApiParameter(name="title", description="Фильтрация по названию заявки", required=False, type=str),
+            OpenApiParameter(name="description", description="Фильтрация по описанию заявки", required=False, type=str),
+            OpenApiParameter(name="from", description="Фильтрация по дате начала (формат YYYY-MM-DD)", required=False,
+                             type=str),
+            OpenApiParameter(name="to", description="Фильтрация по дате окончания (формат YYYY-MM-DD)", required=False,
+                             type=str),
+            OpenApiParameter(name="status", description="Фильтрация по статусу заявки", required=False, type=str),
+            OpenApiParameter(name="category", description="Фильтрация по категории заявки", required=False, type=str),
+            OpenApiParameter(name="author", description="Фильтрация по автору заявки", required=False, type=str),
+            OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
+            OpenApiParameter(name="sort",
+                             description="Сортировка записей (title, description, address, category, fullname, last_update)",
+                             required=False, type=str),
+            OpenApiParameter(name="page", description="Номер страницы для пагинации", required=False, type=int)
+        ],
         responses={
             200: ProductRequestListResponseSerializer(many=True),
             400: ErrorResponseSerializer,
@@ -134,19 +138,19 @@ class RequestViewSet(ModelViewSet):
     def getRequests(self, request, *args, **kwargs):
         user = request.user
 
-        # Получаем параметры фильтрации из тела запроса
-        data = request.data
-
-        title = data.get('title')
-        description = data.get('description')
-        from_date = data.get('from_date')
-        to_date = data.get('to_date')
-        custom_status = data.get('status')
-        category = data.get('category')
-        author = data.get('author')
-        me = data.get('me')
-        sort = data.get('sort')
-        page = data.get('page', 1)
+        # Получаем параметры фильтрации
+        title = str(request.query_params.get('title')) if request.query_params.get('title') is not None else None
+        description = str(request.query_params.get('description')) if request.query_params.get(
+            'description') is not None else None
+        from_date = str(request.query_params.get('from')) if request.query_params.get('from') is not None else None
+        to_date = str(request.query_params.get('to')) if request.query_params.get('to') is not None else None
+        custom_status = str(request.query_params.get('status')) if request.query_params.get(
+            'status') is not None else None
+        category = str(request.query_params.get('category')) if request.query_params.get(
+            'category') is not None else None
+        author = str(request.query_params.get('author')) if request.query_params.get('author') is not None else None
+        me = str(request.query_params.get('me')) if request.query_params.get('me') is not None else None
+        sort = str(request.query_params.get('sort')) if request.query_params.get('sort') is not None else None
 
         if user.role == "client":
             if author:
@@ -166,23 +170,19 @@ class RequestViewSet(ModelViewSet):
 
         if from_date:
             try:
-                from_date_dt = datetime.strptime(from_date, "%Y-%m-%d")
-                from_date_dt = datetime.combine(from_date_dt, time.min)
+                from_date = datetime.strptime(from_date, "%Y-%m-%d")
+                from_date = datetime.combine(from_date, time.min)
             except ValueError:
-                return Response({"details": "Invalid 'from_date' format"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            from_date_dt = None
+                return Response({"details": "Invalid 'from' date format"}, status=status.HTTP_400_BAD_REQUEST)
 
         if to_date:
             try:
-                to_date_dt = datetime.strptime(to_date, "%Y-%m-%d")
-                to_date_dt = datetime.combine(to_date_dt, time.max)
+                to_date = datetime.strptime(to_date, "%Y-%m-%d")
+                to_date = datetime.combine(to_date, time.max)
             except ValueError:
-                return Response({"details": "Invalid 'to_date' format"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            to_date_dt = None
+                return Response({"details": "Invalid 'to' date format"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if from_date_dt or to_date_dt:
+        if from_date or to_date:
             filtered_queryset = []
             for request_obj in queryset:
                 if request_obj.statuses:
@@ -190,9 +190,9 @@ class RequestViewSet(ModelViewSet):
                     timestamp = last_status["timestamp"]
 
                     if timestamp:
-                        if from_date_dt and timestamp < from_date_dt:
+                        if from_date and timestamp < from_date:
                             continue
-                        if to_date_dt and timestamp > to_date_dt:
+                        if to_date and timestamp > to_date:
                             continue
 
                         filtered_queryset.append(request_obj)
@@ -218,6 +218,7 @@ class RequestViewSet(ModelViewSet):
             matching_users = [
                 user.id for user in User.objects.filter(fullname__icontains=author)
             ]
+
             queryset = queryset.filter(user_id__in=matching_users)
 
         if me:
@@ -241,6 +242,7 @@ class RequestViewSet(ModelViewSet):
                 queryset = sorted(queryset, key=lambda x: x.statuses[-1]["timestamp"], reverse=True)
 
         paginator = Paginator(queryset, 10)  # 10 объектов на страницу
+        page = request.GET.get('page')
 
         try:
             products = paginator.page(page)

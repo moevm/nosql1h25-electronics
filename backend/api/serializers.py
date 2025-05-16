@@ -154,13 +154,22 @@ class ProductRequestSerializer(DocumentSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        """Переопределяем метод для исключения _cls из statuses"""
         representation = super().to_representation(instance)
 
-        if "photos" in representation:
-            updated_photos = [f"{os.getenv('BASE_URL')}/api/photos/{str(photo.id)}/" for photo in instance.photos]
-            representation["photos"] = updated_photos
+        # Универсальный доступ к photos
+        if isinstance(instance, dict):
+            photos = instance.get('photos', [])
+        else:
+            photos = getattr(instance, 'photos', [])
 
+        # Для каждого photo берем id (если это объект, иначе берем как есть)
+        updated_photos = []
+        for photo in photos:
+            # если photo - это объект, берем photo.id, иначе берем photo (id как строку)
+            photo_id = getattr(photo, 'id', photo)
+            updated_photos.append(f"{os.getenv('BASE_URL')}/api/photos/{str(photo_id)}/")
+
+        representation["photos"] = updated_photos
         return representation
 
     def validate_user_id(self, value):

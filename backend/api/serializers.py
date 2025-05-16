@@ -40,7 +40,7 @@ class StatusSerializer(DocumentSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        timestamp = instance.timestamp
+        timestamp = instance.get('timestamp')
         if timezone.is_naive(instance.timestamp):
             timestamp = timezone.make_aware(timestamp, timezone.utc)
 

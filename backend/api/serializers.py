@@ -40,20 +40,40 @@ class StatusSerializer(DocumentSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        timestamp = instance.get('timestamp')
-        if timezone.is_naive(instance.timestamp):
+        # Универсальное получение timestamp
+        if isinstance(instance, dict):
+            timestamp = instance.get('timestamp')
+        else:
+            timestamp = getattr(instance, 'timestamp', None)
+
+        if timestamp and timezone.is_naive(timestamp):
             timestamp = timezone.make_aware(timestamp, timezone.utc)
 
-        local_ts = timezone.localtime(timestamp)
-        representation['timestamp'] = local_ts.isoformat()
+        if timestamp:
+            local_ts = timezone.localtime(timestamp)
+            representation['timestamp'] = local_ts.isoformat()
 
+        # Универсальное получение date для DateOfferStatus
+        # Проверяем тип instance или поле type в dict
+        is_date_offer_status = False
         if isinstance(instance, DateOfferStatus):
-            date = instance.date
-            if timezone.is_naive(instance.date):
+            is_date_offer_status = True
+        elif isinstance(instance, dict):
+            # В вашем коде type - строка, проверяем её
+            is_date_offer_status = instance.get('type') == 'date_offer_status'
+
+        if is_date_offer_status:
+            if isinstance(instance, dict):
+                date = instance.get('date')
+            else:
+                date = getattr(instance, 'date', None)
+
+            if date and timezone.is_naive(date):
                 date = timezone.make_aware(date, timezone.utc)
 
-            local_date = timezone.localtime(date)
-            representation['date'] = local_date.isoformat()
+            if date:
+                local_date = timezone.localtime(date)
+                representation['date'] = local_date.isoformat()
 
         return representation
 

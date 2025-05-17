@@ -14,6 +14,7 @@ import { ProductRequest } from '@src/api';
 import { selectProducts, updateProducts } from '@src/store/ProductsSlice';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { categoryToRussian } from '@src/lib/RussianConverters';
+import { Link } from 'react-router-dom';
 
 const groupableAttributes: Array<keyof ProductRequest | 'timestamp'> = [
   'category',
@@ -54,8 +55,8 @@ export default function StatisticsPage() {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
 
-  const [xAttr, setXAttr] = useState<keyof ProductRequest>('category');
-  const [yAttr, setYAttr] = useState<keyof ProductRequest>('address');
+  const [xAttr, setXAttr] = useState<keyof ProductRequest | 'timestamp'>('category');
+  const [yAttr, setYAttr] = useState<keyof ProductRequest | 'timestamp'>('address');
 
   const filteredData = useMemo(() => {
     if (!productsData) return [];
@@ -120,7 +121,12 @@ export default function StatisticsPage() {
       yLabels = Array.from(yLabelsSet);
       series = yLabels.map((yLabel) => ({
         data: xLabels.map((xLabel) => groupMap.get(xLabel)?.get(yLabel) ?? 0),
-        label: yAttr === 'category' ? categoryToRussian(yLabel as any) ?? yLabel : yLabel,
+        label:
+          yAttr === 'category'
+            ? categoryToRussian(yLabel as any) ?? yLabel
+            : yAttr === 'timestamp'
+              ? yLabel
+              : yLabel,
       }));
     }
 
@@ -132,6 +138,9 @@ export default function StatisticsPage() {
 
   return (
     <Box p={4}>
+      <Button component={Link} to="/" variant="contained" sx={{ mb: 2 }}>
+        В главное меню
+      </Button>
       <Typography variant="h5" gutterBottom>
         Статистика по заявкам
       </Typography>

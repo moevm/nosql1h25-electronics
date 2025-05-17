@@ -77,7 +77,65 @@ export default function StatisticsPage() {
     });
   }, [productsData, filters, dateFrom, dateTo]);
 
+  function buildHistogram(data: any[], attr: keyof ProductRequest, binCount = 10) {
+    const values = data.map(item => Number(item[attr])).filter(x => !isNaN(x));
+    if (values.length === 0) return { bins: [], counts: [] };
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    if (min === max) {
+      return { bins: [`${min}`], counts: [values.length] };
+    }
+    const step = (max - min) / binCount;
+    const bins: string[] = [];
+    const counts: number[] = Array(binCount).fill(0);
+    for (let i = 0; i < binCount; ++i) {
+      const binMin = min + i * step;
+      const binMax = min + (i + 1) * step;
+      bins.push(`${binMin.toFixed(0)} - ${binMax.toFixed(0)}`);
+    }
+    values.forEach(val => {
+      let idx = Math.floor((val - min) / step);
+      if (idx >= binCount) idx = binCount - 1;
+      counts[idx]++;
+    });
+    return { bins, counts };
+  }
+
   const chartData = useMemo(() => {
+    if (xAttr === yAttr) {
+      if (xAttr === 'price') {
+        const hist = buildHistogram(filteredData, 'price', 10);
+        return {
+          xLabels: hist.bins,
+          series: [{ data: hist.counts, label: 'Количество' }],
+        };
+      }
+      const counts: Record<string, number> = {};
+      filteredData.forEach(item => {
+        let val: string;
+        if (xAttr === 'category') {
+          val = categoryToRussian(String(item[xAttr]) as any) ?? String(item[xAttr] ?? 'null');
+        } else if (xAttr === 'timestamp') {
+          if (Array.isArray(item.statuses) && item.statuses.length > 0) {
+            val = String(item.statuses[0].timestamp).slice(0, 10);
+          } else {
+            val = 'нет даты';
+          }
+        } else {
+          val = String(item[xAttr] ?? 'null');
+        }
+        counts[val] = (counts[val] ?? 0) + 1;
+      });
+      const xLabels = Object.keys(counts);
+      return {
+        xLabels,
+        series: [{
+          data: xLabels.map(x => counts[x]),
+          label: 'Количество',
+        }],
+      };
+    }
+
     const groupMap = new Map<string, Map<string, number>>();
 
     filteredData.forEach((item) => {
@@ -241,7 +299,13 @@ export default function StatisticsPage() {
             onChange={e => setXAttr(e.target.value as keyof ProductRequest | 'timestamp')}
           >
             {groupableAttributes.map(attr => (
-              <MenuItem key={attr} value={attr}>{attrToRussian[attr] ?? attr}</MenuItem>
+              <MenuItem
+                key={attr}
+                value={attr}
+                disabled={attr === yAttr}
+              >
+                {attrToRussian[attr] ?? attr}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -253,7 +317,13 @@ export default function StatisticsPage() {
             onChange={e => setYAttr(e.target.value as keyof ProductRequest | 'timestamp')}
           >
             {groupableAttributes.map(attr => (
-              <MenuItem key={attr} value={attr}>{attrToRussian[attr] ?? attr}</MenuItem>
+              <MenuItem
+                key={attr}
+                value={attr}
+                disabled={attr === xAttr}
+              >
+                {attrToRussian[attr] ?? attr}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>

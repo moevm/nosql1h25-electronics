@@ -23,7 +23,6 @@ const groupableAttributes: Array<keyof ProductRequest> = [
   'title',
 ];
 
-// Русские названия для атрибутов
 const attrToRussian: Record<string, string> = {
   category: 'Категория',
   address: 'Адрес',

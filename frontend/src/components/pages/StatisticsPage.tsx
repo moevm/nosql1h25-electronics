@@ -8,6 +8,7 @@ import {
   FormControl,
   Typography,
   Button,
+  Autocomplete,
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { ProductRequest } from '@src/api';
@@ -223,32 +224,40 @@ export default function StatisticsPage() {
             ))}
           </Select>
         </FormControl>
-        <FormControl size="small" style={{ minWidth: 140 }}>
-          <InputLabel>{attrToRussian['address']}</InputLabel>
-          <Select
-            value={filters.address}
-            label={attrToRussian['address']}
-            onChange={e => setFilters(f => ({ ...f, address: e.target.value }))}
-          >
-            <MenuItem value="">Все</MenuItem>
-            {unique('address').map(val => (
-              <MenuItem key={val} value={val}>{val}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" style={{ minWidth: 140 }}>
-          <InputLabel>{attrToRussian['user_id']}</InputLabel>
-          <Select
-            value={filters.user_id}
-            label={attrToRussian['user_id']}
-            onChange={e => setFilters(f => ({ ...f, user_id: e.target.value }))}
-          >
-            <MenuItem value="">Все</MenuItem>
-            {unique('user_id').map(val => (
-              <MenuItem key={val} value={val}>{val}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Autocomplete
+          options={unique('address')}
+          value={filters.address}
+          onInputChange={(_, newValue) => setFilters(f => ({ ...f, address: newValue }))}
+          onChange={(_, newValue) => setFilters(f => ({ ...f, address: newValue ?? '' }))}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={attrToRussian['address']}
+              size="small"
+              placeholder="Поиск или выберите"
+            />
+          )}
+          freeSolo
+          clearOnEscape
+          sx={{ minWidth: 280, maxWidth: 400 }}
+        />
+        <Autocomplete
+          options={unique('user_id')}
+          value={filters.user_id}
+          onInputChange={(_, newValue) => setFilters(f => ({ ...f, user_id: newValue }))}
+          onChange={(_, newValue) => setFilters(f => ({ ...f, user_id: newValue ?? '' }))}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={attrToRussian['user_id']}
+              size="small"
+              placeholder="Поиск или выберите"
+            />
+          )}
+          freeSolo
+          clearOnEscape
+          sx={{ minWidth: 250, maxWidth: 300 }}
+        />
         <TextField
           label="Мин. цена"
           type="number"

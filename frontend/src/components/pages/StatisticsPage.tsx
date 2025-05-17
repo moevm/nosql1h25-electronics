@@ -15,12 +15,13 @@ import { selectProducts, updateProducts } from '@src/store/ProductsSlice';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { categoryToRussian } from '@src/lib/RussianConverters';
 
-const groupableAttributes: Array<keyof ProductRequest> = [
+const groupableAttributes: Array<keyof ProductRequest | 'timestamp'> = [
   'category',
   'address',
   'user_id',
   'price',
   'title',
+  'timestamp',
 ];
 
 const attrToRussian: Record<string, string> = {
@@ -30,6 +31,7 @@ const attrToRussian: Record<string, string> = {
   price: 'Цена',
   title: 'Название',
   description: 'Описание',
+  timestamp: 'Дата создания',
 };
 
 export default function StatisticsPage() {
@@ -49,6 +51,9 @@ export default function StatisticsPage() {
     maxPrice: '',
   });
 
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+
   const [xAttr, setXAttr] = useState<keyof ProductRequest>('category');
   const [yAttr, setYAttr] = useState<keyof ProductRequest>('address');
 
@@ -61,16 +66,33 @@ export default function StatisticsPage() {
       const userOk = filters.user_id === '' || String(item.user_id) === filters.user_id;
       const minPriceOk = filters.minPrice === '' || item.price >= Number(filters.minPrice);
       const maxPriceOk = filters.maxPrice === '' || item.price <= Number(filters.maxPrice);
-      return titleOk && categoryOk && addressOk && userOk && minPriceOk && maxPriceOk;
+      const firstTimestamp = Array.isArray(item.statuses) && item.statuses.length > 0
+        ? item.statuses[0].timestamp
+        : undefined;
+      const dateOk =
+        (!dateFrom || (firstTimestamp && firstTimestamp >= dateFrom)) &&
+        (!dateTo || (firstTimestamp && firstTimestamp <= dateTo));
+      return titleOk && categoryOk && addressOk && userOk && minPriceOk && maxPriceOk && dateOk;
     });
-  }, [productsData, filters]);
+  }, [productsData, filters, dateFrom, dateTo]);
 
   const chartData = useMemo(() => {
     const groupMap = new Map<string, Map<string, number>>();
 
     filteredData.forEach((item) => {
-      const xVal = String(item[xAttr] ?? 'null');
-      const yVal = String(item[yAttr] ?? 'null');
+      const getAxisValue = (attr: keyof ProductRequest | 'timestamp') => {
+        if (attr === 'timestamp') {
+          if (Array.isArray(item.statuses) && item.statuses.length > 0) {
+            return String(item.statuses[0].timestamp).slice(0, 10);
+          }
+          return 'нет даты';
+        }
+        return String(item[attr] ?? 'null');
+      };
+
+      const xVal = getAxisValue(xAttr);
+      const yVal = getAxisValue(yAttr);
+
       if (!groupMap.has(xVal)) groupMap.set(xVal, new Map());
       const yMap = groupMap.get(xVal)!;
       if (yAttr === 'price') {
@@ -98,7 +120,7 @@ export default function StatisticsPage() {
       yLabels = Array.from(yLabelsSet);
       series = yLabels.map((yLabel) => ({
         data: xLabels.map((xLabel) => groupMap.get(xLabel)?.get(yLabel) ?? 0),
-        label: yLabel,
+        label: yAttr === 'category' ? categoryToRussian(yLabel as any) ?? yLabel : yLabel,
       }));
     }
 
@@ -174,9 +196,29 @@ export default function StatisticsPage() {
           onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))}
           size="small"
         />
-        <Button variant="outlined" onClick={() => setFilters({
-          title: '', category: '', address: '', user_id: '', minPrice: '', maxPrice: ''
-        })}>
+        <TextField
+          label="Мин. дата"
+          type="date"
+          value={dateFrom}
+          onChange={e => setDateFrom(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          label="Макс. дата"
+          type="date"
+          value={dateTo}
+          onChange={e => setDateTo(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+        />
+        <Button variant="outlined" onClick={() => {
+          setFilters({
+            title: '', category: '', address: '', user_id: '', minPrice: '', maxPrice: ''
+          });
+          setDateFrom('');
+          setDateTo('');
+        }}>
           Сбросить фильтры
         </Button>
       </Box>
@@ -187,7 +229,7 @@ export default function StatisticsPage() {
           <Select
             value={xAttr}
             label="Ось X"
-            onChange={e => setXAttr(e.target.value as keyof ProductRequest)}
+            onChange={e => setXAttr(e.target.value as keyof ProductRequest | 'timestamp')}
           >
             {groupableAttributes.map(attr => (
               <MenuItem key={attr} value={attr}>{attrToRussian[attr] ?? attr}</MenuItem>
@@ -199,7 +241,7 @@ export default function StatisticsPage() {
           <Select
             value={yAttr}
             label="Ось Y"
-            onChange={e => setYAttr(e.target.value as keyof ProductRequest)}
+            onChange={e => setYAttr(e.target.value as keyof ProductRequest | 'timestamp')}
           >
             {groupableAttributes.map(attr => (
               <MenuItem key={attr} value={attr}>{attrToRussian[attr] ?? attr}</MenuItem>

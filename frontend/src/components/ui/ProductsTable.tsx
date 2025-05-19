@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ErrorOutline } from '@mui/icons-material';
+import React from 'react';
 
 interface ProductsTableRowProps {
   product: ProductRequest;
@@ -24,7 +25,7 @@ const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
   return (
     <TableRow 
       hover 
-      sx={{ cursor: 'pointer' }} 
+      sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }} 
       onClick={() => navigate(`/product/${product.id}`)} 
     >
       <TableCell>
@@ -78,6 +79,42 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
     });
   }, [getData, pageSize, page]);
 
+  const emptyRows = pageSize - (products?.length ?? 0);
+  const fillHeight = emptyRows * 53; // actual size of a row
+
+  let tableContent: React.ReactNode;
+  if (products && products.length > 0) {
+    tableContent = (
+      <>
+        { products.map(product => <ProductsTableRow key={product.id} product={product} />) }
+        { (fillHeight > 0) && 
+          <TableRow sx={{ height: fillHeight }}>
+            <TableCell colSpan={5} />
+          </TableRow>
+        }
+      </>
+    );
+  } else {
+    tableContent = (
+      <TableRow>
+        <TableCell colSpan={5}>
+          <Box sx={{ 
+            height: fillHeight, 
+            display: 'flex',
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            }}
+          >
+            { (products)
+            ? <Typography variant='h4'>Пусто</Typography> 
+            : <CircularProgress size={25} />
+            }
+          </Box>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
   return (
     <TableContainer>
       <Table>
@@ -91,25 +128,7 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          { 
-            (products && products.length > 0)
-            ? products.map(product => <ProductsTableRow key={product.id} product={product} />) 
-            : (products)
-            ? <TableRow>
-              <TableCell colSpan={5}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Typography variant='h4'>Пусто</Typography> 
-                </Box>
-              </TableCell>
-            </TableRow>
-            : <TableRow>
-              <TableCell colSpan={5}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <CircularProgress size={25} />
-                </Box>
-              </TableCell>
-            </TableRow>
-          } 
+          { tableContent }
           <TableRow>
             <TablePagination
               rowsPerPage={pageSize}

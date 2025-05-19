@@ -81,6 +81,7 @@ export const ProductsPage = () => {
     }) as unknown) as ProductRequestListResponse;
   }, [clientFilters]);
 
+  
   const onClientSubmit = (data: ClientFiltersFormInputs) => {
     localStorage.setItem('clientFilters', JSON.stringify(data));
     setClientFilters(data);

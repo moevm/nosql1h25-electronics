@@ -233,32 +233,38 @@ class RequestViewSet(ModelViewSet):
 
         try:
             amount = request.query_params.get('amount')
-            offset = request.query_params.get('offset')
-
-            amount = int(amount) if amount is not None else 10
-            offset = int(offset) if offset is not None else 0
-
+            # если что-то не так, то amount = None чтобы все вывести
+            amount = int(amount) if amount is not None else None
             if amount <= 0:
                 raise ValueError("amount должен быть строго положительным числом")
+        except (ValueError, TypeError) as e:
+            amount = None
+
+        try:
+            offset = request.query_params.get('offset')
+
+            # в случае чего просто выводим с начала списка
+            offset = int(offset) if offset is not None else 0
+
             if offset < 0:
                 raise ValueError("offset не может быть отрицательным числом")
-
         except (ValueError, TypeError) as e:
-            # Здесь можно задать значения по умолчанию или вернуть ошибку клиенту
-            amount = 10
             offset = 0
+
         # Общее количество объектов до среза
         total_count = queryset.count()
 
         # Применяем пагинацию
-        paginated_queryset = queryset.skip(offset).limit(amount)
+        paginated_queryset = queryset.skip(offset)
+        if amount is not None:
+            paginated_queryset = paginated_queryset.limit(amount)
 
-        serializer = ProductRequestSerializer(paginated_queryset, many=True)
-        response_data = {
-            "amount": total_count,
-            "requests": serializer.data
-        }
-        response_serializer = ProductRequestListResponseSerializer(response_data)
+        response_serializer = ProductRequestListResponseSerializer(
+            {
+                "amount": total_count,
+                "requests": paginated_queryset
+            }
+        )
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(

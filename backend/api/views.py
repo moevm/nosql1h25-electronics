@@ -1,6 +1,5 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
-from drf_spectacular.types import OpenApiTypes
 from authapp.serializers import ErrorResponseSerializer, UserResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
@@ -8,24 +7,14 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from django.conf import settings
 from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
-from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer, ProductRequestListResponseSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
 import base64
-import zoneinfo
-
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from rest_framework import serializers
 
 
-
-
-class ProductRequestListResponseSerializer(serializers.Serializer):
-    amount = serializers.IntegerField()
-    requests = ProductRequestSerializer(many=True)
 
 
 class RequestViewSet(ModelViewSet):
@@ -126,7 +115,8 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="sort",
                              description="Сортировка записей (title, description, address, category, fullname, last_update)",
                              required=False, type=str),
-            OpenApiParameter(name="page", description="Номер страницы для пагинации", required=False, type=int)
+            OpenApiParameter(name="amount", description="Количество записей для пагинации", required=False, type=int),
+            OpenApiParameter(name="offset", description="Смещение для пагинации", required=False, type=int)
         ],
         responses={
             200: ProductRequestListResponseSerializer(many=True),
@@ -241,19 +231,31 @@ class RequestViewSet(ModelViewSet):
             elif sort == "last_update":
                 queryset = sorted(queryset, key=lambda x: x.statuses[-1]["timestamp"], reverse=True)
 
-        paginator = Paginator(queryset, 10)  # 10 объектов на страницу
-        page = request.GET.get('page')
-
         try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
+            amount = request.query_params.get('amount')
+            offset = request.query_params.get('offset')
 
-        serializer = ProductRequestSerializer(products.object_list, many=True)
+            amount = int(amount) if amount is not None else 10
+            offset = int(offset) if offset is not None else 0
+
+            if amount <= 0:
+                raise ValueError("amount должен быть строго положительным числом")
+            if offset < 0:
+                raise ValueError("offset не может быть отрицательным числом")
+
+        except (ValueError, TypeError) as e:
+            # Здесь можно задать значения по умолчанию или вернуть ошибку клиенту
+            amount = 10
+            offset = 0
+        # Общее количество объектов до среза
+        total_count = queryset.count()
+
+        # Применяем пагинацию
+        paginated_queryset = queryset.skip(offset).limit(amount)
+
+        serializer = ProductRequestSerializer(paginated_queryset, many=True)
         response_data = {
-            "amount": paginator.count,
+            "amount": total_count,
             "requests": serializer.data
         }
         response_serializer = ProductRequestListResponseSerializer(response_data)

@@ -17,6 +17,8 @@ class PhotoResponseSerializer(DocumentSerializer):
         model = Photo
         fields = ['id']
 
+
+
 class StatusSerializer(DocumentSerializer):
     type = serializers.ChoiceField(
         choices=STATUS_TYPES,
@@ -235,3 +237,9 @@ class ProductRequestSerializer(DocumentSerializer):
         if not isinstance(value, str):
             raise serializers.ValidationError("Address must be a string.")
         return value
+
+
+class ProductRequestListResponseSerializer(serializers.Serializer):
+    amount = serializers.IntegerField()
+    requests = ProductRequestSerializer(many=True)
+

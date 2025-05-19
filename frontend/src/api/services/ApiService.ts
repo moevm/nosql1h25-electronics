@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { PhotoResponse } from '../models/PhotoResponse';
 import type { ProductRequest } from '../models/ProductRequest';
+import type { ProductRequestListResponse } from '../models/ProductRequestListResponse';
 import type { Status } from '../models/Status';
 import type { UserResponse } from '../models/UserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -90,21 +91,27 @@ export class ApiService {
     /**
      * Получить список заявок
      * Возвращает список заявок с возможностью фильтрации по разным критериям.
-     * @returns ProductRequest
+     * @returns ProductRequestListResponse
      * @throws ApiError
      */
     public static apiRequestsList({
+        amount,
         author,
         category,
         description,
         from,
         me,
+        offset,
         ordering,
         sort,
         status,
         title,
         to,
     }: {
+        /**
+         * Количество записей для пагинации
+         */
+        amount?: number,
         /**
          * Фильтрация по автору заявки
          */
@@ -126,6 +133,10 @@ export class ApiService {
          */
         me?: boolean,
         /**
+         * Смещение для пагинации
+         */
+        offset?: number,
+        /**
          * Which field to use when ordering the results.
          */
         ordering?: string,
@@ -145,16 +156,18 @@ export class ApiService {
          * Фильтрация по дате окончания (формат YYYY-MM-DD)
          */
         to?: string,
-    }): CancelablePromise<Array<ProductRequest>> {
+    }): CancelablePromise<Array<ProductRequestListResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/requests/',
             query: {
+                'amount': amount,
                 'author': author,
                 'category': category,
                 'description': description,
                 'from': from,
                 'me': me,
+                'offset': offset,
                 'ordering': ordering,
                 'sort': sort,
                 'status': status,

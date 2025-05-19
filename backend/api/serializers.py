@@ -2,21 +2,22 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
+from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, \
+    DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
 from django.utils import timezone
-from datetime import datetime
+
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
         model = Photo
         fields = ['id', 'data']
 
+
 class PhotoResponseSerializer(DocumentSerializer):
     class Meta:
         model = Photo
         fields = ['id']
-
 
 
 class StatusSerializer(DocumentSerializer):
@@ -43,57 +44,26 @@ class StatusSerializer(DocumentSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        # timestamp
-        if isinstance(instance, dict):
-            timestamp = instance.get('timestamp')
-        else:
-            timestamp = getattr(instance, 'timestamp', None)
+        timestamp = instance.timestamp
+        if timezone.is_naive(instance.timestamp):
+            timestamp = timezone.make_aware(timestamp, timezone.utc)
 
-        if isinstance(timestamp, str):
-            try:
-                timestamp = datetime.fromisoformat(timestamp)
-            except Exception:
-                timestamp = None
+        local_ts = timezone.localtime(timestamp)
+        representation['timestamp'] = local_ts.isoformat()
 
-        if timestamp and isinstance(timestamp, datetime):
-            if timezone.is_naive(timestamp):
-                timestamp = timezone.make_aware(timestamp, timezone.utc)
-            local_ts = timezone.localtime(timestamp)
-            representation['timestamp'] = local_ts.isoformat()
-        elif timestamp:
-            representation['timestamp'] = str(timestamp)
-
-        # date для DateOfferStatus
-        is_date_offer_status = False
         if isinstance(instance, DateOfferStatus):
-            is_date_offer_status = True
-        elif isinstance(instance, dict):
-            is_date_offer_status = instance.get('type') == 'date_offer_status'
+            date = instance.date
+            if timezone.is_naive(instance.date):
+                date = timezone.make_aware(date, timezone.utc)
 
-        if is_date_offer_status:
-            if isinstance(instance, dict):
-                date = instance.get('date')
-            else:
-                date = getattr(instance, 'date', None)
-
-            if isinstance(date, str):
-                try:
-                    date = datetime.fromisoformat(date)
-                except Exception:
-                    date = None
-
-            if date and isinstance(date, datetime):
-                if timezone.is_naive(date):
-                    date = timezone.make_aware(date, timezone.utc)
-                local_date = timezone.localtime(date)
-                representation['date'] = local_date.isoformat()
-            elif date:
-                representation['date'] = str(date)
+            local_date = timezone.localtime(date)
+            representation['date'] = local_date.isoformat()
 
         return representation
 
     def validate(self, data):
-        if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:
+        if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(
+                self.REQUIRED_FIELDS.get(data.get('type'))) is None:
             raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'))}")
         return data
 
@@ -121,30 +91,36 @@ class CreatedStatusSerializer(DocumentSerializer):
         model = CreatedStatus
         fields = '__all__'
 
+
 class PriceOfferStatusSerializer(DocumentSerializer):
     class Meta:
         model = PriceOfferStatus
         fields = '__all__'
+
 
 class PriceAcceptStatusSerializer(DocumentSerializer):
     class Meta:
         model = PriceAcceptStatus
         fields = '__all__'
 
+
 class DateOfferStatusSerializer(DocumentSerializer):
     class Meta:
         model = DateOfferStatus
         fields = '__all__'
+
 
 class DateAcceptStatusSerializer(DocumentSerializer):
     class Meta:
         model = DateAcceptStatus
         fields = '__all__'
 
+
 class ClosedStatusSerializer(DocumentSerializer):
     class Meta:
         model = ClosedStatus
         fields = '__all__'
+
 
 class ProductRequestSerializer(DocumentSerializer):
     statuses = StatusSerializer(many=True, read_only=True)
@@ -156,22 +132,13 @@ class ProductRequestSerializer(DocumentSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
+        """Переопределяем метод для исключения _cls из statuses"""
         representation = super().to_representation(instance)
 
-        # Универсальный доступ к photos
-        if isinstance(instance, dict):
-            photos = instance.get('photos', [])
-        else:
-            photos = getattr(instance, 'photos', [])
+        if "photos" in representation:
+            updated_photos = [f"{os.getenv('BASE_URL')}/api/photos/{str(photo.id)}/" for photo in instance.photos]
+            representation["photos"] = updated_photos
 
-        # Для каждого photo берем id (если это объект, иначе берем как есть)
-        updated_photos = []
-        for photo in photos:
-            # если photo - это объект, берем photo.id, иначе берем photo (id как строку)
-            photo_id = getattr(photo, 'id', photo)
-            updated_photos.append(f"{os.getenv('BASE_URL')}/api/photos/{str(photo_id)}/")
-
-        representation["photos"] = updated_photos
         return representation
 
     def validate_user_id(self, value):
@@ -242,4 +209,3 @@ class ProductRequestSerializer(DocumentSerializer):
 class ProductRequestListResponseSerializer(serializers.Serializer):
     amount = serializers.IntegerField()
     requests = ProductRequestSerializer(many=True)
-

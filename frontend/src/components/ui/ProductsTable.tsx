@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Typography } from '@mui/material';
 import { categoryToRussian, statusTypeToRussian } from '@src/lib/RussianConverters';
-import { ApiService, ProductRequest } from '@src/api';
+import { ApiService, ProductRequest, ProductRequestListResponse } from '@src/api';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -46,14 +46,9 @@ const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
   );
 };
 
-interface ProductsData {
-  products: ProductRequest[];
-  total: number;
-}
-
 export interface ProductsTableProps {
   pageSize: number;
-  getData(page: number, pageSize: number): Promise<ProductsData>;
+  getData(page: number, pageSize: number): Promise<ProductRequestListResponse>;
 }
 
 export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
@@ -73,9 +68,9 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
     setProducts(null);
 
     getData(page, pageSize)
-    .then(({ total, products }) => {
-      setTotal(total);
-      setProducts(products);
+    .then(({ amount, requests }) => {
+      setTotal(amount);
+      setProducts(requests);
     })
     .catch(e => {
       setProducts([]);

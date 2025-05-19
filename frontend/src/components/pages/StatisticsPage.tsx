@@ -292,8 +292,6 @@ export default function StatisticsPage() {
           options={userIdOptions}
           getOptionLabel={option => typeof option === 'string' ? option : option.fullname}
           value={userIdOptions.find(opt => opt.id === filters.user_id) || null}
-          onInputChange={(_, newValue) => {
-          }}
           onChange={(_, newValue) => setFilters(f => ({ ...f, user_id: newValue?.id ?? '' }))}
           renderInput={(params) => (
             <TextField

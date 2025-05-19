@@ -11,16 +11,16 @@ import {
   Autocomplete,
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { ProductRequest } from '@src/api';
-import { selectProducts, updateProducts } from '@src/store/ProductsSlice';
+import { ApiService, ProductRequest } from '@src/api';
 import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { categoryToRussian } from '@src/lib/RussianConverters';
 import { Link } from 'react-router-dom';
+import { useQuery, useQueries } from '@tanstack/react-query';
 
-const groupableAttributes: Array<keyof ProductRequest | 'timestamp'> = [
+const groupableAttributes: Array<keyof ProductRequest | 'timestamp' | 'user_fullname'> = [
   'category',
   'address',
-  'user_id',
+  'user_fullname',
   'price',
   'title',
   'timestamp',
@@ -29,7 +29,7 @@ const groupableAttributes: Array<keyof ProductRequest | 'timestamp'> = [
 const attrToRussian: Record<string, string> = {
   category: 'Категория',
   address: 'Адрес',
-  user_id: 'User ID',
+  user_fullname: 'ФИО пользователя',
   price: 'Цена',
   title: 'Название',
   description: 'Описание',
@@ -37,11 +37,14 @@ const attrToRussian: Record<string, string> = {
 };
 
 export default function StatisticsPage() {
-  const productsData = useAppSelector(selectProducts);
-  const dispatch = useAppDispatch();
+  const [productsData, setProductsData] = useState<ProductRequest[] | null>(null);
 
+  const fetchData = async () => {
+    const data = await ApiService.apiRequestsList({});
+    setProductsData(data);
+  };
   useEffect(() => {
-    dispatch(updateProducts(null));
+    fetchData();
   }, []);
 
   const [filters, setFilters] = useState({
@@ -56,8 +59,38 @@ export default function StatisticsPage() {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
 
-  const [xAttr, setXAttr] = useState<keyof ProductRequest | 'timestamp'>('category');
-  const [yAttr, setYAttr] = useState<keyof ProductRequest | 'timestamp'>('address');
+  const [xAttr, setXAttr] = useState<keyof ProductRequest | 'timestamp' | 'user_fullname'>('category');
+  const [yAttr, setYAttr] = useState<keyof ProductRequest | 'timestamp' | 'user_fullname'>('address');
+
+  const userIds = useMemo(() => {
+    if (!productsData) return [];
+    return Array.from(new Set(productsData.map(p => String(p.user_id)))).filter(Boolean);
+  }, [productsData]);
+
+  const userQueries = useQueries({
+    queries: userIds.map(user_id => ({
+      queryKey: ['user', user_id, 'fullname'],
+      queryFn: () => ApiService.apiUsersRetrieve({ id: user_id }).then(user => user.fullname),
+      staleTime: 5 * 60 * 1000,
+      enabled: !!user_id,
+    })),
+  });
+
+  const usersList = useMemo(() => {
+    const map: Record<string, string> = {};
+    userIds.forEach((id, idx) => {
+      const q = userQueries[idx];
+      if (q && q.data) map[id] = q.data;
+    });
+    return map;
+  }, [userIds, userQueries]);
+
+  const userIdOptions = useMemo(() => {
+    return userIds.map(id => ({
+      id,
+      fullname: usersList[id] || id,
+    }));
+  }, [userIds, usersList]);
 
   const filteredData = useMemo(() => {
     if (!productsData) return [];
@@ -103,6 +136,19 @@ export default function StatisticsPage() {
   }
 
   const chartData = useMemo(() => {
+    const getAxisValue = (item: ProductRequest, attr: keyof ProductRequest | 'timestamp' | 'user_fullname') => {
+      if (attr === 'timestamp') {
+        if (Array.isArray(item.statuses) && item.statuses.length > 0) {
+          return String(item.statuses[0].timestamp).slice(0, 10);
+        }
+        return 'нет даты';
+      }
+      if (attr === 'user_fullname') {
+        return usersList?.[String(item.user_id)] || String(item.user_id);
+      }
+      return String(item[attr] ?? 'null');
+    };
+
     if (xAttr === yAttr) {
       if (xAttr === 'price') {
         const hist = buildHistogram(filteredData, 'price', 10);
@@ -122,6 +168,8 @@ export default function StatisticsPage() {
           } else {
             val = 'нет даты';
           }
+        } else if (xAttr === 'user_fullname') {
+          val = usersList?.[String(item.user_id)] || String(item.user_id);
         } else {
           val = String(item[xAttr] ?? 'null');
         }
@@ -140,18 +188,8 @@ export default function StatisticsPage() {
     const groupMap = new Map<string, Map<string, number>>();
 
     filteredData.forEach((item) => {
-      const getAxisValue = (attr: keyof ProductRequest | 'timestamp') => {
-        if (attr === 'timestamp') {
-          if (Array.isArray(item.statuses) && item.statuses.length > 0) {
-            return String(item.statuses[0].timestamp).slice(0, 10);
-          }
-          return 'нет даты';
-        }
-        return String(item[attr] ?? 'null');
-      };
-
-      const xVal = getAxisValue(xAttr);
-      const yVal = getAxisValue(yAttr);
+      const xVal = getAxisValue(item, xAttr);
+      const yVal = getAxisValue(item, yAttr);
 
       if (!groupMap.has(xVal)) groupMap.set(xVal, new Map());
       const yMap = groupMap.get(xVal)!;
@@ -185,12 +223,18 @@ export default function StatisticsPage() {
             ? categoryToRussian(yLabel as any) ?? yLabel
             : yAttr === 'timestamp'
               ? yLabel
-              : yLabel,
+              : yAttr === 'user_fullname'
+                ? yLabel
+                : yLabel,
       }));
     }
 
     return { xLabels, series };
-  }, [filteredData, xAttr, yAttr]);
+  }, [filteredData, xAttr, yAttr, usersList]);
+
+  const userFullnameValue = filters.user_id
+    ? usersList?.[filters.user_id] || ''
+    : '';
 
   const unique = (attr: keyof ProductRequest) =>
     Array.from(new Set((productsData ?? []).map((item) => String(item[attr] ?? '')))).filter(Boolean);
@@ -242,19 +286,24 @@ export default function StatisticsPage() {
           sx={{ minWidth: 280, maxWidth: 400 }}
         />
         <Autocomplete
-          options={unique('user_id')}
-          value={filters.user_id}
-          onInputChange={(_, newValue) => setFilters(f => ({ ...f, user_id: newValue }))}
-          onChange={(_, newValue) => setFilters(f => ({ ...f, user_id: newValue ?? '' }))}
+          options={userIdOptions}
+          getOptionLabel={option => typeof option === 'string' ? option : option.fullname}
+          value={userIdOptions.find(opt => opt.id === filters.user_id) || null}
+          onInputChange={(_, newValue) => {
+          }}
+          onChange={(_, newValue) => setFilters(f => ({ ...f, user_id: newValue?.id ?? '' }))}
           renderInput={(params) => (
             <TextField
               {...params}
-              label={attrToRussian['user_id']}
+              label={attrToRussian['user_fullname']}
               size="small"
               placeholder="Поиск или выберите"
             />
           )}
-          freeSolo
+          isOptionEqualToValue={(option, value) => {
+            if (!option || !value) return false;
+            return option.id === value.id;
+          }}
           clearOnEscape
           sx={{ minWidth: 250, maxWidth: 300 }}
         />
@@ -305,7 +354,7 @@ export default function StatisticsPage() {
           <Select
             value={xAttr}
             label="Ось X"
-            onChange={e => setXAttr(e.target.value as keyof ProductRequest | 'timestamp')}
+            onChange={e => setXAttr(e.target.value as keyof ProductRequest | 'timestamp' | 'user_fullname')}
           >
             {groupableAttributes.map(attr => (
               <MenuItem
@@ -323,7 +372,7 @@ export default function StatisticsPage() {
           <Select
             value={yAttr}
             label="Ось Y"
-            onChange={e => setYAttr(e.target.value as keyof ProductRequest | 'timestamp')}
+            onChange={e => setYAttr(e.target.value as keyof ProductRequest | 'timestamp' | 'user_fullname')}
           >
             {groupableAttributes.map(attr => (
               <MenuItem

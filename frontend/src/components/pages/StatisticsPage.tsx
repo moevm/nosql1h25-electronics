@@ -146,6 +146,9 @@ export default function StatisticsPage() {
       if (attr === 'user_fullname') {
         return usersList?.[String(item.user_id)] || String(item.user_id);
       }
+      if (attr === 'category') {
+        return categoryToRussian(item.category) ?? String(item.category ?? 'null');
+      }
       return String(item[attr] ?? 'null');
     };
 
@@ -161,7 +164,7 @@ export default function StatisticsPage() {
       filteredData.forEach(item => {
         let val: string;
         if (xAttr === 'category') {
-          val = categoryToRussian(String(item[xAttr]) as any) ?? String(item[xAttr] ?? 'null');
+          val = categoryToRussian(item.category) ?? String(item.category ?? 'null');
         } else if (xAttr === 'timestamp') {
           if (Array.isArray(item.statuses) && item.statuses.length > 0) {
             val = String(item.statuses[0].timestamp).slice(0, 10);
@@ -220,7 +223,7 @@ export default function StatisticsPage() {
         data: xLabels.map((xLabel) => groupMap.get(xLabel)?.get(yLabel) ?? 0),
         label:
           yAttr === 'category'
-            ? categoryToRussian(yLabel as any) ?? yLabel
+            ? yLabel // уже руссифицировано в getAxisValue
             : yAttr === 'timestamp'
               ? yLabel
               : yAttr === 'user_fullname'

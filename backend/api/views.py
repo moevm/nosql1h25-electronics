@@ -117,7 +117,7 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="offset", description="Смещение для пагинации", required=False, type=int)
         ],
         responses={
-            200: ProductRequestListResponseSerializer(many=True),
+            200: ProductRequestListResponseSerializer,
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,

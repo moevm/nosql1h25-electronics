@@ -94,7 +94,7 @@ export class ApiService {
      * @returns ProductRequestListResponse
      * @throws ApiError
      */
-    public static apiRequestsList({
+    public static apiRequestsRetrieve({
         amount,
         author,
         category,
@@ -102,7 +102,6 @@ export class ApiService {
         from,
         me,
         offset,
-        ordering,
         sort,
         status,
         title,
@@ -137,10 +136,6 @@ export class ApiService {
          */
         offset?: number,
         /**
-         * Which field to use when ordering the results.
-         */
-        ordering?: string,
-        /**
          * Сортировка записей (title, description, address, category, fullname, last_update)
          */
         sort?: string,
@@ -156,7 +151,7 @@ export class ApiService {
          * Фильтрация по дате окончания (формат YYYY-MM-DD)
          */
         to?: string,
-    }): CancelablePromise<Array<ProductRequestListResponse>> {
+    }): CancelablePromise<ProductRequestListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/requests/',
@@ -168,7 +163,6 @@ export class ApiService {
                 'from': from,
                 'me': me,
                 'offset': offset,
-                'ordering': ordering,
                 'sort': sort,
                 'status': status,
                 'title': title,
@@ -200,7 +194,7 @@ export class ApiService {
      * @returns ProductRequest
      * @throws ApiError
      */
-    public static apiRequestsRetrieve({
+    public static apiRequestsRetrieve2({
         id,
     }: {
         id: string,

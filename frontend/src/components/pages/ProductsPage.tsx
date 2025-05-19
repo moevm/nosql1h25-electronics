@@ -34,7 +34,7 @@ export const ProductsPage = () => {
       ...restFilters
     } = adminFilters;
 
-    return (await ApiService.apiRequestsList({
+    return await ApiService.apiRequestsRetrieve({
       from: from?.format('YYYY-MM-DD'),
       to: to?.format('YYYY-MM-DD'),
       status: status === 'any' ? undefined : status,
@@ -43,7 +43,7 @@ export const ProductsPage = () => {
       amount: pageSize,
       offset: page*pageSize,
       ...restFilters,
-    }) as unknown) as ProductRequestListResponse;
+    });
   }, [adminFilters]);
 
   const onAdminSubmit = (data: AdminFiltersFormInputs) => {
@@ -69,7 +69,7 @@ export const ProductsPage = () => {
       ...restFilters
     } = clientFilters;
 
-    return (await ApiService.apiRequestsList({
+    return await ApiService.apiRequestsRetrieve({
       from: from?.format('YYYY-MM-DD'),
       to: to?.format('YYYY-MM-DD'),
       status: status === 'any' ? undefined : status,
@@ -78,10 +78,10 @@ export const ProductsPage = () => {
       amount: pageSize,
       offset: page*pageSize,
       ...restFilters,
-    }) as unknown) as ProductRequestListResponse;
+    });
   }, [clientFilters]);
 
-  
+
   const onClientSubmit = (data: ClientFiltersFormInputs) => {
     localStorage.setItem('clientFilters', JSON.stringify(data));
     setClientFilters(data);

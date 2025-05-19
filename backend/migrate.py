@@ -18,121 +18,112 @@ MONGO_ROOT_PASSWORD = os.getenv('MONGO_ROOT_PASSWORD')
 
 MONGO_ROOT_URI = f"mongodb://{MONGO_ROOT_USERNAME}:{MONGO_ROOT_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/?authSource=admin"
 
+def parse_iso_datetime(dt_str):
+    try:
+        return datetime.fromisoformat(dt_str)
+    except Exception:
+        return dt_str
 
-def convert_objectids(obj):
-    if isinstance(obj, dict):
-        new_obj = {}
-        for k, v in obj.items():
+def convert_document(doc, collection_name=None):
+    """
+    Recursively convert document fields:
+    - _id and *_id fields to ObjectId
+    - ISO date strings to datetime objects
+    - 'data' field from base64 string to bytes
+    - recursively handle nested lists and dicts, including 'statuses' and 'photos'
+    """
+    if isinstance(doc, dict):
+        new_doc = {}
+        for k, v in doc.items():
             if (k == '_id' or k.endswith('_id')) and isinstance(v, str):
                 try:
-                    new_obj[k] = ObjectId(v)
+                    new_doc[k] = ObjectId(v)
                 except Exception:
-                    new_obj[k] = v
-            elif k in ('creation_date', 'edit_date', 'timestamp') and isinstance(v, str):
-                try:
-                    new_obj[k] = datetime.fromisoformat(v.replace('Z', '+00:00'))
-                except Exception:
-                    new_obj[k] = v
+                    new_doc[k] = v
+            elif k in ('creation_date', 'edit_date', 'timestamp', 'date') and isinstance(v, str):
+                new_doc[k] = parse_iso_datetime(v)
             elif k == 'data' and isinstance(v, str):
                 try:
-                    new_obj[k] = base64.b64decode(v)
+                    new_doc[k] = base64.b64decode(v)
                 except Exception:
-                    new_obj[k] = v
+                    new_doc[k] = v
             elif k == 'photos' and isinstance(v, list):
-                photo_objects = []
-                for photo_id in v:
-                    if isinstance(photo_id, str):
+                new_doc[k] = []
+                for item in v:
+                    if isinstance(item, str):
                         try:
-                            photo_objects.append(ObjectId(photo_id))
+                            new_doc[k].append(ObjectId(item))
                         except Exception:
-                            photo_objects.append(photo_id)
+                            new_doc[k].append(item)
                     else:
-                        photo_objects.append(photo_id)
-                new_obj[k] = photo_objects
+                        new_doc[k].append(item)
             elif k == 'statuses' and isinstance(v, list):
-                new_obj[k] = [convert_objectids(item) for item in v]
+                new_doc[k] = [convert_document(item) for item in v]
             else:
-                new_obj[k] = convert_objectids(v)
-        return new_obj
-    elif isinstance(obj, list):
-        new_list = []
-        for item in obj:
-            if isinstance(item, str) and len(item) == 24:
-                try:
-                    new_list.append(ObjectId(item))
-                except Exception:
-                    new_list.append(item)
-            else:
-                new_list.append(convert_objectids(item))
-        return new_list
+                new_doc[k] = convert_document(v)
+        return new_doc
+    elif isinstance(doc, list):
+        return [convert_document(item) for item in doc]
     else:
-        return obj
-
+        return doc
 
 try:
-    # подключаемся рутом чтобы все заполнить и создать
+    # Connect as root user
     client = MongoClient(MONGO_ROOT_URI)
-
-    db_admin = client.admin
-
-    # создание рабочей бд
-    if MONGO_DB_NAME not in client.list_database_names():
-        print(f"Database '{MONGO_DB_NAME}' does not exist. Creating...")
-        db = client[MONGO_DB_NAME]
-    else:
-        db = client[MONGO_DB_NAME]
-
     db = client[MONGO_DB_NAME]
 
-    try:
-        users_info = db.command("usersInfo", {"user": MONGO_USER, "db": MONGO_DB_NAME})
-        users = users_info.get("users", [])
+    # Check if user exists, create if not
+    users_info = db.command("usersInfo", {"user": MONGO_USER, "db": MONGO_DB_NAME})
+    if not users_info.get("users"):
+        print(f"User '{MONGO_USER}' does not exist. Creating...")
+        db.command("createUser", MONGO_USER,
+                   pwd=MONGO_PASSWORD,
+                   roles=[{"role": "readWrite", "db": MONGO_DB_NAME}])
+        print(f"User '{MONGO_USER}' created with readWrite access to '{MONGO_DB_NAME}'.")
+    else:
+        print(f"User '{MONGO_USER}' already exists. Skipping user creation.")
 
-        if not users:
-            print(f"User '{MONGO_USER}' does not exist. Creating...")
-            db.command("createUser", MONGO_USER,
-                       pwd=MONGO_PASSWORD,
-                       roles=[{"role": "readWrite", "db": MONGO_DB_NAME}])
-            print(f"User '{MONGO_USER}' created with readWrite access to '{MONGO_DB_NAME}'.")
-        else:
-            print(f"User '{MONGO_USER}' already exists. Skipping user creation.")
-    except Exception as e:
-        print(f"Error creating or checking user: {e}")
-        raise
-
-    # загрузка данных
+    # Load backup data
     with open("migrations/backup.json", "r") as f:
         backup_data = json.load(f)
 
+    # Check if all collections are empty
     all_empty = True
-    for collection_name in backup_data.keys():
-        if collection_name not in db.list_collection_names():
-            db.create_collection(collection_name)
-        collection = db[collection_name]
-        if collection.count_documents({}) > 0:
+    for coll_name in backup_data.keys():
+        if coll_name not in db.list_collection_names():
+            db.create_collection(coll_name)
+        coll = db[coll_name]
+        if coll.count_documents({}) > 0:
             all_empty = False
-            print(f"Collection {collection_name} is not empty")
+            print(f"Collection '{coll_name}' is not empty. Skipping import.")
             break
 
     if all_empty:
-        print("All collections are empty. Importing data...")
-        for collection_name, data in backup_data.items():
-            collection = db[collection_name]
-            # Рекурсивно преобразуем ObjectId
-            data = convert_objectids(data)
-            if isinstance(data, list):
-                if data:
-                    collection.insert_many(data)
-            elif isinstance(data, dict):
-                collection.insert_one(data)
-            print(f"Data imported into collection '{collection_name}'.")
+        print("All collections are empty. Starting data import...")
+
+        # Import data per collection
+        for coll_name, documents in backup_data.items():
+            coll = db[coll_name]
+
+            if isinstance(documents, dict):
+                documents = [documents]
+
+            # Convert documents recursively
+            converted_docs = [convert_document(doc, coll_name) for doc in documents]
+
+            if converted_docs:
+                coll.insert_many(converted_docs)
+                print(f"Imported {len(converted_docs)} documents into collection '{coll_name}'.")
+            else:
+                print(f"No documents to import into collection '{coll_name}'.")
+
     else:
-        print("Some collections are not empty. Skipping import.")
+        print("Some collections are not empty. Import skipped.")
 
 except KeyError as e:
     print(f"Missing environment variable: {e}")
 except Exception as e:
-    print(f"An error occurred: {e}")
+    print(f"Migration error: {e}")
 finally:
     if 'client' in locals():
         client.close()

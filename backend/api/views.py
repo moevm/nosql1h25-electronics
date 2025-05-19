@@ -15,8 +15,6 @@ import json
 import base64
 
 
-
-
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
     queryset = ProductRequest.objects.all()

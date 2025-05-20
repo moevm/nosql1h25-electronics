@@ -102,7 +102,7 @@ export default function StatisticsPage() {
       const minPriceOk = filters.minPrice === '' || item.price >= Number(filters.minPrice);
       const maxPriceOk = filters.maxPrice === '' || item.price <= Number(filters.maxPrice);
       const firstTimestamp = Array.isArray(item.statuses) && item.statuses.length > 0
-        ? item.statuses[0].timestamp
+        ? item.statuses[item.statuses.length - 1].timestamp
         : undefined;
       const dateOk =
         (!dateFrom || (firstTimestamp && firstTimestamp >= dateFrom)) &&
@@ -139,7 +139,7 @@ export default function StatisticsPage() {
     const getAxisValue = (item: ProductRequest, attr: keyof ProductRequest | 'timestamp' | 'user_fullname') => {
       if (attr === 'timestamp') {
         if (Array.isArray(item.statuses) && item.statuses.length > 0) {
-          return String(item.statuses[0].timestamp).slice(0, 10);
+          return String(item.statuses[item.statuses.length - 1].timestamp).slice(0, 10);
         }
         return 'нет даты';
       }
@@ -323,7 +323,7 @@ export default function StatisticsPage() {
           size="small"
         />
         <TextField
-          label="Мин. дата"
+          label="Мин. дата изменения"
           type="date"
           value={dateFrom}
           onChange={e => setDateFrom(e.target.value)}
@@ -331,7 +331,7 @@ export default function StatisticsPage() {
           InputLabelProps={{ shrink: true }}
         />
         <TextField
-          label="Макс. дата"
+          label="Макс. дата изменения"
           type="date"
           value={dateTo}
           onChange={e => setDateTo(e.target.value)}

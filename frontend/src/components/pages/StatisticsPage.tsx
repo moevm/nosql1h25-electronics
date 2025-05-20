@@ -204,7 +204,7 @@ export default function StatisticsPage() {
         }
         counts[val] = (counts[val] ?? 0) + 1;
       });
-      const xLabels = Object.keys(counts);
+      const xLabels = Object.keys(counts).sort();
       return {
         xLabels,
         series: [{
@@ -229,7 +229,25 @@ export default function StatisticsPage() {
       }
     });
 
-    const xLabels = Array.from(groupMap.keys());
+    let xLabels = Array.from(groupMap.keys());
+    if (xAttr === 'price') {
+      xLabels.sort((a, b) => Number(a) - Number(b));
+    } else if (xAttr === 'timestamp') {
+      xLabels.sort((a, b) => a.localeCompare(b));
+    } else if (xAttr === 'category') {
+      xLabels.sort((a, b) => a.localeCompare(b, 'ru'));
+    } else {
+      if (xLabels.length > 0 && /^\d+/.test(xLabels[0])) {
+        xLabels.sort((a, b) => {
+          const aNum = parseInt(a.split(' ')[0], 10);
+          const bNum = parseInt(b.split(' ')[0], 10);
+          return aNum - bNum;
+        });
+      } else {
+        xLabels.sort((a, b) => a.localeCompare(b, 'ru'));
+      }
+    }
+
     let yLabels: string[];
     let series;
 

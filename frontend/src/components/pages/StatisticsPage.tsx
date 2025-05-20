@@ -36,7 +36,7 @@ const attrToRussian: Record<string, string> = {
   price: 'Цена',
   title: 'Название',
   description: 'Описание',
-  timestamp: 'Дата создания',
+  timestamp: 'Дата изменения',
 };
 
 const statusOptions = [

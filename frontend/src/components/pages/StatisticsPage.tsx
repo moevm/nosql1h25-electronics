@@ -53,8 +53,8 @@ export default function StatisticsPage() {
   const [onlyMy, setOnlyMy] = useState(false);
 
   const fetchData = async (me?: boolean) => {
-    const data = await ApiService.apiRequestsList({ me: me ? true : undefined });
-    setProductsData(data);
+    const { requests } = await ApiService.apiRequestsRetrieve({ me: me ? true : undefined });
+    setProductsData(requests);
   };
 
   useEffect(() => {

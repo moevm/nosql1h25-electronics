@@ -67,7 +67,7 @@ export default function StatisticsPage() {
     minPrice: '',
     maxPrice: '',
     lastStatus: '',
-    closedSuccess: true, // новое поле для чекбокса
+    closedSuccess: true,
   });
 
   const [dateFrom, setDateFrom] = useState<string>('');
@@ -126,7 +126,6 @@ export default function StatisticsPage() {
         : undefined;
       const lastStatus = lastStatusObj?.type;
       const statusOk = !filters.lastStatus || lastStatus === filters.lastStatus;
-      // фильтрация по succes если выбран closed_status
       const closedOk = filters.lastStatus !== 'closed_status'
         || (lastStatus === 'closed_status' && (
           (filters.closedSuccess && lastStatusObj?.success === true) ||
@@ -248,7 +247,7 @@ export default function StatisticsPage() {
         data: xLabels.map((xLabel) => groupMap.get(xLabel)?.get(yLabel) ?? 0),
         label:
           yAttr === 'category'
-            ? yLabel // уже руссифицировано в getAxisValue
+            ? yLabel
             : yAttr === 'timestamp'
               ? yLabel
               : yAttr === 'user_fullname'

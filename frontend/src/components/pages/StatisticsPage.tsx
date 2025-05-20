@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   TextField,
@@ -14,10 +14,9 @@ import {
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { ApiService, ProductRequest } from '@src/api';
-import { useAppDispatch, useAppSelector } from '@src/hooks/ReduxHooks';
 import { categoryToRussian } from '@src/lib/RussianConverters';
 import { Link } from 'react-router-dom';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 
 type chartLabels = keyof ProductRequest | 'timestamp' | 'user_fullname';
 

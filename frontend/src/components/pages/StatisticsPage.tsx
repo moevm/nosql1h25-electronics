@@ -9,6 +9,8 @@ import {
   Typography,
   Button,
   Autocomplete,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { ApiService, ProductRequest } from '@src/api';
@@ -36,6 +38,16 @@ const attrToRussian: Record<string, string> = {
   timestamp: 'Дата создания',
 };
 
+const statusOptions = [
+  { value: '', label: 'Все' },
+  { value: 'created_status', label: 'Создана' },
+  { value: 'price_offer_status', label: 'Предложена цена' },
+  { value: 'price_accept_status', label: 'Цена принята' },
+  { value: 'date_offer_status', label: 'Предложена дата' },
+  { value: 'date_accept_status', label: 'Дата принята' },
+  { value: 'closed_status', label: 'Закрыта' },
+];
+
 export default function StatisticsPage() {
   const [productsData, setProductsData] = useState<ProductRequest[] | null>(null);
 
@@ -54,6 +66,8 @@ export default function StatisticsPage() {
     user_id: '',
     minPrice: '',
     maxPrice: '',
+    lastStatus: '',
+    closedSuccess: true, // новое поле для чекбокса
   });
 
   const [dateFrom, setDateFrom] = useState<string>('');
@@ -107,7 +121,18 @@ export default function StatisticsPage() {
       const dateOk =
         (!dateFrom || (firstTimestamp && firstTimestamp >= dateFrom)) &&
         (!dateTo || (firstTimestamp && firstTimestamp <= dateTo));
-      return titleOk && categoryOk && addressOk && userOk && minPriceOk && maxPriceOk && dateOk;
+      const lastStatusObj = Array.isArray(item.statuses) && item.statuses.length > 0
+        ? item.statuses[item.statuses.length - 1]
+        : undefined;
+      const lastStatus = lastStatusObj?.type;
+      const statusOk = !filters.lastStatus || lastStatus === filters.lastStatus;
+      // фильтрация по succes если выбран closed_status
+      const closedOk = filters.lastStatus !== 'closed_status'
+        || (lastStatus === 'closed_status' && (
+          (filters.closedSuccess && lastStatusObj?.success === true) ||
+          (!filters.closedSuccess && lastStatusObj?.success === false)
+        ));
+      return titleOk && categoryOk && addressOk && userOk && minPriceOk && maxPriceOk && dateOk && statusOk && closedOk;
     });
   }, [productsData, filters, dateFrom, dateTo]);
 
@@ -338,9 +363,32 @@ export default function StatisticsPage() {
           size="small"
           InputLabelProps={{ shrink: true }}
         />
+        <FormControl size="small" style={{ minWidth: 170 }}>
+          <InputLabel>Последний статус</InputLabel>
+          <Select
+            value={filters.lastStatus}
+            label="Последний статус"
+            onChange={e => setFilters(f => ({ ...f, lastStatus: e.target.value }))}
+          >
+            {statusOptions.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        {filters.lastStatus === 'closed_status' && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filters.closedSuccess}
+                onChange={e => setFilters(f => ({ ...f, closedSuccess: e.target.checked }))}
+              />
+            }
+            label="Успешно закрытые"
+          />
+        )}
         <Button variant="outlined" onClick={() => {
           setFilters({
-            title: '', category: '', address: '', user_id: '', minPrice: '', maxPrice: ''
+            title: '', category: '', address: '', user_id: '', minPrice: '', maxPrice: '', lastStatus: '', closedSuccess: true
           });
           setDateFrom('');
           setDateTo('');

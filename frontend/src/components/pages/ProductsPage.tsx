@@ -99,7 +99,7 @@ export const ProductsPage = () => {
               ? <>
                 <BackupExportButton />
                 <BackupImportButton />
-                <Button variant='contained' onClick={() => {}}>Статистика</Button>
+                <Button variant='contained' onClick={() => navigate('/statistics')}>Статистика</Button>
               </>
               : <CreateProductButton />
             }

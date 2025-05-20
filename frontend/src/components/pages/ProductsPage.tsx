@@ -10,7 +10,8 @@ import { AdminFilters, AdminFiltersFormInputs } from '@src/components/ui/AdminFi
 import { BackupExportButton } from '@src/components/ui/buttons/BackupExportButton';
 import { BackupImportButton } from '@src/components/ui/buttons/BackupImportButton';
 import { useCallback, useState } from 'react';
-import { ApiService, ProductRequestListResponse } from '@src/api';
+import { ApiService } from '@src/api';
+import dayjs from 'dayjs';
 
 export const ProductsPage = () => {
   const navigate = useNavigate();
@@ -18,10 +19,12 @@ export const ProductsPage = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
 
   const [adminFilters, setAdminFilters] = useState<AdminFiltersFormInputs>(() => {
-    if (localStorage.getItem('adminFilters'))
-      return JSON.parse(localStorage.getItem('adminFilters')!);
+    if (localStorage.getItem('adminFilters')) {
+      const { from, to, ...rest }: Omit<AdminFiltersFormInputs, 'from' | 'to'> & { from?: string, to?: string } = JSON.parse(localStorage.getItem('adminFilters')!);
+      return { ...rest, from: from ? dayjs(from) : undefined, to: to ? dayjs(to) : undefined };
+    }
 
-    return {};
+    return { status: 'any', category: 'any', me: false };
   });
 
   const getProductsWithAdminFilters = useCallback(async (page: number, pageSize: number) => {

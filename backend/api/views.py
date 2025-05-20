@@ -7,6 +7,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
+from mongoengine.queryset.queryset import QuerySet
 from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
 from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer, ProductRequestListResponseSerializer
 from datetime import datetime, time
@@ -249,13 +250,14 @@ class RequestViewSet(ModelViewSet):
         except (ValueError, TypeError) as e:
             offset = 0
 
-        # Общее количество объектов до среза
-        total_count = queryset.count()
-
-        # Применяем пагинацию
-        paginated_queryset = queryset.skip(offset)
-        if amount is not None:
-            paginated_queryset = paginated_queryset.limit(amount)
+        if isinstance(queryset, QuerySet):
+            total_count = queryset.count()
+            paginated_queryset = queryset.skip(offset)
+            if amount is not None:
+                paginated_queryset = paginated_queryset.limit(amount)
+        else:
+            total_count = len(queryset)
+            paginated_queryset = queryset[offset: offset + amount if amount is not None else None]
 
         response_serializer = ProductRequestListResponseSerializer(
             {

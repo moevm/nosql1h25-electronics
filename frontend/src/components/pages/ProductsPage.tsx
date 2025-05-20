@@ -12,6 +12,11 @@ import { BackupImportButton } from '@src/components/ui/buttons/BackupImportButto
 import { useCallback, useState } from 'react';
 import { ApiService } from '@src/api';
 import dayjs from 'dayjs';
+import { DateType } from '@src/components/ui/form/DateFormField';
+
+type DateToString<T> = {
+  [K in keyof T]: T[K] extends DateType | undefined ? string : T[K];
+};
 
 export const ProductsPage = () => {
   const navigate = useNavigate();
@@ -19,8 +24,9 @@ export const ProductsPage = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
 
   const [adminFilters, setAdminFilters] = useState<AdminFiltersFormInputs>(() => {
-    if (localStorage.getItem('adminFilters')) {
-      const { from, to, ...rest }: Omit<AdminFiltersFormInputs, 'from' | 'to'> & { from?: string, to?: string } = JSON.parse(localStorage.getItem('adminFilters')!);
+    const adminFilters = localStorage.getItem('adminFilters');
+    if (adminFilters) {
+      const { from, to, ...rest }: DateToString<AdminFiltersFormInputs> = JSON.parse(adminFilters);
       return { ...rest, from: from ? dayjs(from) : undefined, to: to ? dayjs(to) : undefined };
     }
 
@@ -56,10 +62,13 @@ export const ProductsPage = () => {
 
   
   const [clientFilters, setClientFilters] = useState<ClientFiltersFormInputs>(() => {
-    if (localStorage.getItem('clientFilters'))
-      return JSON.parse(localStorage.getItem('clientFilters')!);
+    const clientFilters = localStorage.getItem('clientFilters');
+    if (clientFilters) {
+      const { from, to, ...rest }: DateToString<ClientFiltersFormInputs> = JSON.parse(clientFilters);
+      return { ...rest, from: from ? dayjs(from) : undefined, to: to ? dayjs(to) : undefined };
+    }
 
-    return {};
+    return { status: 'any', category: 'any', sort: 'any' };
   });
 
   const getProductsWithClientFilters = useCallback(async (page: number, pageSize: number) => {

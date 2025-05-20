@@ -10,7 +10,7 @@ import { AdminFilters, AdminFiltersFormInputs } from '@src/components/ui/AdminFi
 import { BackupExportButton } from '@src/components/ui/buttons/BackupExportButton';
 import { BackupImportButton } from '@src/components/ui/buttons/BackupImportButton';
 import { useCallback, useState } from 'react';
-import { ApiService } from '@src/api';
+import { ApiService, ProductRequestListResponse } from '@src/api';
 
 export const ProductsPage = () => {
   const navigate = useNavigate();
@@ -34,19 +34,16 @@ export const ProductsPage = () => {
       ...restFilters
     } = adminFilters;
 
-    let products = await ApiService.apiRequestsList({
+    return await ApiService.apiRequestsRetrieve({
       from: from?.format('YYYY-MM-DD'),
       to: to?.format('YYYY-MM-DD'),
       status: status === 'any' ? undefined : status,
       category: category === 'any' ? undefined : category,
       me: me === true ? true : undefined,
+      amount: pageSize,
+      offset: page*pageSize,
       ...restFilters,
     });
-
-    const total = products.length;
-    products = products.slice(page*pageSize, (page + 1)*pageSize);
-    
-    return { total, products };
   }, [adminFilters]);
 
   const onAdminSubmit = (data: AdminFiltersFormInputs) => {
@@ -72,20 +69,18 @@ export const ProductsPage = () => {
       ...restFilters
     } = clientFilters;
 
-    let products = await ApiService.apiRequestsList({
+    return await ApiService.apiRequestsRetrieve({
       from: from?.format('YYYY-MM-DD'),
       to: to?.format('YYYY-MM-DD'),
       status: status === 'any' ? undefined : status,
       category: category === 'any' ? undefined : category,
       sort: sort === 'any' ? undefined : sort,
+      amount: pageSize,
+      offset: page*pageSize,
       ...restFilters,
     });
-
-    const total = products.length;
-    products = products.slice(page*pageSize, (page + 1)*pageSize);
-    
-    return { total, products };
   }, [clientFilters]);
+
 
   const onClientSubmit = (data: ClientFiltersFormInputs) => {
     localStorage.setItem('clientFilters', JSON.stringify(data));

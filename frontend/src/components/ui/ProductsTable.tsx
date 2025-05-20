@@ -1,11 +1,12 @@
 import { Box, CircularProgress, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Typography } from '@mui/material';
 import { categoryToRussian, statusTypeToRussian } from '@src/lib/RussianConverters';
-import { ApiService, ProductRequest } from '@src/api';
+import { ApiService, ProductRequest, ProductRequestListResponse } from '@src/api';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ErrorOutline } from '@mui/icons-material';
+import React from 'react';
 
 interface ProductsTableRowProps {
   product: ProductRequest;
@@ -24,7 +25,7 @@ const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
   return (
     <TableRow 
       hover 
-      sx={{ cursor: 'pointer' }} 
+      sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }} 
       onClick={() => navigate(`/product/${product.id}`)} 
     >
       <TableCell>
@@ -46,14 +47,9 @@ const ProductsTableRow = ({ product }: ProductsTableRowProps) => {
   );
 };
 
-interface ProductsData {
-  products: ProductRequest[];
-  total: number;
-}
-
 export interface ProductsTableProps {
   pageSize: number;
-  getData(page: number, pageSize: number): Promise<ProductsData>;
+  getData(page: number, pageSize: number): Promise<ProductRequestListResponse>;
 }
 
 export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
@@ -73,15 +69,51 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
     setProducts(null);
 
     getData(page, pageSize)
-    .then(({ total, products }) => {
-      setTotal(total);
-      setProducts(products);
+    .then(({ amount, requests }) => {
+      setTotal(amount);
+      setProducts(requests);
     })
     .catch(e => {
       setProducts([]);
       alert(e.toString());
     });
   }, [getData, pageSize, page]);
+
+  const emptyRows = pageSize - (products?.length ?? 0);
+  const fillHeight = emptyRows * 52; // actual size of a row
+
+  let tableContent: React.ReactNode;
+  if (products && products.length > 0) {
+    tableContent = (
+      <>
+        { products.map(product => <ProductsTableRow key={product.id} product={product} />) }
+        { (fillHeight > 0) && 
+          <TableRow sx={{ height: fillHeight }}>
+            <TableCell colSpan={5} />
+          </TableRow>
+        }
+      </>
+    );
+  } else {
+    tableContent = (
+      <TableRow>
+        <TableCell colSpan={5}>
+          <Box sx={{ 
+            height: fillHeight, 
+            display: 'flex',
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            }}
+          >
+            { (products)
+            ? <Typography variant='h4'>Пусто</Typography> 
+            : <CircularProgress size={25} />
+            }
+          </Box>
+        </TableCell>
+      </TableRow>
+    );
+  }
 
   return (
     <TableContainer>
@@ -96,25 +128,7 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          { 
-            (products && products.length > 0)
-            ? products.map(product => <ProductsTableRow key={product.id} product={product} />) 
-            : (products)
-            ? <TableRow>
-              <TableCell colSpan={5}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Typography variant='h4'>Пусто</Typography> 
-                </Box>
-              </TableCell>
-            </TableRow>
-            : <TableRow>
-              <TableCell colSpan={5}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <CircularProgress size={25} />
-                </Box>
-              </TableCell>
-            </TableRow>
-          } 
+          { tableContent }
           <TableRow>
             <TablePagination
               rowsPerPage={pageSize}

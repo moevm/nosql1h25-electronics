@@ -2,19 +2,23 @@ from rest_framework_mongoengine.serializers import DocumentSerializer
 from rest_framework import serializers
 from bson import ObjectId
 from bson.dbref import DBRef
-from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus, STATUS_TYPES
+from .models import ProductRequest, Photo, Status, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, \
+    DateAcceptStatus, ClosedStatus, STATUS_TYPES
 import os
 from django.utils import timezone
+
 
 class PhotoSerializer(DocumentSerializer):
     class Meta:
         model = Photo
         fields = ['id', 'data']
 
+
 class PhotoResponseSerializer(DocumentSerializer):
     class Meta:
         model = Photo
         fields = ['id']
+
 
 class StatusSerializer(DocumentSerializer):
     type = serializers.ChoiceField(
@@ -58,7 +62,8 @@ class StatusSerializer(DocumentSerializer):
         return representation
 
     def validate(self, data):
-        if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(self.REQUIRED_FIELDS.get(data.get('type'))) is None:
+        if self.REQUIRED_FIELDS.get(data.get('type'), False) and data.get(
+                self.REQUIRED_FIELDS.get(data.get('type'))) is None:
             raise serializers.ValidationError(f"Missing required field: {self.REQUIRED_FIELDS.get(data.get('type'))}")
         return data
 
@@ -86,30 +91,36 @@ class CreatedStatusSerializer(DocumentSerializer):
         model = CreatedStatus
         fields = '__all__'
 
+
 class PriceOfferStatusSerializer(DocumentSerializer):
     class Meta:
         model = PriceOfferStatus
         fields = '__all__'
+
 
 class PriceAcceptStatusSerializer(DocumentSerializer):
     class Meta:
         model = PriceAcceptStatus
         fields = '__all__'
 
+
 class DateOfferStatusSerializer(DocumentSerializer):
     class Meta:
         model = DateOfferStatus
         fields = '__all__'
+
 
 class DateAcceptStatusSerializer(DocumentSerializer):
     class Meta:
         model = DateAcceptStatus
         fields = '__all__'
 
+
 class ClosedStatusSerializer(DocumentSerializer):
     class Meta:
         model = ClosedStatus
         fields = '__all__'
+
 
 class ProductRequestSerializer(DocumentSerializer):
     statuses = StatusSerializer(many=True, read_only=True)
@@ -193,3 +204,8 @@ class ProductRequestSerializer(DocumentSerializer):
         if not isinstance(value, str):
             raise serializers.ValidationError("Address must be a string.")
         return value
+
+
+class ProductRequestListResponseSerializer(serializers.Serializer):
+    amount = serializers.IntegerField()
+    requests = ProductRequestSerializer(many=True)

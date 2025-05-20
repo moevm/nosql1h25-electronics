@@ -280,10 +280,6 @@ export default function StatisticsPage() {
     return { xLabels, series };
   }, [filteredData, xAttr, yAttr, usersList]);
 
-  const userFullnameValue = filters.user_id
-    ? usersList?.[filters.user_id] || ''
-    : '';
-
   const unique = (attr: keyof ProductRequest) =>
     Array.from(new Set((productsData ?? []).map((item) => String(item[attr] ?? '')))).filter(Boolean);
 

@@ -19,7 +19,9 @@ import { categoryToRussian } from '@src/lib/RussianConverters';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueries } from '@tanstack/react-query';
 
-const groupableAttributes: Array<keyof ProductRequest | 'timestamp' | 'user_fullname'> = [
+type chartLabels = keyof ProductRequest | 'timestamp' | 'user_fullname';
+
+const groupableAttributes: Array<chartLabels> = [
   'category',
   'address',
   'user_fullname',
@@ -75,8 +77,8 @@ export default function StatisticsPage() {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
 
-  const [xAttr, setXAttr] = useState<keyof ProductRequest | 'timestamp' | 'user_fullname'>('category');
-  const [yAttr, setYAttr] = useState<keyof ProductRequest | 'timestamp' | 'user_fullname'>('address');
+  const [xAttr, setXAttr] = useState<chartLabels>('category');
+  const [yAttr, setYAttr] = useState<chartLabels>('address');
 
   const userIds = useMemo(() => {
     if (!productsData) return [];
@@ -162,7 +164,7 @@ export default function StatisticsPage() {
   }
 
   const chartData = useMemo(() => {
-    const getAxisValue = (item: ProductRequest, attr: keyof ProductRequest | 'timestamp' | 'user_fullname') => {
+    const getAxisValue = (item: ProductRequest, attr: chartLabels) => {
       if (attr === 'timestamp') {
         if (Array.isArray(item.statuses) && item.statuses.length > 0) {
           return String(item.statuses[item.statuses.length - 1].timestamp).slice(0, 10);
@@ -436,7 +438,7 @@ export default function StatisticsPage() {
           <Select
             value={xAttr}
             label="Ось X"
-            onChange={e => setXAttr(e.target.value as keyof ProductRequest | 'timestamp' | 'user_fullname')}
+            onChange={e => setXAttr(e.target.value as chartLabels)}
           >
             {groupableAttributes.map(attr => (
               <MenuItem
@@ -454,7 +456,7 @@ export default function StatisticsPage() {
           <Select
             value={yAttr}
             label="Ось Y"
-            onChange={e => setYAttr(e.target.value as keyof ProductRequest | 'timestamp' | 'user_fullname')}
+            onChange={e => setYAttr(e.target.value as chartLabels)}
           >
             {groupableAttributes.map(attr => (
               <MenuItem

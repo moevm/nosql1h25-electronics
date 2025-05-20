@@ -2,7 +2,11 @@ import { Button } from '@mui/material';
 import CreateRequestDialog from '@src/components/ui/ProductCreateDialog';
 import { useState } from 'react';
 
-export const CreateProductButton = () => {
+export interface CreateProductButtonProps {
+  onSubmit?: () => void;
+}
+
+export const CreateProductButton = ({ onSubmit }: CreateProductButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -10,7 +14,7 @@ export const CreateProductButton = () => {
       <CreateRequestDialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={() => onSubmit?.()}
       />
 
       <Button

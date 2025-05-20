@@ -99,6 +99,8 @@ export const ProductsPage = () => {
     setClientFilters(data);
   };
 
+  const updateTable = () => isAdmin ? setAdminFilters({ ...adminFilters }) : setClientFilters({ ...clientFilters });
+
   return (
     <Container maxWidth='lg'>
       <Paper elevation={5} sx={{ mt: 3, p: 3 }}>
@@ -113,7 +115,7 @@ export const ProductsPage = () => {
                 <BackupImportButton />
                 <Button variant='contained' onClick={() => navigate('/statistics')}>Статистика</Button>
               </>
-              : <CreateProductButton />
+              : <CreateProductButton onSubmit={updateTable} />
             }
             <LogoutButton />
           </Stack>

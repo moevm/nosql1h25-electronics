@@ -10,7 +10,13 @@ import { AdminFilters, AdminFiltersFormInputs } from '@src/components/ui/AdminFi
 import { BackupExportButton } from '@src/components/ui/buttons/BackupExportButton';
 import { BackupImportButton } from '@src/components/ui/buttons/BackupImportButton';
 import { useCallback, useState } from 'react';
-import { ApiService, ProductRequestListResponse } from '@src/api';
+import { ApiService } from '@src/api';
+import dayjs from 'dayjs';
+import { DateType } from '@src/components/ui/form/DateFormField';
+
+type DateToString<T> = {
+  [K in keyof T]: T[K] extends DateType | undefined ? string : T[K];
+};
 
 export const ProductsPage = () => {
   const navigate = useNavigate();
@@ -18,10 +24,13 @@ export const ProductsPage = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
 
   const [adminFilters, setAdminFilters] = useState<AdminFiltersFormInputs>(() => {
-    if (localStorage.getItem('adminFilters'))
-      return JSON.parse(localStorage.getItem('adminFilters')!);
+    const adminFilters = localStorage.getItem('adminFilters');
+    if (adminFilters) {
+      const { from, to, ...rest }: DateToString<AdminFiltersFormInputs> = JSON.parse(adminFilters);
+      return { ...rest, from: from ? dayjs(from) : undefined, to: to ? dayjs(to) : undefined };
+    }
 
-    return {};
+    return { status: 'any', category: 'any', me: false };
   });
 
   const getProductsWithAdminFilters = useCallback(async (page: number, pageSize: number) => {
@@ -35,8 +44,8 @@ export const ProductsPage = () => {
     } = adminFilters;
 
     return await ApiService.apiRequestsRetrieve({
-      from: from?.format('YYYY-MM-DD'),
-      to: to?.format('YYYY-MM-DD'),
+      from: from?.isValid() ? from.format('YYYY-MM-DD') : undefined,
+      to: to?.isValid() ? to.format('YYYY-MM-DD') : undefined,
       status: status === 'any' ? undefined : status,
       category: category === 'any' ? undefined : category,
       me: me === true ? true : undefined,
@@ -53,10 +62,13 @@ export const ProductsPage = () => {
 
   
   const [clientFilters, setClientFilters] = useState<ClientFiltersFormInputs>(() => {
-    if (localStorage.getItem('clientFilters'))
-      return JSON.parse(localStorage.getItem('clientFilters')!);
+    const clientFilters = localStorage.getItem('clientFilters');
+    if (clientFilters) {
+      const { from, to, ...rest }: DateToString<ClientFiltersFormInputs> = JSON.parse(clientFilters);
+      return { ...rest, from: from ? dayjs(from) : undefined, to: to ? dayjs(to) : undefined };
+    }
 
-    return {};
+    return { status: 'any', category: 'any', sort: 'any' };
   });
 
   const getProductsWithClientFilters = useCallback(async (page: number, pageSize: number) => {
@@ -70,8 +82,8 @@ export const ProductsPage = () => {
     } = clientFilters;
 
     return await ApiService.apiRequestsRetrieve({
-      from: from?.format('YYYY-MM-DD'),
-      to: to?.format('YYYY-MM-DD'),
+      from: from?.isValid() ? from.format('YYYY-MM-DD') : undefined,
+      to: to?.isValid() ? to.format('YYYY-MM-DD') : undefined,
       status: status === 'any' ? undefined : status,
       category: category === 'any' ? undefined : category,
       sort: sort === 'any' ? undefined : sort,
@@ -87,6 +99,8 @@ export const ProductsPage = () => {
     setClientFilters(data);
   };
 
+  const updateTable = () => isAdmin ? setAdminFilters({ ...adminFilters }) : setClientFilters({ ...clientFilters });
+
   return (
     <Container maxWidth='lg'>
       <Paper elevation={5} sx={{ mt: 3, p: 3 }}>
@@ -101,7 +115,7 @@ export const ProductsPage = () => {
                 <BackupImportButton />
                 <Button variant='contained' onClick={() => navigate('/statistics')}>Статистика</Button>
               </>
-              : <CreateProductButton />
+              : <CreateProductButton onSubmit={updateTable} />
             }
             <LogoutButton />
           </Stack>

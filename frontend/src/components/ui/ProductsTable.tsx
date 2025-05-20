@@ -80,7 +80,7 @@ export const ProductsTable = ({ getData, pageSize }: ProductsTableProps) => {
   }, [getData, pageSize, page]);
 
   const emptyRows = pageSize - (products?.length ?? 0);
-  const fillHeight = emptyRows * 52; // actual size of a row
+  const fillHeight = emptyRows * 52;
 
   let tableContent: React.ReactNode;
   if (products && products.length > 0) {

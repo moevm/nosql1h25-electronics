@@ -385,7 +385,7 @@ export default function StatisticsPage() {
           value={dateFrom}
           onChange={e => setDateFrom(e.target.value)}
           size="small"
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true }}}
         />
         <TextField
           label="Макс. дата изменения"
@@ -393,7 +393,7 @@ export default function StatisticsPage() {
           value={dateTo}
           onChange={e => setDateTo(e.target.value)}
           size="small"
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true }}}
         />
         <FormControl size="small" style={{ minWidth: 170 }}>
           <InputLabel>Последний статус</InputLabel>

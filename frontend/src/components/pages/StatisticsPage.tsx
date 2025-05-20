@@ -50,14 +50,16 @@ const statusOptions = [
 
 export default function StatisticsPage() {
   const [productsData, setProductsData] = useState<ProductRequest[] | null>(null);
+  const [onlyMy, setOnlyMy] = useState(false);
 
-  const fetchData = async () => {
-    const data = await ApiService.apiRequestsList({});
+  const fetchData = async (me?: boolean) => {
+    const data = await ApiService.apiRequestsList({ me: me ? true : undefined });
     setProductsData(data);
   };
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(onlyMy);
+  }, [onlyMy]);
 
   const [filters, setFilters] = useState({
     title: '',
@@ -275,6 +277,18 @@ export default function StatisticsPage() {
         Статистика по заявкам
       </Typography>
 
+      <Box display="flex" gap={2} flexWrap="wrap">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={onlyMy}
+              onChange={e => setOnlyMy(e.target.checked)}
+            />
+          }
+          label="Участвовал в разрешении"
+        />
+      </Box>
+
       <Box display="flex" gap={2} flexWrap="wrap" mb={3}>
         <TextField
           label="Название содержит"
@@ -368,6 +382,7 @@ export default function StatisticsPage() {
             value={filters.lastStatus}
             label="Последний статус"
             onChange={e => setFilters(f => ({ ...f, lastStatus: e.target.value }))}
+            sx={{ minWidth: 280, maxWidth: 400 }}
           >
             {statusOptions.map(opt => (
               <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
@@ -385,6 +400,7 @@ export default function StatisticsPage() {
             label="Успешно закрытые"
           />
         )}
+
         <Button variant="outlined" onClick={() => {
           setFilters({
             title: '', category: '', address: '', user_id: '', minPrice: '', maxPrice: '', lastStatus: '', closedSuccess: true

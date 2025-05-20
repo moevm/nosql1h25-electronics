@@ -44,8 +44,8 @@ export const ProductsPage = () => {
     } = adminFilters;
 
     return await ApiService.apiRequestsRetrieve({
-      from: from?.format('YYYY-MM-DD'),
-      to: to?.format('YYYY-MM-DD'),
+      from: from?.isValid() ? from.format('YYYY-MM-DD') : undefined,
+      to: to?.isValid() ? to.format('YYYY-MM-DD') : undefined,
       status: status === 'any' ? undefined : status,
       category: category === 'any' ? undefined : category,
       me: me === true ? true : undefined,
@@ -82,8 +82,8 @@ export const ProductsPage = () => {
     } = clientFilters;
 
     return await ApiService.apiRequestsRetrieve({
-      from: from?.format('YYYY-MM-DD'),
-      to: to?.format('YYYY-MM-DD'),
+      from: from?.isValid() ? from.format('YYYY-MM-DD') : undefined,
+      to: to?.isValid() ? to.format('YYYY-MM-DD') : undefined,
       status: status === 'any' ? undefined : status,
       category: category === 'any' ? undefined : category,
       sort: sort === 'any' ? undefined : sort,

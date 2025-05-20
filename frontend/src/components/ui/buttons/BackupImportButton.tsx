@@ -1,7 +1,6 @@
 import { Button } from '@mui/material';
 import { ApiService } from '@src/api';
 import { useAppDispatch } from '@src/hooks/ReduxHooks';
-import { reset } from '@src/store/ProductsSlice';
 import { logout } from '@src/store/UserSlice';
 import React, { useRef } from 'react';
 
@@ -27,7 +26,6 @@ export const BackupImportButton = () => {
       alert('Данные успешно импортированы');
 
       await dispatch(logout());
-      dispatch(reset());
     } catch {
       alert('Ошибка импорта данных');
     }

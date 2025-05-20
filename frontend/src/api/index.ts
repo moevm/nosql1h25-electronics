@@ -12,6 +12,7 @@ export type { CustomTokenObtainPair } from './models/CustomTokenObtainPair';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { PhotoResponse } from './models/PhotoResponse';
 export type { ProductRequest } from './models/ProductRequest';
+export type { ProductRequestListResponse } from './models/ProductRequestListResponse';
 export type { Register } from './models/Register';
 export type { Status } from './models/Status';
 export type { TokenResponse } from './models/TokenResponse';

@@ -49,7 +49,7 @@ const ProductCardPage = () => {
 
     const loadProduct = async (id: string) => {
       try {
-        const response = await ApiService.apiRequestsRetrieve({ id });
+        const response = await ApiService.apiRequestsRetrieve2({ id });
         setProduct(response);
       } catch (error) {
         setIsError(true);

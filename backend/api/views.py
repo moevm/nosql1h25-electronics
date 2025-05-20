@@ -1,6 +1,5 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
-from drf_spectacular.types import OpenApiTypes
 from authapp.serializers import ErrorResponseSerializer, UserResponseSerializer
 from authapp.models import User
 from rest_framework.response import Response
@@ -8,14 +7,14 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.http import HttpResponse, JsonResponse
-from django.conf import settings
+from mongoengine.queryset.queryset import QuerySet
 from .models import ProductRequest, Photo, CreatedStatus, PriceOfferStatus, PriceAcceptStatus, DateOfferStatus, DateAcceptStatus, ClosedStatus
-from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer
+from .serializers import ProductRequestSerializer, PhotoSerializer, PhotoResponseSerializer, StatusSerializer, ProductRequestListResponseSerializer
 from datetime import datetime, time
 from bson import ObjectId
 import json
 import base64
-import zoneinfo
+
 
 class RequestViewSet(ModelViewSet):
     """ViewSet для работы с заявками"""
@@ -114,10 +113,12 @@ class RequestViewSet(ModelViewSet):
             OpenApiParameter(name="me", description="Фильтрация по своим заявкам", required=False, type=bool),
             OpenApiParameter(name="sort",
                              description="Сортировка записей (title, description, address, category, fullname, last_update)",
-                             required=False, type=str)
+                             required=False, type=str),
+            OpenApiParameter(name="amount", description="Количество записей для пагинации", required=False, type=int),
+            OpenApiParameter(name="offset", description="Смещение для пагинации", required=False, type=int)
         ],
         responses={
-            200: ProductRequestSerializer(many=True),
+            200: ProductRequestListResponseSerializer,
             400: ErrorResponseSerializer,
             401: ErrorResponseSerializer,
             403: ErrorResponseSerializer,
@@ -229,8 +230,42 @@ class RequestViewSet(ModelViewSet):
             elif sort == "last_update":
                 queryset = sorted(queryset, key=lambda x: x.statuses[-1]["timestamp"], reverse=True)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            amount = request.query_params.get('amount')
+            # если что-то не так, то amount = None чтобы все вывести
+            amount = int(amount) if amount is not None else None
+            if amount <= 0:
+                raise ValueError("amount должен быть строго положительным числом")
+        except (ValueError, TypeError) as e:
+            amount = None
+
+        try:
+            offset = request.query_params.get('offset')
+
+            # в случае чего просто выводим с начала списка
+            offset = int(offset) if offset is not None else 0
+
+            if offset < 0:
+                raise ValueError("offset не может быть отрицательным числом")
+        except (ValueError, TypeError) as e:
+            offset = 0
+
+        if isinstance(queryset, QuerySet):
+            total_count = queryset.count()
+            paginated_queryset = queryset.skip(offset)
+            if amount is not None:
+                paginated_queryset = paginated_queryset.limit(amount)
+        else:
+            total_count = len(queryset)
+            paginated_queryset = queryset[offset: offset + amount if amount is not None else None]
+
+        response_serializer = ProductRequestListResponseSerializer(
+            {
+                "amount": total_count,
+                "requests": paginated_queryset
+            }
+        )
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Получить заявку",

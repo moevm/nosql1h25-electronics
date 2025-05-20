@@ -89,7 +89,7 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
         return;
       }
 
-      const response = await ApiService.apiRequestsCreate({
+      await ApiService.apiRequestsCreate({
         requestBody: {
           id: '',
           statuses: [],
@@ -103,9 +103,15 @@ const CreateRequestDialog = ({ open, onClose, onSubmit }: CreateRequestDialogPro
         }
       })
 
-      console.log(response);
       onSubmit(form);
       onClose();
+
+      setForm({
+        images: [],
+        title: '',
+        description: '',
+        address: '',
+      });
     }
   };
 

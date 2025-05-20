@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { PhotoResponse } from '../models/PhotoResponse';
 import type { ProductRequest } from '../models/ProductRequest';
+import type { ProductRequestListResponse } from '../models/ProductRequestListResponse';
 import type { Status } from '../models/Status';
 import type { UserResponse } from '../models/UserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -90,21 +91,26 @@ export class ApiService {
     /**
      * Получить список заявок
      * Возвращает список заявок с возможностью фильтрации по разным критериям.
-     * @returns ProductRequest
+     * @returns ProductRequestListResponse
      * @throws ApiError
      */
-    public static apiRequestsList({
+    public static apiRequestsRetrieve({
+        amount,
         author,
         category,
         description,
         from,
         me,
-        ordering,
+        offset,
         sort,
         status,
         title,
         to,
     }: {
+        /**
+         * Количество записей для пагинации
+         */
+        amount?: number,
         /**
          * Фильтрация по автору заявки
          */
@@ -126,9 +132,9 @@ export class ApiService {
          */
         me?: boolean,
         /**
-         * Which field to use when ordering the results.
+         * Смещение для пагинации
          */
-        ordering?: string,
+        offset?: number,
         /**
          * Сортировка записей (title, description, address, category, fullname, last_update)
          */
@@ -145,17 +151,18 @@ export class ApiService {
          * Фильтрация по дате окончания (формат YYYY-MM-DD)
          */
         to?: string,
-    }): CancelablePromise<Array<ProductRequest>> {
+    }): CancelablePromise<ProductRequestListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/requests/',
             query: {
+                'amount': amount,
                 'author': author,
                 'category': category,
                 'description': description,
                 'from': from,
                 'me': me,
-                'ordering': ordering,
+                'offset': offset,
                 'sort': sort,
                 'status': status,
                 'title': title,
@@ -187,7 +194,7 @@ export class ApiService {
      * @returns ProductRequest
      * @throws ApiError
      */
-    public static apiRequestsRetrieve({
+    public static apiRequestsRetrieve2({
         id,
     }: {
         id: string,

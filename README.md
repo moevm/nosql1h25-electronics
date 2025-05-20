@@ -48,9 +48,29 @@ docker compose up --build
 login: buyer
 password: password
 ```
+```
+login: amina
+password: password
+```
 
 Для тестирования функционала со стороны клиента необходимо воспользоваться следующими данными для авторизации:
 ```
 login: lena
+password: password
+```
+```
+login: erika
+password: password
+```
+```
+login: saveli
+password: password
+```
+```
+login: ilya
+password: password
+```
+```
+login: alice
 password: password
 ```

@@ -13,7 +13,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { ApiService, ProductRequest } from '@src/api';
+import { ApiService, CategoryEnum, ProductRequest } from '@src/api';
 import { categoryToRussian } from '@src/lib/RussianConverters';
 import { Link } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
@@ -320,7 +320,7 @@ export default function StatisticsPage() {
           >
             <MenuItem value="">Все</MenuItem>
             {unique('category').map(val => (
-              <MenuItem key={val} value={val}>{categoryToRussian(val as any) ?? val}</MenuItem>
+              <MenuItem key={val} value={val}>{categoryToRussian(val as CategoryEnum) ?? val}</MenuItem>
             ))}
           </Select>
         </FormControl>

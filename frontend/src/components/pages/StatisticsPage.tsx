@@ -256,7 +256,7 @@ export default function StatisticsPage() {
       yLabels = ['price'];
       series = [{
         data: xLabels.map((xLabel) => groupMap.get(xLabel)?.get('price') ?? 0),
-        label: 'Сумма price',
+        label: 'Сумма цен',
       }];
     } else {
       const yLabelsSet = new Set<string>();
